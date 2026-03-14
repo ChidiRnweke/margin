@@ -7,6 +7,8 @@ description: Convert domain modeling artifacts into a complete architectural spe
 
 Take domain artifacts. Produce a complete architectural specification. Every entity, service, controller, repository, and wiring decision defined before any code is written.
 
+Important interpretation: this skill is not just "design a good architecture." It is a translation exercise. The output must preserve and account for the source domain artifacts as exhaustively as possible. If the domain model is detailed, the architecture translation must be equally detailed. Do not stop at a high-quality synthesis if you have not also made the translation auditable.
+
 ## Reference files
 
 Read these when working in the relevant area:
@@ -54,6 +56,29 @@ A complete architectural specification that an implementation agent can execute 
 9. **Invariant classification** — every invariant categorized as construction-time (model), behavioral (service), or aggregate (repository), with the enforcing class identified.
 
 10. **Config mapping** — external dependencies and configuration values derived from the domain's external system boundaries.
+
+11. **Interaction traceability** — every interaction from the interaction matrix mapped to its controller, service, repository/infrastructure dependencies, governing invariants, and primary error contract.
+
+12. **Sequence failure mapping** — every failure `alt` path from every sequence diagram mapped to one exact architectural raising point.
+
+13. **Aggregate-boundary audit** — every root/child decision justified from ERD structure, interaction independence, and invariant locality.
+
+14. **Mechanical audit log** — a source-to-destination audit showing what was translated, what required architectural judgment, and what remains genuinely ambiguous.
+
+### Exhaustiveness standard
+
+When doing this skill, assume the user wants an auditable, near-lossless conversion from domain spec to software architecture.
+
+That means you must:
+
+- treat the ERD as an entity/attribute/relationship/cardinality checklist
+- treat the interaction matrix as an interaction/actor/error-contract checklist
+- treat the invariants file as a numbered enforcement checklist
+- treat the sequence diagrams as a happy-path and failure-path ownership checklist
+- treat any traceability/overview files as concern-level completeness checks
+- make architectural judgment explicit where the source domain does not uniquely determine one answer
+
+Do not claim full coverage unless you have explicit traceability artifacts to support that claim.
 
 ---
 
@@ -108,6 +133,17 @@ This means:
 ---
 
 ## Workflow
+
+Before Step 0, build a private checklist from the source artifacts:
+
+- every ERD entity
+- every important ERD attribute and enum/status field
+- every important ERD relationship/cardinality
+- every interaction ID
+- every invariant ID
+- every sequence failure path
+
+Use that checklist to drive the architecture output. Do not rely on memory or a single synthesized summary.
 
 ### Step 0: Extract cross-cutting concerns
 
@@ -168,6 +204,8 @@ For each entity in the ERD, produce a model specification:
 - **Enum types** for fields with fixed states
 - **Construction-time invariants** from the invariants file — every invariant about data shape and validity
 
+Do this literally. Do not hide "minor" or infrastructure-oriented ERD entities behind prose like "these mirror the ERD" if the rest of the domain is being specified field-by-field. If an entity matters enough to exist in the ERD and participates in flows or invariants, specify it explicitly.
+
 Don't over-engineer value objects. The threshold: if there's a numbered invariant about this field, it gets a value object. If it's just a string with no rules, it stays a string.
 
 ### Step 3: Design service interfaces
@@ -225,8 +263,10 @@ For each aggregate root:
 Read every `alt` (failure) block in every sequence diagram. For each failure:
 
 - **Identify the error type** from the error hierarchy: `InputError` (bad input / validation), `NotFoundError` (entity doesn't exist), `UnauthorisedError` (permission denied), `InfraError` (external system failure), or domain-specific subtypes if needed.
-- **Identify where it's raised** — which service or model constructor.
+- **Identify where it's raised** — which one exact layer/class/method owns the raise.
 - **Map it to the sequence diagram** — the `alt` block references the error by type.
+
+If the same failure path could be described as coming from multiple places, you have not finished the mapping. Pick the true owning raise point and make the architecture consistent with that choice.
 
 ### Step 7: Produce the wiring plan
 
@@ -288,6 +328,43 @@ Every invariant must have exactly one enforcement point. If an invariant doesn't
 - [ ] No controller contains business logic
 - [ ] No model contains behavioral logic
 - [ ] No cross-cutting concern is duplicated in individual services or controllers
+
+### Step 12: Produce proof artifacts
+
+Before you finish, produce these explicit proof-oriented artifacts in addition to the architecture itself:
+
+- an invariant-by-invariant enforcement matrix
+- an interaction-by-interaction traceability matrix
+- a sequence-failure-path mapping
+- an aggregate-boundary audit
+- a mechanical audit note that states what was directly translated vs what required architectural judgment
+
+These are not optional if the user provided a detailed domain spec.
+
+### Step 13: Mandatory skeptical audit with a subagent
+
+At the end, you must launch at least one independent subagent to audit the work.
+
+Prefer multiple subagents when possible, split by source artifact type:
+
+- one for the ERD
+- one for the interaction matrix
+- one for the invariants file
+- one for the sequence diagrams
+- one for traceability/overview docs if present
+
+Instructions for the audit subagent(s):
+
+- be skeptical and unbiased
+- assume omissions and mismatches are bugs
+- check source artifacts against the produced architecture docs, not against your intent
+- return coverage, gaps, mismatches, and recommended fixes
+
+After the subagent(s) return:
+
+- fix any real inconsistencies you find
+- record remaining genuine ambiguities explicitly in the final architecture/audit output
+- only then present the work as complete
 
 ---
 
