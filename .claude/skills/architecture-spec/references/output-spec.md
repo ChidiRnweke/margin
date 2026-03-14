@@ -14,6 +14,9 @@ The final output is a single Markdown file containing:
 ## Overview
 [2–3 sentences: system type, architecture pattern, key constraints]
 
+## Cross-cutting Concerns
+[Middleware, decorators, infrastructure extracted in Step 0]
+
 ## Aggregate Map
 [Table of aggregates with roots and children]
 
@@ -23,24 +26,27 @@ The final output is a single Markdown file containing:
 
 ## Service Interfaces
 ### [Service Name]
-[Interface with method signatures, behavioral invariants, dependencies]
+[Interface with method signatures, behavioral invariants, dependencies, public/private]
 
 ## Controller Specifications
-### [Controller Name]
-[Methods, service dependencies, sequence diagram mapping]
+### [Controller Name — one per concern area]
+[Methods (one per interaction), service dependencies, concern area]
+
+## Job-triggered Interactions
+[Interactions that bypass controllers — job name, service method, trigger]
 
 ## Repository Interfaces
 ### [Repository Name]
-[Methods, aggregate boundary, return types]
+[Methods including cascade operations, aggregate boundary, return types]
 
 ## Error Mapping
-[Table: failure path → error type → raising class]
+[Table: failure path → error type → raising class, derived from interaction matrix error contracts]
 
 ## Invariant Classification
-[Table: invariant → category → enforcement point]
+[Table: invariant → category → enforcement point, including cross-cutting]
 
 ## Wiring Plan
-[Factory structure, DI graph, public vs private services]
+[Factory structure, DI graph, public vs private services, job entry points]
 
 ## Config Mapping
 [External dependencies, required config values]
@@ -53,6 +59,25 @@ The final output is a single Markdown file containing:
 
 ## Aggregate map format
 
+```markdown
+## Cross-cutting Concerns
+
+| Concern | Applies to | Mechanism | Implementation |
+|---|---|---|---|
+| Ownership scoping | 90% of interactions (all mutations + most reads) | Middleware | Injects `owner_id` filter into repository queries. Service methods never check ownership explicitly. |
+| Audit emission | All mutation interactions | Decorator | `@audited` decorator on service mutation methods. Emits event with actor, action, entity, timestamp. |
+| Optimistic concurrency | All entities with `version` field | Repository infrastructure | `save()` checks version match, raises `ConflictError` on mismatch. Transparent to services. |
+| Soft-delete filtering | All reads except admin queries | Repository default filter | Default `WHERE archived_at IS NULL` on all queries. Explicit `include_archived=True` overrides. |
+
+For each concern, note:
+- **Which interactions are excluded** (if any) and why
+- **Where the mechanism is configured** (middleware registration, decorator application)
+- **How services interact with it** (they don't — it's transparent, or they opt in via decorator)
+```
+
+---
+
+## Aggregate map table format
 ```markdown
 ## Aggregate Map
 
@@ -131,49 +156,45 @@ List every value object with its invariant and construction behavior:
 For each service:
 
 ```markdown
-### IPipelineService
+### IPipelineLifecycleService
 
-**Concern:** Pipeline lifecycle management and stage execution.
+**Concern:** Creating, updating, archiving, and cloning pipelines.
+
+**Visibility:** Public (used by PipelineLifecycleController)
 
 **Dependencies:**
 - `IPipelineRepository` (interface)
 
 **Methods:**
 
-#### get_by_id(pipeline_id: str) → Pipeline
-- Loads the pipeline aggregate (root + stages)
-- Raises `NotFoundError` if not found
-
-#### execute(pipeline_id: str) → ExecutionLog
+#### create(input: CreatePipelineInput) → Pipeline
+- Creates pipeline with initial stages
 - **Behavioral invariants enforced:**
-  - #3: Pipeline cannot be executed while already running → raises `InputError`
-  - #14: Pipeline status transition must be valid → checked via `PipelineStatus.can_transition_to`
-- **Flow:** loads pipeline, validates status, transitions to running, executes stages in order, creates execution log
-- **Failure handling:**
-  - If a stage fails: pipeline transitions to `failed`, remaining stages marked `skipped`
-  - Stage results for completed stages are preserved (invariant #10)
+  - #2: Pipeline must have ≥ 1 stage → checked before save
 
-#### retry(pipeline_id: str) → ExecutionLog
+#### archive(pipeline_id: str) → None
 - **Behavioral invariants enforced:**
-  - #15: Only failed pipelines can be retried → raises `InputError`
-  - #12: Retry resumes from failed stage, not beginning
-- **Flow:** loads pipeline, finds first failed/skipped stage, re-executes from there
+  - #4: Pipeline can only be archived when idle or failed → raises `InputError`
+- **Flow:** validates status, calls `repository.archive(pipeline_id)` which cascades to stages
 
-**Sequence diagrams mapped:** "Execute Pipeline" (happy + failure), "Retry Failed Pipeline"
+#### clone(pipeline_id: str) → Pipeline
+- Loads source pipeline, creates a copy with new ID and idle status
+
+**Interaction matrix sections mapped:** "Pipeline Lifecycle"
 ```
 
 ### Private service example
 
 ```markdown
-### ITransformExecutor (private — not directly available to controllers)
+### ITransformExecutor (private)
 
 **Concern:** Executing a transform against data.
+
+**Visibility:** Private — only injected into `ExecutionService` via DI. Never available to controllers.
 
 **Dependencies:**
 - `ITransformRepository` (interface)
 - External API client (if transforms call external services)
-
-**Injected into:** `PipelineService` (via DI in factory)
 
 **Methods:**
 
@@ -188,40 +209,90 @@ For each service:
 
 ## Controller specifications
 
+Controllers are grouped **one per concern area** (not one per interaction). Each interaction in the concern area becomes a method.
+
 For each controller:
 
 ```markdown
-### PipelineController
+### PipelineLifecycleController
+
+**Concern area:** Pipeline Lifecycle (from interaction matrix)
 
 **Service dependencies (all interface-typed):**
-- `IPipelineService`
+- `IPipelineLifecycleService`
+
+**Methods:**
+
+#### create_pipeline(input: CreatePipelineInput) → Pipeline
+- **Maps to interaction:** "Create Pipeline"
+- **Flow:** Call `service.create(input)` → returns Pipeline
+
+#### update_pipeline(pipeline_id: str, input: UpdatePipelineInput) → Pipeline
+- **Maps to interaction:** "Update Pipeline"
+- **Flow:** Call `service.update(pipeline_id, input)` → returns Pipeline
+
+#### archive_pipeline(pipeline_id: str) → None
+- **Maps to interaction:** "Archive Pipeline"
+- **Flow:** Call `service.archive(pipeline_id)`
+
+#### clone_pipeline(pipeline_id: str) → Pipeline
+- **Maps to interaction:** "Clone Pipeline"
+- **Flow:** Call `service.clone(pipeline_id)` → returns Pipeline
+```
+
+### Multi-service controller example
+
+```markdown
+### ExecutionController
+
+**Concern area:** Execution & Monitoring (from interaction matrix)
+
+**Service dependencies (all interface-typed):**
 - `IExecutionService`
 
 **Methods:**
 
 #### execute_pipeline(pipeline_id: str) → ExecutionLog
-- **Maps to sequence diagram:** "Execute Pipeline"
-- **Flow:**
-  1. Call `pipeline_service.execute(pipeline_id)` → returns ExecutionLog
-  2. (If execution logging is a separate concern: call `execution_service.create_log(...)`)
-- **No business logic.** Orchestration only.
-- **Parallel opportunities:** None in this flow (sequential by nature)
+- **Maps to interaction:** "Execute Pipeline"
+- **Flow:** Call `execution_service.execute(pipeline_id)` → returns ExecutionLog
 
-#### get_pipeline_dashboard(pipeline_id: str) → PipelineDashboard
-- **Maps to sequence diagram:** "View Pipeline Details"
-- **Flow:**
-  1. `pipeline_service.get_by_id(pipeline_id)` and `execution_service.get_recent_logs(pipeline_id)` — **parallel** (independent data)
-  2. Compose into `PipelineDashboard`
+#### retry_execution(pipeline_id: str) → ExecutionLog
+- **Maps to interaction:** "Retry Failed Execution"
+- **Flow:** Call `execution_service.retry(pipeline_id)` → returns ExecutionLog
+
+#### get_execution_history(pipeline_id: str) → list[ExecutionLog]
+- **Maps to interaction:** "Get Execution History"
+- **Flow:** Call `execution_service.get_history(pipeline_id)` → returns list
+- **Parallel opportunities:** None (single call)
 ```
 
-### When no controller is needed
+### Job-triggered interactions (no controller)
 
 ```markdown
+## Job-triggered Interactions
+
+These interactions are triggered by background jobs or schedulers. They bypass controllers and use the factory directly to obtain services.
+
+| Interaction | Actor | Service Method | Trigger | Schedule |
+|---|---|---|---|---|
+| "Expire Stale Executions" | Scheduler | ExecutionService.expire_stale() | Cron job | Every hour |
+| "Reindex Transforms" | System | TransformService.reindex_all() | Event: transform updated | On event |
+| "Generate Daily Report" | Scheduler | ReportService.generate_daily() | Cron job | Daily 02:00 UTC |
+
+For each job-triggered interaction:
+- **No HTTP route.** The job runner calls `factory.get_execution_service().expire_stale()`.
+- **Same service interface.** The method signature is identical to what a controller would call.
+- **Error handling:** Job failures are logged and optionally retried by the job framework — not translated to HTTP responses.
+```
+
 ### Direct service calls (no controller)
 
-These flows are single-service operations routed directly through the factory:
+```markdown
+### Direct service calls
 
-| Flow | Service | Method |
+These flows are single-service operations with no orchestration, routed directly through the factory:
+
+| Interaction | Service | Method |
 |---|---|---|
 | "Create Transform" | TransformService | create(input) |
 | "List Transforms" | TransformService | list_all() |
@@ -247,10 +318,16 @@ For each aggregate root:
 | find_by_workspace | (workspace_id: str) → list[Pipeline] | Returns pipelines without stages (summary query). |
 | save | (pipeline: Pipeline) → Pipeline | Upserts root + all children atomically. Handles stage adds/removes/reorders. |
 | delete | (pipeline_id: str) → None | Deletes root + all children. Raises NotFoundError if absent. |
+| archive | (pipeline_id: str) → None | Sets archived_at on root + cascades to all stages. Raises NotFoundError if absent. |
+| restore | (pipeline_id: str) → None | Clears archived_at on root + all stages. Raises NotFoundError if absent. |
+
+**Cascade operations:**
+- `archive` — sets `archived_at` on Pipeline and all child Stages atomically
+- `delete` — removes Pipeline and all child Stages atomically
+- `save` — diffs current stages against persisted stages to handle adds/deletes/reorders
 
 **Internal implementation notes (for the developer, not part of the interface):**
 - ORM models: `PipelineORM`, `StageORM` — private to repository
-- `save` diffs current stages against persisted stages to handle adds/deletes
 - All operations within a single DB transaction
 ```
 
@@ -305,32 +382,48 @@ For each aggregate root:
 
 | Method | Returns | Assembles |
 |---|---|---|
-| get_pipeline_controller() | PipelineController | PipelineService(PipelineRepository, TransformExecutor), ExecutionService(ExecutionLogRepository) |
+| get_pipeline_lifecycle_controller() | PipelineLifecycleController | PipelineLifecycleService(PipelineRepository) |
+| get_execution_controller() | ExecutionController | ExecutionService(PipelineRepository, TransformRepository, ExecutionLogRepository, TransformExecutor) |
 | get_transform_service() | TransformService | TransformService(TransformRepository) |
+| get_execution_service() | ExecutionService | (for job runners — same instance as controller would get) |
 
 ### Dependency graph
 
 ```
-PipelineController
-├── IPipelineService → PipelineService
-│   ├── IPipelineRepository → PipelineRepository(session)
-│   └── ITransformExecutor → TransformExecutor  [PRIVATE]
-│       └── ITransformRepository → TransformRepository(session)
+PipelineLifecycleController
+└── IPipelineLifecycleService → PipelineLifecycleService
+    └── IPipelineRepository → PipelineRepository(session)
+
+ExecutionController
 └── IExecutionService → ExecutionService
-    └── IExecutionLogRepository → ExecutionLogRepository(session)
+    ├── IPipelineRepository → PipelineRepository(session)
+    ├── ITransformRepository → TransformRepository(session)
+    ├── IExecutionLogRepository → ExecutionLogRepository(session)
+    └── ITransformExecutor → TransformExecutor  [PRIVATE]
+        └── ITransformRepository → TransformRepository(session)
 
 TransformService (direct, no controller)
 └── ITransformRepository → TransformRepository(session)
+
+Job: expire_stale_executions (hourly)
+└── factory.get_execution_service().expire_stale()
 ```
 
 ### Public vs Private services
 
 | Service | Visibility | Reason |
 |---|---|---|
-| PipelineService | Public | Used by PipelineController |
-| ExecutionService | Public | Used by PipelineController |
+| PipelineLifecycleService | Public | Used by PipelineLifecycleController |
+| ExecutionService | Public | Used by ExecutionController + job runner |
 | TransformService | Public | Used directly from routes (simple CRUD) |
-| TransformExecutor | **Private** | Only injected into PipelineService, never used by controllers |
+| TransformExecutor | **Private** | Only injected into ExecutionService, never used by controllers |
+
+### Job-triggered entry points
+
+| Job | Service Method | Trigger | Notes |
+|---|---|---|---|
+| expire_stale_executions | ExecutionService.expire_stale() | Cron: hourly | Factory provides service directly |
+| reindex_transforms | TransformService.reindex_all() | Event: transform updated | Factory provides service directly |
 ```
 
 ---
@@ -359,18 +452,23 @@ TransformService (direct, no controller)
 ```markdown
 ## Completeness Checklist
 
+- [x] Cross-cutting concerns identified and extracted before service/controller design
 - [x] Every entity in the ERD maps to a model specification
 - [x] Every aggregate has exactly one repository interface
-- [x] Every multi-service sequence diagram maps to a controller method
-- [x] Every single-service sequence diagram is listed as a direct call
+- [x] Repository interfaces include explicit cascade/workflow methods where needed
+- [x] Every interaction in the interaction matrix maps to a controller method, direct service call, or job entry point
+- [x] Controllers are grouped by concern area (one controller per concern, not per interaction)
+- [x] Job-triggered interactions are identified with trigger conditions and documented in the wiring plan
 - [x] Every service has a complete interface with typed signatures
-- [x] Every invariant is classified (construction-time / behavioral / aggregate)
+- [x] Every service is classified as public or private with justification
+- [x] Private services are identified from sequence diagrams and excluded from controller access
+- [x] Every invariant is classified (construction-time / behavioral / aggregate / cross-cutting)
 - [x] Every invariant has exactly one identified enforcement point
-- [x] Every failure path from sequence diagrams is mapped to an error type
+- [x] Every failure path from sequence diagrams and interaction matrix error contracts is mapped to an error type
 - [x] The wiring plan covers all dependencies with no cycles
 - [x] The config mapping covers all external system boundaries
 - [x] No service directly imports another service
 - [x] No controller contains conditional logic over domain data
 - [x] No model has behavioral methods (only pure data + construction validation)
-- [x] Private services are identified and excluded from controller access
+- [x] No cross-cutting concern is duplicated in individual services or controllers
 ```

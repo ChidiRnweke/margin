@@ -21,3 +21,10 @@ Domain references:
 - `architecture/invariants.md`
 - `architecture/traceability.md`
 - `architecture/margin-domain-model.md`
+
+UI/UX references:
+
+- `DESIGN_SYSTEM.md` — visual identity, tokens, style rules, component conventions
+- `architecture/ui-screen-inventory.md` — every screen mapped to routes and interactions
+- `architecture/ui-ux-patterns.md` — UX pattern specs for each feature
+- `architecture/ui-wireframes.md` — ASCII wireframes for all major screens
