@@ -15,7 +15,6 @@
 | PlanningCycle   | `PlanningCycle`       | `PlanningRevision`, `TaskAllocation`, `AllocationOutcome`, `AspectCycleHealth` | references `Task`, `Aspect` by id                                             |
 | Reminder        | `Reminder`            | `ReminderAttempt`                                                              | references `Task`                                                             |
 | ImportJob       | `ImportJob`           | none                                                                           | references affected user                                                      |
-| ExportJob       | `ExportJob`           | none                                                                           | references affected user                                                      |
 | AuditLog        | `AuditEvent`          | none                                                                           | references user and optionally system job run                                 |
 | Idempotency     | `IdempotencyKey`      | none                                                                           | references user                                                               |
 | SystemJobRun    | `SystemJobRun`        | none                                                                           | referenced by `AuditEvent`                                                    |
@@ -346,18 +345,6 @@
 | conflicted_entities_remapped | int         | remap result counter  |
 | started_at                   | datetime    | immutable after start |
 | finished_at                  | datetime?   | nullable              |
-
-### ExportJob
-
-| Field        | Type           | Notes                      |
-| ------------ | -------------- | -------------------------- | --------- | ------- |
-| id           | UUID           | system generated           |
-| user_id      | UUID           | owning user                |
-| status       | `JobStatus`    | `Running                   | Succeeded | Failed` |
-| format       | `ExportFormat` | `json` in v1               |
-| started_at   | datetime       | immutable after start      |
-| finished_at  | datetime?      | nullable                   |
-| artifact_ref | str?           | nullable storage reference |
 
 ### AuditEvent
 

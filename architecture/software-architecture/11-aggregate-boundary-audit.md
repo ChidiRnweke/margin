@@ -172,12 +172,12 @@ For each domain cluster, the boundary test is:
   - attempts are append-only history of reminder delivery.
   - no independent lifecycle or query interaction in the interaction matrix.
 
-## ImportJob and ExportJob
+## ImportJob
 
 - Decision: standalone roots.
 - Evidence:
-  - directly started and status-tracked in `DAT-01` and `DAT-02`.
-  - `INV-189` defines their lifecycle transitions independently.
+  - directly started and status-tracked in `DAT-02`.
+  - `INV-189` defines its lifecycle transitions independently.
 
 ## AuditEvent
 
@@ -219,7 +219,6 @@ For each domain cluster, the boundary test is:
 - `PlanningCycle` + `PlanningRevision` + `TaskAllocation` + `AllocationOutcome` + `AspectCycleHealth`
 - `Reminder` + `ReminderAttempt`
 - `ImportJob`
-- `ExportJob`
 - `AuditEvent`
 - `IdempotencyKey`
 - `SystemJobRun`

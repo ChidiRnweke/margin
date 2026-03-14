@@ -55,7 +55,6 @@ Additional rules:
 - `AvailabilityBlock`
 - `PlanningCycle`
 - `ImportJob`
-- `ExportJob`
 - `AuditEvent`
 - `IdempotencyKey`
 

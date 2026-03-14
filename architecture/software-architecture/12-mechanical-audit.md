@@ -33,19 +33,19 @@ Reviewed destination set:
 
 ## Subagent Verdict Summary
 
-| Source Area               | Initial Verdict                               | Main Issues Found                                                                                                                                             | Status After Fix Pass |
-| ------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| ERD                       | mostly covered, not fully exhaustive          | missing explicit model specs for `Session`, `ImportJob`, `ExportJob`, `AuditEvent`, `IdempotencyKey`, `SystemJobRun`; planning containment wording too coarse | improved              |
-| Interaction matrix        | mostly translated, not fully faithful         | `AUTH-01` ownership inconsistency, missing `SYS-01` infra mapping, `TSK-01` dependency mismatch, some error-contract mismatches                               | improved              |
-| Invariants                | all IDs covered, some ownership too generic   | weak structural representation for session/audit/system records; optimistic concurrency wording too broad                                                     | partially improved    |
-| Sequence diagrams         | nearly all paths mapped                       | some non-exact raiser ownership, `REC-01` materializer gap, `TSK-01` defaults dependency mismatch                                                             | improved              |
-| Traceability and overview | concern coverage reconstructable but implicit | source overview files missing from README, concern-level carry-over not explicit enough                                                                       | improved              |
+| Source Area               | Initial Verdict                               | Main Issues Found                                                                                                                                | Status After Fix Pass |
+| ------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| ERD                       | mostly covered, not fully exhaustive          | missing explicit model specs for `Session`, `ImportJob`, `AuditEvent`, `IdempotencyKey`, `SystemJobRun`; planning containment wording too coarse | improved              |
+| Interaction matrix        | mostly translated, not fully faithful         | `AUTH-01` ownership inconsistency, missing `SYS-01` infra mapping, `TSK-01` dependency mismatch, some error-contract mismatches                  | improved              |
+| Invariants                | all IDs covered, some ownership too generic   | weak structural representation for session/audit/system records; optimistic concurrency wording too broad                                        | partially improved    |
+| Sequence diagrams         | nearly all paths mapped                       | some non-exact raiser ownership, `REC-01` materializer gap, `TSK-01` defaults dependency mismatch                                                | improved              |
+| Traceability and overview | concern coverage reconstructable but implicit | source overview files missing from README, concern-level carry-over not explicit enough                                                          | improved              |
 
 ## Fixes Applied Because of the Audit
 
 - Added source references to `architecture/index.md` and `architecture/margin-domain-model.md` in `README.md`.
 - Added `Session` model fields to `02-aggregates-and-models.md`.
-- Expanded explicit model specs for `ImportJob`, `ExportJob`, `AuditEvent`, `IdempotencyKey`, and `SystemJobRun` in `02-aggregates-and-models.md`.
+- Expanded explicit model specs for `ImportJob`, `AuditEvent`, `IdempotencyKey`, and `SystemJobRun` in `02-aggregates-and-models.md`.
 - Added `IPlanningProfileRepository` to `ITaskService` dependencies in `03-services.md` and wiring in `07-wiring-and-config.md`.
 - Added `IRecurrenceMaterializer` to `IRecurrenceService` dependencies in `03-services.md` and wiring in `07-wiring-and-config.md`.
 - Added `IIdentityProviderGateway` as the explicit owner for `AUTH-01`/`AUTH-02` infrastructure work in `03-services.md`, `04-controllers-and-jobs.md`, and `10-sequence-failure-mapping.md`.

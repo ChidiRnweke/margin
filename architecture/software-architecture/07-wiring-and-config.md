@@ -116,7 +116,7 @@ Required configuration:
 
 Optional configuration:
 
-- export artifact storage backend
+- export response size limit
 - import payload size limit
 - job polling intervals
 

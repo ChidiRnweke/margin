@@ -138,15 +138,6 @@
   - `mark_failed(job_id, reason) -> ImportJob`
   - `delete_by_user_id(user_id) -> int`
 
-## IExportJobRepository
-
-- Aggregate: `ExportJob`
-- Methods:
-  - `create_running(job: ExportJob) -> ExportJob`
-  - `mark_succeeded(job_id, artifact_ref) -> ExportJob`
-  - `mark_failed(job_id, reason) -> ExportJob`
-  - `delete_by_user_id(user_id) -> int`
-
 ## IAuditEventRepository
 
 - Aggregate: `AuditEvent`

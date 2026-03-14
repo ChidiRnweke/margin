@@ -26,6 +26,7 @@ Documents in this folder:
 - `10-sequence-failure-mapping.md` - sequence-diagram `alt` path conversion into exact raising layer and error type
 - `11-aggregate-boundary-audit.md` - aggregate root and child audit justified from the ERD, flows, and invariants
 - `12-mechanical-audit.md` - source-to-architecture audit log based on skeptical subagent review
+- `13-infrastructure-considerations.md` - required infrastructure, job/runtime topology, and config implications
 
 Design principles:
 

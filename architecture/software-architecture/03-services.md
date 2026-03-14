@@ -189,11 +189,10 @@
 - Visibility: public.
 - Dependencies:
   - `IImportJobRepository`
-  - `IExportJobRepository`
   - repositories for all exported/imported aggregates
   - `IImportRemapService`
 - Methods:
-  - `export_user_data(user_id) -> ExportArtifact`
+  - `export_user_data(user_id) -> ExportPayload`
   - `import_user_data(user_id, payload) -> ImportReport`
 - Interaction coverage: `DAT-01`, `DAT-02`
 
