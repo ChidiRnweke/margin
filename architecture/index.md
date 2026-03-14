@@ -18,4 +18,6 @@ Domain references:
 - `architecture/interaction-matrix.md`
 - `architecture/sequence-diagrams.md`
 - `architecture/invariants.md`
+- `architecture/traceability.md`
+- `architecture/completeness-checklist.md`
 - `architecture/margin-domain-model.md`

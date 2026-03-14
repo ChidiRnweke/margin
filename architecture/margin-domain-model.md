@@ -7,3 +7,5 @@ This domain model is fully specified and split into focused files:
 - [All Sequence Diagrams (Index)](./sequence-diagrams.md)
 - [Sequence Diagram Folder](./sequence-diagrams/)
 - [Domain Invariants](./invariants.md)
+- [Traceability Matrix](./traceability.md)
+- [Completeness Checklist](./completeness-checklist.md)
