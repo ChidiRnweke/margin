@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: Interview-driven domain modeling that produces exhaustive Mermaid specifications. Use this skill whenever the user wants to model a domain — whether that's a web app, CLI tool, library, data pipeline, game engine, compiler, hardware controller, or any other software system. Trigger when the user says "model my domain", "what entities do I need", "help me think through the data model", "what are the rules", "map out the system", or describes a problem that needs structuring before code is written. Also trigger for non-business domains like protocol design, file format specs, game mechanics, or language grammars. This skill is conversational — it interviews the user, makes concrete assumptions for the user to confirm or correct, and produces a complete specification with zero gaps. The output is Mermaid diagrams and an invariants file, not code.
+description: Interview-driven domain modeling and domain-model auditing that produces exhaustive Mermaid specifications. Use this skill whenever the user wants to model a domain or analyze an existing domain model — whether that's a web app, CLI tool, library, data pipeline, game engine, compiler, hardware controller, or any other software system. Trigger when the user says "model my domain", "audit my domain model", "what entities do I need", "help me think through the data model", "what are the rules", "map out the system", asks for missing domain details, or describes a problem that needs structuring before code is written. Also trigger for non-business domains like protocol design, file format specs, game mechanics, or language grammars. This skill is conversational — it interviews the user, makes concrete assumptions for the user to confirm or correct, iterates through audit and clarification loops when needed, and produces a complete specification with zero gaps. The output is Mermaid diagrams and an invariants file, not code.
 ---
 
 # Domain Modeling Skill
@@ -36,6 +36,29 @@ At the end of each interview round, ask whether to go deeper or stop at current 
 - You may propose assumptions, but each assumption must be presented for confirmation or correction before being treated as true.
 - If you used a provisional assumption to keep momentum, label it as `Provisional` and resolve it before final output.
 - Maintain a short **Decision Log** (`DEC-001`, `DEC-002`, ...) so reversals are tracked explicitly.
+
+---
+
+## Existing-model audit loop
+
+When the user already has a domain model, architecture folder, ERD, invariants file, or sequence diagrams, do not treat the work as a fresh modeling session only. Switch into an iterative audit loop:
+
+1. Read the existing artifacts and assess completeness before proposing changes.
+2. Use a focused sub-agent or parallel exploration pass to find contradictions, missing lifecycle states, absent invariants, broken traceability, and participant/entity mismatches.
+3. Summarize only the highest-leverage gaps.
+4. Ask targeted clarification questions using concrete assumptions and bounded choices.
+5. Re-audit after each answer to verify that the new decision actually closes the gap and does not create fresh inconsistencies elsewhere.
+6. Repeat until the model passes the relevant completeness check for the agreed depth.
+
+Use this loop especially when the user asks for a "deep audit", "find missing details", "tighten the model", "make this water-tight", or similar.
+
+The pattern is:
+
+- audit existing model
+- identify the smallest set of blocking ambiguities
+- ask assumption-based clarification questions
+- re-audit with the answers applied
+- continue until no blocking gaps remain
 
 ---
 
