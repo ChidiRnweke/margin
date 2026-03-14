@@ -279,17 +279,20 @@ sequenceDiagram
 
 <a id="REC-01"></a>
 
-## REC-01 Attach or Update Rule
+## REC-01 Create or Update Series and Rule
 
 ```mermaid
 sequenceDiagram
     actor U as User
     participant S as RecurringTaskSeries
     participant C as RecurrenceRule
+    participant T as Task
     U->>S: Create or update recurring series and rule
-    alt series not found
+    alt create or update request invalid
+        S-->>U: VALIDATION_FAILED
+    else updating and series not found
         S-->>U: NOT_FOUND
-    else series not owned by user
+    else updating and series not owned by user
         S-->>U: OWNERSHIP_VIOLATION
     else series aspect invalid or inactive
         S-->>U: VALIDATION_FAILED
@@ -300,7 +303,9 @@ sequenceDiagram
     else valid upsert
         S->>S: Persist active series metadata
         S->>C: Persist single active rule
-        C-->>U: Rule saved
+        C->>T: Materialize first eligible task instance immediately unless occurrence is skipped
+        C->>S: Initialize next occurrence pointer after first materialized or skipped occurrence
+        C-->>U: Series and rule saved
     end
 ```
 
@@ -374,9 +379,39 @@ sequenceDiagram
     else valid series
         S->>C: Resolve next local occurrence
         C->>E: Apply explicit skip or move exceptions
-        C->>N: Create next task instance when occurrence is not skipped
-        C->>N: Enforce single carried overdue instance
-        S->>S: Advance next occurrence pointer
+        alt current instance is overdue and not done
+            C-->>X: Generation suppressed until carried instance is terminal
+        else occurrence is not skipped
+            C->>N: Create next task instance
+            C->>S: Advance next occurrence pointer
+        else occurrence skipped
+            C->>S: Advance next occurrence pointer without creating task
+        end
         S-->>X: Generation result
+    end
+```
+
+<a id="REC-05"></a>
+
+## REC-05 Close Series
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant S as RecurringTaskSeries
+    participant C as RecurrenceRule
+    U->>S: Close recurring series
+    alt series not found
+        S-->>U: NOT_FOUND
+    else series not owned by user
+        S-->>U: OWNERSHIP_VIOLATION
+    else stale version
+        S-->>U: CONFLICT_STALE_WRITE
+    else series already closed
+        S-->>U: STATE_TRANSITION_INVALID
+    else valid close
+        S->>S: Set status Closed
+        S->>C: Retain rule and exception history without future materialization
+        S-->>U: Series closed
     end
 ```

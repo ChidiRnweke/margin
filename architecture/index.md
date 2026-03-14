@@ -7,6 +7,7 @@ Core domain structure:
 - A user defines **aspects** (for example reading, sports, friends).
 - Each aspect can contain **milestones** and **tasks**.
 - Tasks can be scheduled into weekly planning cycles via **allocations**.
+- Weekly planning uses a deterministic heuristic scheduler rather than an exact optimization solver in v1.
 - **Availability blocks** constrain what time can be planned.
 - **Recurrence rules** generate repeated work.
 - **Reminders** support task execution.
@@ -19,5 +20,4 @@ Domain references:
 - `architecture/sequence-diagrams.md`
 - `architecture/invariants.md`
 - `architecture/traceability.md`
-- `architecture/completeness-checklist.md`
 - `architecture/margin-domain-model.md`

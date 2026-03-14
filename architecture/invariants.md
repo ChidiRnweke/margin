@@ -29,10 +29,11 @@
 
 - `INV-020` Every user has exactly one planning profile from the moment the user account is created.
 - `INV-021` Planner weights are integers in `0..100`.
-- `INV-022` Planner weights are normalized at score evaluation time.
+- `INV-022` Planner weights are normalized at score evaluation time and combined as a weighted sum of normalized urgency, importance, balance, and effort-fit subscores.
 - `INV-023` `urgent_threshold_days` is in `0..30`.
 - `INV-024` `min_chunk_minutes` is in `5..120`.
 - `INV-025` `default_effort_minutes` is positive.
+- `INV-026` Planner ranking remains deterministic after weighted scoring by applying tie-break order only when weighted scores are equal.
 
 ## Aspect Rules
 
@@ -92,6 +93,9 @@
 - `INV-084` `RECURRING_TASK_SERIES.status = Active` iff its recurrence rule exists and `paused = false`.
 - `INV-085` `RECURRING_TASK_SERIES.status = Paused` iff its recurrence rule exists and `paused = true`.
 - `INV-086` `RECURRING_TASK_SERIES.status = Closed` is terminal and requires future materialization to remain disabled regardless of rule history.
+- `INV-087` Creating a recurring task series immediately materializes the first concrete task instance for the first eligible local occurrence unless that occurrence is explicitly skipped.
+- `INV-088` If the current recurring task instance is overdue and not done, next-instance generation is suppressed until that carried instance is completed, archived, or otherwise terminal.
+- `INV-089` Closing a recurring task series preserves historical tasks, rules, and exceptions but prevents all future instance materialization.
 
 ## Availability
 
@@ -121,7 +125,7 @@
 - `INV-110` Planner applies hard constraints in order: active lock, due feasibility, minimum chunk, then capacity.
 - `INV-111` If capacity is insufficient, lower-ranked feasible tasks are deferred; draft generation still succeeds with the best feasible subset.
 - `INV-112` Effective split behavior is task override else aspect default.
-- `INV-113` Splittable allocations must respect user minimum chunk.
+- `INV-113` Splittable allocations may use multiple windows, but every window must respect user minimum chunk; non-splittable tasks must fit in one contiguous window.
 - `INV-114` Tie-break order is due date ascending, then task age ascending.
 - `INV-115` A task may have many historical locks but at most one active lock.
 - `INV-116` A task lock binds to an exact time window and cannot be silently violated.
@@ -130,6 +134,11 @@
 - `INV-119` Materialized plan windows store canonical UTC instants plus numeric UTC offset and DST offset snapshots.
 - `INV-120` Allocation edits and lock changes create a new revision when they alter the active plan snapshot.
 - `INV-121` Revision diffs are summarized and queryable as part of cycle history.
+- `INV-122` Due feasibility requires that all remaining minutes for a task can be scheduled no later than the end of the task's due local date; tasks that cannot fully fit by then are infeasible for that plan run.
+- `INV-123` Planner scoring ranks feasible tasks by weighted score first, then tie-breaks by due date ascending and task age ascending.
+- `INV-124` Regeneration and day-boundary replanning preserve past allocations and active locks while reoptimizing future unlocked allocations.
+- `INV-125` v1 planning uses a deterministic heuristic scheduler, not an exact integer or linear optimization solver.
+- `INV-126` The heuristic scheduler processes feasible tasks in ranked order and greedily assigns the earliest valid windows that satisfy lock, due, chunk, split, and capacity constraints.
 
 ## Execution and Health
 

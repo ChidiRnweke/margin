@@ -64,10 +64,11 @@ All create and mutate interactions require idempotency keys unless explicitly ma
 
 ## Recurrence
 
-- `REC-01` Attach or update recurrence rule on a recurring task series.
+- `REC-01` Create or update recurring task series and rule; initial creation materializes the first eligible task instance immediately.
 - `REC-02` Pause or resume recurrence.
 - `REC-03` Skip or move the next recurrence occurrence.
 - `REC-04` Generate next task instance on completion using recurrence rule plus explicit recurrence exceptions.
+- `REC-05` Close recurring task series and prevent future materialization while preserving history.
 
 ## Availability
 
@@ -79,11 +80,11 @@ All create and mutate interactions require idempotency keys unless explicitly ma
 
 ## Planning
 
-- `PLN-01` Generate draft weekly plan (ISO week Monday start).
+- `PLN-01` Generate draft weekly plan (ISO week Monday start) with a deterministic heuristic scheduler that ranks feasible tasks with weighted scoring and greedily assigns valid windows under hard constraints.
 - `PLN-02` Confirm draft plan; blocked unless active aspect targets total exactly `100`.
-- `PLN-03` Regenerate confirmed plan into a new revision in the same cycle; prior current revision becomes superseded.
+- `PLN-03` Regenerate confirmed plan into a new revision in the same cycle; preserve past allocations and active locks, reoptimize future unlocked work, and supersede the prior current revision.
 - `PLN-04` Edit allocations: lock, unlock, cancel, or reslot with revision stamp.
-- `PLN-05` Day-boundary replan job.
+- `PLN-05` Day-boundary replan job that preserves past allocations and active locks while reoptimizing future unlocked work.
 - `PLN-06` Query planning cycles and revisions with diff summaries.
 
 ## Execution and Health
@@ -114,7 +115,7 @@ All create and mutate interactions require idempotency keys unless explicitly ma
 
 - `AUTH/PRF` -> [`AUTH-01`](./sequence-diagrams/01-auth-profile.md#AUTH-01), [`AUTH-02`](./sequence-diagrams/01-auth-profile.md#AUTH-02), [`AUTH-03`](./sequence-diagrams/01-auth-profile.md#AUTH-03), [`AUTH-04`](./sequence-diagrams/01-auth-profile.md#AUTH-04), [`AUTH-05`](./sequence-diagrams/01-auth-profile.md#AUTH-05), [`AUTH-06`](./sequence-diagrams/01-auth-profile.md#AUTH-06), [`PRF-01`](./sequence-diagrams/01-auth-profile.md#PRF-01)
 - `ASP/MLS` -> [`ASP-01`](./sequence-diagrams/02-aspects-milestones.md#ASP-01), [`ASP-02`](./sequence-diagrams/02-aspects-milestones.md#ASP-02), [`ASP-03`](./sequence-diagrams/02-aspects-milestones.md#ASP-03), [`ASP-04`](./sequence-diagrams/02-aspects-milestones.md#ASP-04), [`ASP-05`](./sequence-diagrams/02-aspects-milestones.md#ASP-05), [`ASP-06`](./sequence-diagrams/02-aspects-milestones.md#ASP-06), [`MLS-01`](./sequence-diagrams/02-aspects-milestones.md#MLS-01), [`MLS-02`](./sequence-diagrams/02-aspects-milestones.md#MLS-02), [`MLS-03`](./sequence-diagrams/02-aspects-milestones.md#MLS-03), [`MLS-04`](./sequence-diagrams/02-aspects-milestones.md#MLS-04), [`MLS-05`](./sequence-diagrams/02-aspects-milestones.md#MLS-05), [`MLS-06`](./sequence-diagrams/02-aspects-milestones.md#MLS-06), [`MLS-07`](./sequence-diagrams/02-aspects-milestones.md#MLS-07)
-- `TSK/REC` -> [`TSK-01`](./sequence-diagrams/03-tasks-recurrence.md#TSK-01), [`TSK-02`](./sequence-diagrams/03-tasks-recurrence.md#TSK-02), [`TSK-03`](./sequence-diagrams/03-tasks-recurrence.md#TSK-03), [`TSK-04`](./sequence-diagrams/03-tasks-recurrence.md#TSK-04), [`TSK-05`](./sequence-diagrams/03-tasks-recurrence.md#TSK-05), [`TSK-06`](./sequence-diagrams/03-tasks-recurrence.md#TSK-06), [`TSK-07`](./sequence-diagrams/03-tasks-recurrence.md#TSK-07), [`TSK-08`](./sequence-diagrams/03-tasks-recurrence.md#TSK-08), [`TSK-09`](./sequence-diagrams/03-tasks-recurrence.md#TSK-09), [`TSK-10`](./sequence-diagrams/03-tasks-recurrence.md#TSK-10), [`TSK-11`](./sequence-diagrams/03-tasks-recurrence.md#TSK-11), [`REC-01`](./sequence-diagrams/03-tasks-recurrence.md#REC-01), [`REC-02`](./sequence-diagrams/03-tasks-recurrence.md#REC-02), [`REC-03`](./sequence-diagrams/03-tasks-recurrence.md#REC-03), [`REC-04`](./sequence-diagrams/03-tasks-recurrence.md#REC-04)
+- `TSK/REC` -> [`TSK-01`](./sequence-diagrams/03-tasks-recurrence.md#TSK-01), [`TSK-02`](./sequence-diagrams/03-tasks-recurrence.md#TSK-02), [`TSK-03`](./sequence-diagrams/03-tasks-recurrence.md#TSK-03), [`TSK-04`](./sequence-diagrams/03-tasks-recurrence.md#TSK-04), [`TSK-05`](./sequence-diagrams/03-tasks-recurrence.md#TSK-05), [`TSK-06`](./sequence-diagrams/03-tasks-recurrence.md#TSK-06), [`TSK-07`](./sequence-diagrams/03-tasks-recurrence.md#TSK-07), [`TSK-08`](./sequence-diagrams/03-tasks-recurrence.md#TSK-08), [`TSK-09`](./sequence-diagrams/03-tasks-recurrence.md#TSK-09), [`TSK-10`](./sequence-diagrams/03-tasks-recurrence.md#TSK-10), [`TSK-11`](./sequence-diagrams/03-tasks-recurrence.md#TSK-11), [`REC-01`](./sequence-diagrams/03-tasks-recurrence.md#REC-01), [`REC-02`](./sequence-diagrams/03-tasks-recurrence.md#REC-02), [`REC-03`](./sequence-diagrams/03-tasks-recurrence.md#REC-03), [`REC-04`](./sequence-diagrams/03-tasks-recurrence.md#REC-04), [`REC-05`](./sequence-diagrams/03-tasks-recurrence.md#REC-05)
 - `AVL/PLN` -> [`AVL-01`](./sequence-diagrams/04-availability-planning.md#AVL-01), [`AVL-02`](./sequence-diagrams/04-availability-planning.md#AVL-02), [`AVL-03`](./sequence-diagrams/04-availability-planning.md#AVL-03), [`AVL-04`](./sequence-diagrams/04-availability-planning.md#AVL-04), [`AVL-05`](./sequence-diagrams/04-availability-planning.md#AVL-05), [`PLN-01`](./sequence-diagrams/04-availability-planning.md#PLN-01), [`PLN-02`](./sequence-diagrams/04-availability-planning.md#PLN-02), [`PLN-03`](./sequence-diagrams/04-availability-planning.md#PLN-03), [`PLN-04`](./sequence-diagrams/04-availability-planning.md#PLN-04), [`PLN-05`](./sequence-diagrams/04-availability-planning.md#PLN-05), [`PLN-06`](./sequence-diagrams/04-availability-planning.md#PLN-06)
 - `EXE/REM` -> [`EXE-01`](./sequence-diagrams/05-execution-reminders.md#EXE-01), [`EXE-02`](./sequence-diagrams/05-execution-reminders.md#EXE-02), [`REM-01`](./sequence-diagrams/05-execution-reminders.md#REM-01), [`REM-02`](./sequence-diagrams/05-execution-reminders.md#REM-02), [`REM-03`](./sequence-diagrams/05-execution-reminders.md#REM-03), [`REM-04`](./sequence-diagrams/05-execution-reminders.md#REM-04)
 - `DAT/AUD/SYS` -> [`DAT-01`](./sequence-diagrams/06-data-audit-system.md#DAT-01), [`DAT-02`](./sequence-diagrams/06-data-audit-system.md#DAT-02), [`AUD-01`](./sequence-diagrams/06-data-audit-system.md#AUD-01), [`AUD-02`](./sequence-diagrams/06-data-audit-system.md#AUD-02), [`SYS-01`](./sequence-diagrams/06-data-audit-system.md#SYS-01), [`SYS-02`](./sequence-diagrams/06-data-audit-system.md#SYS-02)
@@ -160,6 +161,7 @@ All create and mutate interactions require idempotency keys unless explicitly ma
 - `REC-02`: `AUTH_UNAUTHORIZED`, `AUTH_SESSION_EXPIRED`, `STATE_TRANSITION_INVALID`, `OWNERSHIP_VIOLATION`, `NOT_FOUND`, `CONFLICT_STALE_WRITE`
 - `REC-03`: `AUTH_UNAUTHORIZED`, `AUTH_SESSION_EXPIRED`, `VALIDATION_FAILED`, `OWNERSHIP_VIOLATION`, `NOT_FOUND`, `CONFLICT_STALE_WRITE`
 - `REC-04`: `STATE_TRANSITION_INVALID`, `VALIDATION_FAILED`
+- `REC-05`: `AUTH_UNAUTHORIZED`, `AUTH_SESSION_EXPIRED`, `STATE_TRANSITION_INVALID`, `OWNERSHIP_VIOLATION`, `NOT_FOUND`, `CONFLICT_STALE_WRITE`
 
 - `AVL-01`: `AUTH_UNAUTHORIZED`, `AUTH_SESSION_EXPIRED`, `VALIDATION_FAILED`, `OWNERSHIP_VIOLATION`
 - `AVL-02`: `AUTH_UNAUTHORIZED`, `AUTH_SESSION_EXPIRED`, `VALIDATION_FAILED`, `OWNERSHIP_VIOLATION`

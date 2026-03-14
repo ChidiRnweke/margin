@@ -122,7 +122,10 @@ sequenceDiagram
         alt active lock makes a user-forced slot impossible
             C-->>U: LOCK_CONFLICT
         else feasible draft
-            C->>C: Rank tasks and apply hard constraints
+            Note over C: Due feasibility means all remaining minutes must fit by the end of the task's due local date
+            Note over C: Splittable tasks may use multiple windows respecting min chunk; non-splittable tasks must fit contiguously
+            Note over C: v1 uses a deterministic heuristic scheduler, not an exact optimization solver
+            C->>C: Rank feasible tasks by weighted score and greedily assign earliest valid windows under hard constraints
             Note over C: Lower-ranked feasible tasks may be deferred when capacity is insufficient
             C->>R: Create new active draft revision and supersede prior draft revision if present
             R->>A: Create proposed allocations for scheduled subset
@@ -179,6 +182,8 @@ sequenceDiagram
     else lock constraints are impossible to preserve
         C-->>U: LOCK_CONFLICT
     else valid regeneration
+        Note over C: Preserve past allocations and active locks
+        Note over C: Reoptimize only future unlocked allocations
         C->>R: Mark current revision Superseded
         C->>R: Create next revision as Active
         R->>A: Generate replacement allocations
@@ -232,6 +237,8 @@ sequenceDiagram
     alt no material change
         C-->>J: No-op
     else lock-preserving revision can be created
+        Note over C: Preserve past allocations and active locks
+        Note over C: Reoptimize only future unlocked allocations
         C->>R: Create superseding revision
         C->>C: Update current revision pointer
         C-->>J: Revision created
