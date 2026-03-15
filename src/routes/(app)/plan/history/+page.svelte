@@ -36,23 +36,22 @@
 		/>
 	{:else}
 		<div class="revision-feed">
-			{#each data.revisions as revision (revision.id)}
-				<RevisionFeedItem
-					timestamp={revision.timestamp}
-					action={revision.action}
-					summary={revision.summary}
-					author={revision.author}
-				/>
-			{/each}
+			<Stack direction="vertical" gap="3">
+				{#each data.revisions as revision (revision.id)}
+					<RevisionFeedItem
+						timestamp={revision.timestamp}
+						action={revision.action}
+						summary={revision.summary}
+						author={revision.author}
+					/>
+				{/each}
+			</Stack>
 		</div>
 	{/if}
 </Stack>
 
 <style>
 	.revision-feed {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-3);
 		border-left: 2px solid var(--color-border-muted);
 		padding-left: var(--space-4);
 	}

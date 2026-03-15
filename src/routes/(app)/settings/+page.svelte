@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import Stack from '$lib/components/primitives/Stack.svelte';
 	import SettingsCardGrid from '$lib/components/domain/settings/SettingsCardGrid.svelte';
 
 	const settingsCards = [
@@ -36,13 +37,7 @@
 	];
 </script>
 
-<PageHeader title="Settings" description="Manage your account, preferences, and data." />
-<div class="settings-hub">
+<Stack direction="vertical" gap="6">
+	<PageHeader title="Settings" description="Manage your account, preferences, and data." />
 	<SettingsCardGrid cards={settingsCards} />
-</div>
-
-<style>
-	.settings-hub {
-		margin-top: var(--space-6);
-	}
-</style>
+</Stack>
