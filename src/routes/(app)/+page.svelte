@@ -22,21 +22,8 @@
 		<KpiCard label="Overdue" value={data.stats.overdueTasks} variant="destructive" />
 	</DashboardGrid>
 
-	<div class="dashboard-panels">
+	<DashboardGrid columns={2} minWidth="360px" gap="6">
 		<TodaySchedule />
 		<UpcomingTasks />
-	</div>
+	</DashboardGrid>
 </Stack>
-
-<style>
-	.dashboard-panels {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: var(--space-6);
-	}
-	@media (max-width: 768px) {
-		.dashboard-panels {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>
