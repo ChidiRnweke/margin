@@ -1,3 +1,3 @@
 export interface IAccountErasureService {
-  eraseUserAccount(userId: string): Promise<void>;
+	eraseUserAccount(userId: string): Promise<void>;
 }

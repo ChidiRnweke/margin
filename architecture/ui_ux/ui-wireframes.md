@@ -591,9 +591,9 @@ Advanced expanded:
 
 ## Responsive Breakpoints
 
-| Breakpoint | Width | Layout Changes |
-|---|---|---|
-| Mobile | < 768px | Single column, bottom nav, master-detail collapses to drill-down, sidebar hidden |
-| Tablet | 768–1024px | Sidebar collapsible to icons, 2-column grids, master-detail with narrow master |
-| Desktop | > 1024px | Full sidebar, multi-column grids, full master-detail split |
-| Wide | > 1440px | Content max-width `72rem` centered, extra whitespace margins |
+| Breakpoint | Width      | Layout Changes                                                                   |
+| ---------- | ---------- | -------------------------------------------------------------------------------- |
+| Mobile     | < 768px    | Single column, bottom nav, master-detail collapses to drill-down, sidebar hidden |
+| Tablet     | 768–1024px | Sidebar collapsible to icons, 2-column grids, master-detail with narrow master   |
+| Desktop    | > 1024px   | Full sidebar, multi-column grids, full master-detail split                       |
+| Wide       | > 1440px   | Content max-width `72rem` centered, extra whitespace margins                     |

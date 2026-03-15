@@ -66,10 +66,8 @@ export class MilestoneService implements IMilestoneService {
 			...milestone,
 			title: input.title !== undefined ? input.title.trim() : milestone.title,
 			description:
-				input.description !== undefined
-					? (input.description?.trim() || null)
-					: milestone.description,
-			targetDate: input.targetDate !== undefined ? (input.targetDate || null) : milestone.targetDate
+				input.description !== undefined ? input.description?.trim() || null : milestone.description,
+			targetDate: input.targetDate !== undefined ? input.targetDate || null : milestone.targetDate
 		};
 
 		const saved = await this.milestoneRepo.save(updated, expectedVersion);

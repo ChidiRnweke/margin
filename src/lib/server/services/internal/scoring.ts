@@ -59,10 +59,7 @@ function computeUrgencyScore(task: Task, urgentThresholdDays: number): number {
 	return 1.0 - daysUntilDue / urgentThresholdDays;
 }
 
-function computeBalanceScore(
-	task: Task,
-	aspectHealthMap?: Map<string, AspectCycleHealth>
-): number {
+function computeBalanceScore(task: Task, aspectHealthMap?: Map<string, AspectCycleHealth>): number {
 	if (!aspectHealthMap) return 0.5;
 
 	const health = aspectHealthMap.get(task.aspectId);
@@ -88,7 +85,5 @@ export function rankTasks(
 	profile: PlanningProfile,
 	aspectHealthMap?: Map<string, AspectCycleHealth>
 ): TaskScore[] {
-	return tasks
-		.map((t) => scoreTask(t, profile, aspectHealthMap))
-		.sort((a, b) => b.score - a.score);
+	return tasks.map((t) => scoreTask(t, profile, aspectHealthMap)).sort((a, b) => b.score - a.score);
 }

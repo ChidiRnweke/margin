@@ -71,10 +71,7 @@ export class PostgresPlanningProfileRepository implements IPlanningProfileReposi
 				updatedAt: profile.updatedAt
 			})
 			.where(
-				and(
-					eq(planningProfiles.id, profile.id),
-					eq(planningProfiles.version, expectedVersion)
-				)
+				and(eq(planningProfiles.id, profile.id), eq(planningProfiles.version, expectedVersion))
 			)
 			.returning();
 

@@ -129,6 +129,7 @@ Never use `asyncio.gather`. `TaskGroup` propagates exceptions cleanly and cancel
 ## Code Examples
 
 For full code examples of the architecture layers in practice, please read:
+
 - **`references/patterns-examples.md`** — Examples for Models, Services, Controllers, Factory, AppConfig, and Error hierarchy.
 
 ---
@@ -142,6 +143,7 @@ For full code examples of the architecture layers in practice, please read:
 ## Validation Checklist
 
 Before concluding any implementation task, copy this checklist into your response scratchpad to track your progress:
+
 - [ ] Run the type-checker (e.g., `pyright .` or `mypy .`) and linter (`ruff check .`).
 - [ ] Run tests (`pytest`).
 - [ ] If errors occur, autonomously fix them and repeat the loop until the checks pass. Do not ask the human to fix your structural or typing errors.

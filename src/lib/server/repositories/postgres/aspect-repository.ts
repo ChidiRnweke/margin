@@ -142,9 +142,7 @@ export class PostgresAspectRepository implements IAspectRepository {
 				})
 				.from(aspects)
 				.where(whereClause)
-				.orderBy(
-					query.sortDirection === 'asc' ? asc(aspects.createdAt) : desc(aspects.createdAt)
-				)
+				.orderBy(query.sortDirection === 'asc' ? asc(aspects.createdAt) : desc(aspects.createdAt))
 				.limit(limit)
 				.offset(offset)
 		]);

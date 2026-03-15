@@ -1,4 +1,12 @@
-import { pgTable, uuid, timestamp, integer, boolean, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	timestamp,
+	integer,
+	boolean,
+	uniqueIndex,
+	index
+} from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { tasks } from './tasks.js';
 

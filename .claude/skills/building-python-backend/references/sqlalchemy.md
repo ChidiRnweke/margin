@@ -36,6 +36,7 @@ class RecipeORM(Base):
 ```
 
 **Rules:**
+
 - ORM models live only in `repositories/orm/` — never imported outside the repository layer
 - Use `Mapped[T]` for all column types — no untyped `Column()`
 - Never pass ORM instances to services or controllers
@@ -120,6 +121,7 @@ class RecipeRepository:
 ```
 
 **Anti-patterns:**
+
 - ❌ Returning `RecipeORM` from a repository method
 - ❌ Accepting `RecipeORM` as a parameter from outside the repository
 - ❌ Running queries in services or controllers

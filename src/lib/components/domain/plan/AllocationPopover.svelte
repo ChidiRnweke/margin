@@ -34,7 +34,7 @@
 
 <Dialog.Root bind:open onOpenChange={(v) => !v && onclose?.()}>
 	<Dialog.Content
-		class="shadow-glass-lg max-w-sm rounded-xl border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] backdrop-blur-lg"
+		class="max-w-sm rounded-xl border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] shadow-glass-lg backdrop-blur-lg"
 	>
 		<Dialog.Header>
 			<Dialog.Title>{title}</Dialog.Title>

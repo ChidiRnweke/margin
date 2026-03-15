@@ -119,6 +119,7 @@ async def create_recipe(
 ```
 
 **Anti-patterns:**
+
 - ❌ Assembling services or repositories inside the route handler
 - ❌ Business logic inside the route handler
 - ❌ `try/except` inside route handlers — let error handlers deal with it

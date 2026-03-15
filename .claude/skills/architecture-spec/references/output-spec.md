@@ -12,46 +12,63 @@ The final output is a single Markdown file containing:
 # Architecture Specification: [System Name]
 
 ## Overview
+
 [2–3 sentences: system type, architecture pattern, key constraints]
 
 ## Cross-cutting Concerns
+
 [Middleware, decorators, infrastructure extracted in Step 0]
 
 ## Aggregate Map
+
 [Table of aggregates with roots and children]
 
 ## Models
+
 ### [Aggregate Name]
+
 [Class specifications with fields, value objects, construction-time invariants]
 
 ## Service Interfaces
+
 ### [Service Name]
+
 [Interface with method signatures, behavioral invariants, dependencies, public/private]
 
 ## Controller Specifications
+
 ### [Controller Name — one per concern area]
+
 [Methods (one per interaction), service dependencies, concern area]
 
 ## Job-triggered Interactions
+
 [Interactions that bypass controllers — job name, service method, trigger]
 
 ## Repository Interfaces
+
 ### [Repository Name]
+
 [Methods including cascade operations, aggregate boundary, return types]
 
 ## Error Mapping
+
 [Table: failure path → error type → raising class, derived from interaction matrix error contracts]
 
 ## Invariant Classification
+
 [Table: invariant → category → enforcement point, including cross-cutting]
 
 ## Wiring Plan
+
 [Factory structure, DI graph, public vs private services, job entry points]
 
 ## Config Mapping
+
 [External dependencies, required config values]
 
 ## Completeness Checklist
+
 [Verification that everything is covered]
 ```
 
@@ -62,14 +79,15 @@ The final output is a single Markdown file containing:
 ```markdown
 ## Cross-cutting Concerns
 
-| Concern | Applies to | Mechanism | Implementation |
-|---|---|---|---|
-| Ownership scoping | 90% of interactions (all mutations + most reads) | Middleware | Injects `owner_id` filter into repository queries. Service methods never check ownership explicitly. |
-| Audit emission | All mutation interactions | Decorator | `@audited` decorator on service mutation methods. Emits event with actor, action, entity, timestamp. |
-| Optimistic concurrency | All entities with `version` field | Repository infrastructure | `save()` checks version match, raises `ConflictError` on mismatch. Transparent to services. |
-| Soft-delete filtering | All reads except admin queries | Repository default filter | Default `WHERE archived_at IS NULL` on all queries. Explicit `include_archived=True` overrides. |
+| Concern                | Applies to                                       | Mechanism                 | Implementation                                                                                       |
+| ---------------------- | ------------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Ownership scoping      | 90% of interactions (all mutations + most reads) | Middleware                | Injects `owner_id` filter into repository queries. Service methods never check ownership explicitly. |
+| Audit emission         | All mutation interactions                        | Decorator                 | `@audited` decorator on service mutation methods. Emits event with actor, action, entity, timestamp. |
+| Optimistic concurrency | All entities with `version` field                | Repository infrastructure | `save()` checks version match, raises `ConflictError` on mismatch. Transparent to services.          |
+| Soft-delete filtering  | All reads except admin queries                   | Repository default filter | Default `WHERE archived_at IS NULL` on all queries. Explicit `include_archived=True` overrides.      |
 
 For each concern, note:
+
 - **Which interactions are excluded** (if any) and why
 - **Where the mechanism is configured** (middleware registration, decorator application)
 - **How services interact with it** (they don't — it's transparent, or they opt in via decorator)
@@ -78,20 +96,22 @@ For each concern, note:
 ---
 
 ## Aggregate map table format
+
 ```markdown
 ## Aggregate Map
 
-| Aggregate | Root | Children | Referenced by (via ID) |
-|---|---|---|---|
-| Pipeline | Pipeline | Stage | ExecutionLog.pipeline_id |
-| Transform | Transform | — | Stage.transform_id |
-| ExecutionLog | ExecutionLog | StageResult | — |
+| Aggregate    | Root         | Children    | Referenced by (via ID)   |
+| ------------ | ------------ | ----------- | ------------------------ |
+| Pipeline     | Pipeline     | Stage       | ExecutionLog.pipeline_id |
+| Transform    | Transform    | —           | Stage.transform_id       |
+| ExecutionLog | ExecutionLog | StageResult | —                        |
 ```
 
 For each aggregate, include a brief note on the boundary rationale:
 
 > **Pipeline aggregate**: Pipeline and Stage share a transactional boundary because stage ordering must be consistent with the pipeline's state. Stages are never created, modified, or deleted independently.
-```
+
+````
 
 ---
 
@@ -120,17 +140,17 @@ For each model, specify:
 **Construction-time invariants:**
 - Invariant #1: name is non-empty and ≤ 100 chars → enforced by `PipelineName`
 - Invariant #2: stages list has ≥ 1 element → enforced by validator / `__post_init__`
-```
+````
 
 ### Input model (for creation/mutation)
 
 ```markdown
 ### CreatePipelineInput
 
-| Field | Type | Notes |
-|---|---|---|
-| name | PipelineName | Same value object as domain model |
-| stages | list[CreateStageInput] | At least 1 required |
+| Field  | Type                   | Notes                             |
+| ------ | ---------------------- | --------------------------------- |
+| name   | PipelineName           | Same value object as domain model |
+| stages | list[CreateStageInput] | At least 1 required               |
 
 **Validation:** Pydantic model at the route boundary. After validation, the domain can trust the input.
 ```
@@ -142,11 +162,11 @@ List every value object with its invariant and construction behavior:
 ```markdown
 ### Value Objects
 
-| Value Object | Wraps | Invariant | Construction behavior |
-|---|---|---|---|
-| PipelineName | str | #1: non-empty, ≤ 100 chars | Strips whitespace, raises InputError if empty or too long |
-| PositiveInt | int | #5: stage order must be positive | Raises InputError if ≤ 0 |
-| TransformConfig | str (JSON) | #7: must be valid JSON matching schema | Parses and validates against transform's config schema |
+| Value Object    | Wraps      | Invariant                              | Construction behavior                                     |
+| --------------- | ---------- | -------------------------------------- | --------------------------------------------------------- |
+| PipelineName    | str        | #1: non-empty, ≤ 100 chars             | Strips whitespace, raises InputError if empty or too long |
+| PositiveInt     | int        | #5: stage order must be positive       | Raises InputError if ≤ 0                                  |
+| TransformConfig | str (JSON) | #7: must be valid JSON matching schema | Parses and validates against transform's config schema    |
 ```
 
 ---
@@ -163,21 +183,25 @@ For each service:
 **Visibility:** Public (used by PipelineLifecycleController)
 
 **Dependencies:**
+
 - `IPipelineRepository` (interface)
 
 **Methods:**
 
 #### create(input: CreatePipelineInput) → Pipeline
+
 - Creates pipeline with initial stages
 - **Behavioral invariants enforced:**
   - #2: Pipeline must have ≥ 1 stage → checked before save
 
 #### archive(pipeline_id: str) → None
+
 - **Behavioral invariants enforced:**
   - #4: Pipeline can only be archived when idle or failed → raises `InputError`
 - **Flow:** validates status, calls `repository.archive(pipeline_id)` which cascades to stages
 
 #### clone(pipeline_id: str) → Pipeline
+
 - Loads source pipeline, creates a copy with new ID and idle status
 
 **Interaction matrix sections mapped:** "Pipeline Lifecycle"
@@ -193,12 +217,14 @@ For each service:
 **Visibility:** Private — only injected into `ExecutionService` via DI. Never available to controllers.
 
 **Dependencies:**
+
 - `ITransformRepository` (interface)
 - External API client (if transforms call external services)
 
 **Methods:**
 
 #### execute(transform_id: str, data: StageInput) → StageOutput
+
 - Loads the transform configuration
 - Applies the transform to the input data
 - Raises `NotFoundError` if transform doesn't exist
@@ -219,23 +245,28 @@ For each controller:
 **Concern area:** Pipeline Lifecycle (from interaction matrix)
 
 **Service dependencies (all interface-typed):**
+
 - `IPipelineLifecycleService`
 
 **Methods:**
 
 #### create_pipeline(input: CreatePipelineInput) → Pipeline
+
 - **Maps to interaction:** "Create Pipeline"
 - **Flow:** Call `service.create(input)` → returns Pipeline
 
 #### update_pipeline(pipeline_id: str, input: UpdatePipelineInput) → Pipeline
+
 - **Maps to interaction:** "Update Pipeline"
 - **Flow:** Call `service.update(pipeline_id, input)` → returns Pipeline
 
 #### archive_pipeline(pipeline_id: str) → None
+
 - **Maps to interaction:** "Archive Pipeline"
 - **Flow:** Call `service.archive(pipeline_id)`
 
 #### clone_pipeline(pipeline_id: str) → Pipeline
+
 - **Maps to interaction:** "Clone Pipeline"
 - **Flow:** Call `service.clone(pipeline_id)` → returns Pipeline
 ```
@@ -248,19 +279,23 @@ For each controller:
 **Concern area:** Execution & Monitoring (from interaction matrix)
 
 **Service dependencies (all interface-typed):**
+
 - `IExecutionService`
 
 **Methods:**
 
 #### execute_pipeline(pipeline_id: str) → ExecutionLog
+
 - **Maps to interaction:** "Execute Pipeline"
 - **Flow:** Call `execution_service.execute(pipeline_id)` → returns ExecutionLog
 
 #### retry_execution(pipeline_id: str) → ExecutionLog
+
 - **Maps to interaction:** "Retry Failed Execution"
 - **Flow:** Call `execution_service.retry(pipeline_id)` → returns ExecutionLog
 
 #### get_execution_history(pipeline_id: str) → list[ExecutionLog]
+
 - **Maps to interaction:** "Get Execution History"
 - **Flow:** Call `execution_service.get_history(pipeline_id)` → returns list
 - **Parallel opportunities:** None (single call)
@@ -273,13 +308,14 @@ For each controller:
 
 These interactions are triggered by background jobs or schedulers. They bypass controllers and use the factory directly to obtain services.
 
-| Interaction | Actor | Service Method | Trigger | Schedule |
-|---|---|---|---|---|
-| "Expire Stale Executions" | Scheduler | ExecutionService.expire_stale() | Cron job | Every hour |
-| "Reindex Transforms" | System | TransformService.reindex_all() | Event: transform updated | On event |
-| "Generate Daily Report" | Scheduler | ReportService.generate_daily() | Cron job | Daily 02:00 UTC |
+| Interaction               | Actor     | Service Method                  | Trigger                  | Schedule        |
+| ------------------------- | --------- | ------------------------------- | ------------------------ | --------------- |
+| "Expire Stale Executions" | Scheduler | ExecutionService.expire_stale() | Cron job                 | Every hour      |
+| "Reindex Transforms"      | System    | TransformService.reindex_all()  | Event: transform updated | On event        |
+| "Generate Daily Report"   | Scheduler | ReportService.generate_daily()  | Cron job                 | Daily 02:00 UTC |
 
 For each job-triggered interaction:
+
 - **No HTTP route.** The job runner calls `factory.get_execution_service().expire_stale()`.
 - **Same service interface.** The method signature is identical to what a controller would call.
 - **Error handling:** Job failures are logged and optionally retried by the job framework — not translated to HTTP responses.
@@ -292,11 +328,11 @@ For each job-triggered interaction:
 
 These flows are single-service operations with no orchestration, routed directly through the factory:
 
-| Interaction | Service | Method |
-|---|---|---|
+| Interaction        | Service          | Method        |
+| ------------------ | ---------------- | ------------- |
 | "Create Transform" | TransformService | create(input) |
-| "List Transforms" | TransformService | list_all() |
-| "Delete Transform" | TransformService | delete(id) |
+| "List Transforms"  | TransformService | list_all()    |
+| "Delete Transform" | TransformService | delete(id)    |
 ```
 
 ---
@@ -312,21 +348,23 @@ For each aggregate root:
 
 **Methods:**
 
-| Method | Signature | Notes |
-|---|---|---|
-| find_by_id | (pipeline_id: str) → Pipeline | Loads root + all stages. Raises NotFoundError if absent. |
-| find_by_workspace | (workspace_id: str) → list[Pipeline] | Returns pipelines without stages (summary query). |
-| save | (pipeline: Pipeline) → Pipeline | Upserts root + all children atomically. Handles stage adds/removes/reorders. |
-| delete | (pipeline_id: str) → None | Deletes root + all children. Raises NotFoundError if absent. |
-| archive | (pipeline_id: str) → None | Sets archived_at on root + cascades to all stages. Raises NotFoundError if absent. |
-| restore | (pipeline_id: str) → None | Clears archived_at on root + all stages. Raises NotFoundError if absent. |
+| Method            | Signature                            | Notes                                                                              |
+| ----------------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
+| find_by_id        | (pipeline_id: str) → Pipeline        | Loads root + all stages. Raises NotFoundError if absent.                           |
+| find_by_workspace | (workspace_id: str) → list[Pipeline] | Returns pipelines without stages (summary query).                                  |
+| save              | (pipeline: Pipeline) → Pipeline      | Upserts root + all children atomically. Handles stage adds/removes/reorders.       |
+| delete            | (pipeline_id: str) → None            | Deletes root + all children. Raises NotFoundError if absent.                       |
+| archive           | (pipeline_id: str) → None            | Sets archived_at on root + cascades to all stages. Raises NotFoundError if absent. |
+| restore           | (pipeline_id: str) → None            | Clears archived_at on root + all stages. Raises NotFoundError if absent.           |
 
 **Cascade operations:**
+
 - `archive` — sets `archived_at` on Pipeline and all child Stages atomically
 - `delete` — removes Pipeline and all child Stages atomically
 - `save` — diffs current stages against persisted stages to handle adds/deletes/reorders
 
 **Internal implementation notes (for the developer, not part of the interface):**
+
 - ORM models: `PipelineORM`, `StageORM` — private to repository
 - All operations within a single DB transaction
 ```
@@ -338,14 +376,14 @@ For each aggregate root:
 ```markdown
 ## Error Mapping
 
-| Sequence Diagram | Failure Path | Error Type | Raised By |
-|---|---|---|---|
-| Execute Pipeline | Pipeline not found | NotFoundError("Pipeline") | PipelineService.execute |
-| Execute Pipeline | Pipeline already running | InputError("Pipeline is already running") | PipelineService.execute |
-| Execute Pipeline | Stage transform not found | NotFoundError("Transform") | TransformExecutor.execute |
-| Execute Pipeline | External API failure | InfraError("Transform execution failed") | TransformExecutor.execute |
-| Create Pipeline | Name already taken | InputError("Pipeline name must be unique") | PipelineService.create |
-| Retry Pipeline | Pipeline not in failed state | InputError("Only failed pipelines can be retried") | PipelineService.retry |
+| Sequence Diagram | Failure Path                 | Error Type                                         | Raised By                 |
+| ---------------- | ---------------------------- | -------------------------------------------------- | ------------------------- |
+| Execute Pipeline | Pipeline not found           | NotFoundError("Pipeline")                          | PipelineService.execute   |
+| Execute Pipeline | Pipeline already running     | InputError("Pipeline is already running")          | PipelineService.execute   |
+| Execute Pipeline | Stage transform not found    | NotFoundError("Transform")                         | TransformExecutor.execute |
+| Execute Pipeline | External API failure         | InfraError("Transform execution failed")           | TransformExecutor.execute |
+| Create Pipeline  | Name already taken           | InputError("Pipeline name must be unique")         | PipelineService.create    |
+| Retry Pipeline   | Pipeline not in failed state | InputError("Only failed pipelines can be retried") | PipelineService.retry     |
 ```
 
 ---
@@ -355,18 +393,18 @@ For each aggregate root:
 ```markdown
 ## Invariant Classification
 
-| # | Invariant | Category | Enforced By |
-|---|---|---|---|
-| 1 | Pipeline name non-empty, ≤ 100 chars | Construction-time | PipelineName value object |
-| 2 | Pipeline must have ≥ 1 stage | Construction-time | Pipeline model validator |
-| 3 | Cannot execute while already running | Behavioral | PipelineService.execute |
-| 4 | Pipeline can only be deleted when idle or failed | Behavioral | PipelineService.delete |
-| 5 | Stage order must be positive | Construction-time | PositiveInt value object |
-| 6 | Stage ordering contiguous within pipeline | Aggregate | PipelineRepository.save |
-| 7 | Stage config must match transform schema | Construction-time | TransformConfig value object |
-| 10 | Completed stage results preserved on failure | Behavioral | PipelineService.execute |
-| 12 | Retry resumes from failed stage | Behavioral | PipelineService.retry |
-| 13 | idle → running → complete/failed | State transition | PipelineService (via PipelineStatus.can_transition_to) |
+| #   | Invariant                                        | Category          | Enforced By                                            |
+| --- | ------------------------------------------------ | ----------------- | ------------------------------------------------------ |
+| 1   | Pipeline name non-empty, ≤ 100 chars             | Construction-time | PipelineName value object                              |
+| 2   | Pipeline must have ≥ 1 stage                     | Construction-time | Pipeline model validator                               |
+| 3   | Cannot execute while already running             | Behavioral        | PipelineService.execute                                |
+| 4   | Pipeline can only be deleted when idle or failed | Behavioral        | PipelineService.delete                                 |
+| 5   | Stage order must be positive                     | Construction-time | PositiveInt value object                               |
+| 6   | Stage ordering contiguous within pipeline        | Aggregate         | PipelineRepository.save                                |
+| 7   | Stage config must match transform schema         | Construction-time | TransformConfig value object                           |
+| 10  | Completed stage results preserved on failure     | Behavioral        | PipelineService.execute                                |
+| 12  | Retry resumes from failed stage                  | Behavioral        | PipelineService.retry                                  |
+| 13  | idle → running → complete/failed                 | State transition  | PipelineService (via PipelineStatus.can_transition_to) |
 ```
 
 ---
@@ -380,33 +418,34 @@ For each aggregate root:
 
 **Instantiated per-request** with session, config, and user context.
 
-| Method | Returns | Assembles |
-|---|---|---|
-| get_pipeline_lifecycle_controller() | PipelineLifecycleController | PipelineLifecycleService(PipelineRepository) |
-| get_execution_controller() | ExecutionController | ExecutionService(PipelineRepository, TransformRepository, ExecutionLogRepository, TransformExecutor) |
-| get_transform_service() | TransformService | TransformService(TransformRepository) |
-| get_execution_service() | ExecutionService | (for job runners — same instance as controller would get) |
+| Method                              | Returns                     | Assembles                                                                                            |
+| ----------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| get_pipeline_lifecycle_controller() | PipelineLifecycleController | PipelineLifecycleService(PipelineRepository)                                                         |
+| get_execution_controller()          | ExecutionController         | ExecutionService(PipelineRepository, TransformRepository, ExecutionLogRepository, TransformExecutor) |
+| get_transform_service()             | TransformService            | TransformService(TransformRepository)                                                                |
+| get_execution_service()             | ExecutionService            | (for job runners — same instance as controller would get)                                            |
 
 ### Dependency graph
-
 ```
+
 PipelineLifecycleController
 └── IPipelineLifecycleService → PipelineLifecycleService
-    └── IPipelineRepository → PipelineRepository(session)
+└── IPipelineRepository → PipelineRepository(session)
 
 ExecutionController
 └── IExecutionService → ExecutionService
-    ├── IPipelineRepository → PipelineRepository(session)
-    ├── ITransformRepository → TransformRepository(session)
-    ├── IExecutionLogRepository → ExecutionLogRepository(session)
-    └── ITransformExecutor → TransformExecutor  [PRIVATE]
-        └── ITransformRepository → TransformRepository(session)
+├── IPipelineRepository → PipelineRepository(session)
+├── ITransformRepository → TransformRepository(session)
+├── IExecutionLogRepository → ExecutionLogRepository(session)
+└── ITransformExecutor → TransformExecutor [PRIVATE]
+└── ITransformRepository → TransformRepository(session)
 
 TransformService (direct, no controller)
 └── ITransformRepository → TransformRepository(session)
 
 Job: expire_stale_executions (hourly)
 └── factory.get_execution_service().expire_stale()
+
 ```
 
 ### Public vs Private services
@@ -435,12 +474,12 @@ Job: expire_stale_executions (hourly)
 
 ### AppConfig fields
 
-| Field | Type | Source | Required | Used By |
-|---|---|---|---|---|
-| db_url | str | DATABASE_URL env var | Yes | Session factory |
-| transform_api_url | str | TRANSFORM_API_URL env var | Yes | TransformExecutor |
-| transform_api_key | str | TRANSFORM_API_KEY env var | Yes | TransformExecutor |
-| max_pipeline_stages | int | MAX_STAGES env var | No (default: 50) | PipelineService |
+| Field               | Type | Source                    | Required         | Used By           |
+| ------------------- | ---- | ------------------------- | ---------------- | ----------------- |
+| db_url              | str  | DATABASE_URL env var      | Yes              | Session factory   |
+| transform_api_url   | str  | TRANSFORM_API_URL env var | Yes              | TransformExecutor |
+| transform_api_key   | str  | TRANSFORM_API_KEY env var | Yes              | TransformExecutor |
+| max_pipeline_stages | int  | MAX_STAGES env var        | No (default: 50) | PipelineService   |
 
 **Fail-fast:** All required fields validated at startup via `AppConfig.from_env()`. Missing values raise `AppStartupError` with a clear message.
 ```

@@ -88,34 +88,34 @@ This is explicit. You read the test and see exactly what the fake is configured 
 
 ```typescript
 // src/lib/__tests__/fakes/FakeRecipeService.ts
-import type { IRecipeService } from "$lib/services/IRecipeService";
-import type { Recipe, CreateRecipeInput } from "$lib/models";
+import type { IRecipeService } from '$lib/services/IRecipeService';
+import type { Recipe, CreateRecipeInput } from '$lib/models';
 
 export class FakeRecipeService implements IRecipeService {
-  recipes: Recipe[] = [];
-  private nextId = 1;
+	recipes: Recipe[] = [];
+	private nextId = 1;
 
-  async getByUserId(userId: string): Promise<Recipe[]> {
-    return this.recipes.filter((r) => r.userId === userId);
-  }
+	async getByUserId(userId: string): Promise<Recipe[]> {
+		return this.recipes.filter((r) => r.userId === userId);
+	}
 
-  async getById(id: string): Promise<Recipe> {
-    const recipe = this.recipes.find((r) => r.id === id);
-    if (!recipe) throw new NotFoundError("Recipe");
-    return recipe;
-  }
+	async getById(id: string): Promise<Recipe> {
+		const recipe = this.recipes.find((r) => r.id === id);
+		if (!recipe) throw new NotFoundError('Recipe');
+		return recipe;
+	}
 
-  async create(input: CreateRecipeInput): Promise<Recipe> {
-    const recipe: Recipe = {
-      id: String(this.nextId++),
-      title: input.title,
-      cuisine: input.cuisine ?? "unknown",
-      servings: input.servings ?? 1,
-      createdAt: new Date(),
-    };
-    this.recipes.push(recipe);
-    return recipe;
-  }
+	async create(input: CreateRecipeInput): Promise<Recipe> {
+		const recipe: Recipe = {
+			id: String(this.nextId++),
+			title: input.title,
+			cuisine: input.cuisine ?? 'unknown',
+			servings: input.servings ?? 1,
+			createdAt: new Date()
+		};
+		this.recipes.push(recipe);
+		return recipe;
+	}
 }
 ```
 
@@ -350,25 +350,25 @@ Same principles. Use vitest. No `vi.mock()`.
 
 ```typescript
 // src/lib/__tests__/controllers/RecipeController.test.ts
-import { describe, it, expect } from "vitest";
-import { RecipeController } from "$lib/controllers/RecipeController";
-import { FakeRecipeService } from "../fakes/FakeRecipeService";
-import { FakePantryService } from "../fakes/FakePantryService";
+import { describe, it, expect } from 'vitest';
+import { RecipeController } from '$lib/controllers/RecipeController';
+import { FakeRecipeService } from '../fakes/FakeRecipeService';
+import { FakePantryService } from '../fakes/FakePantryService';
 
-describe("RecipeController.getRecipesForUser", () => {
-  it("returns empty when pantry has no items", async () => {
-    const recipeService = new FakeRecipeService();
-    const pantryService = new FakePantryService();
-    recipeService.recipes = [
-      { id: "1", title: "Pasta", cuisine: "italian", servings: 2, createdAt: new Date() },
-    ];
-    pantryService.items = [];
+describe('RecipeController.getRecipesForUser', () => {
+	it('returns empty when pantry has no items', async () => {
+		const recipeService = new FakeRecipeService();
+		const pantryService = new FakePantryService();
+		recipeService.recipes = [
+			{ id: '1', title: 'Pasta', cuisine: 'italian', servings: 2, createdAt: new Date() }
+		];
+		pantryService.items = [];
 
-    const controller = new RecipeController(recipeService, pantryService);
-    const result = await controller.getRecipesForUser("u1");
+		const controller = new RecipeController(recipeService, pantryService);
+		const result = await controller.getRecipesForUser('u1');
 
-    expect(result).toEqual([]);
-  });
+		expect(result).toEqual([]);
+	});
 });
 ```
 
@@ -378,16 +378,16 @@ For frontend services that wrap `openapi-fetch`, the fake replaces the service â
 
 ## Anti-patterns to flag during review
 
-| What you see | Why it's wrong | What to do instead |
-|---|---|---|
-| `from unittest.mock import Mock, patch` | Mocking library | Write a fake implementing the Protocol |
-| `mock.assert_called_once_with(...)` | Testing implementation, not behaviour | Assert on the return value or state change |
-| `@patch('myapp.services.recipe_service.repository')` | Patching internals | Inject a fake via constructor |
-| `assert result.title == "Pasta" and result.cuisine == "italian"` | Two assertions in one | Split into two tests |
-| `vi.mock('$lib/services/RecipeService')` | Mocking library (frontend) | Write a `FakeRecipeService` class |
-| `jest.spyOn(service, 'getByUserId')` | Spying on implementation | Use a fake, assert on output |
-| `test('create recipe', ...)` with 5 assertions | Testing too many things | One test per behaviour/invariant |
-| Test that constructs a complex mock chain | Architecture smell | Simplify dependencies or add a controller |
+| What you see                                                     | Why it's wrong                        | What to do instead                         |
+| ---------------------------------------------------------------- | ------------------------------------- | ------------------------------------------ |
+| `from unittest.mock import Mock, patch`                          | Mocking library                       | Write a fake implementing the Protocol     |
+| `mock.assert_called_once_with(...)`                              | Testing implementation, not behaviour | Assert on the return value or state change |
+| `@patch('myapp.services.recipe_service.repository')`             | Patching internals                    | Inject a fake via constructor              |
+| `assert result.title == "Pasta" and result.cuisine == "italian"` | Two assertions in one                 | Split into two tests                       |
+| `vi.mock('$lib/services/RecipeService')`                         | Mocking library (frontend)            | Write a `FakeRecipeService` class          |
+| `jest.spyOn(service, 'getByUserId')`                             | Spying on implementation              | Use a fake, assert on output               |
+| `test('create recipe', ...)` with 5 assertions                   | Testing too many things               | One test per behaviour/invariant           |
+| Test that constructs a complex mock chain                        | Architecture smell                    | Simplify dependencies or add a controller  |
 
 ---
 

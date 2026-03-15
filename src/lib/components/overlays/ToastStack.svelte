@@ -59,7 +59,7 @@
 		{#each toasts as toast (toast.id)}
 			<div
 				class={cn(
-					'shadow-glass-sm animate-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-3 rounded-[10px] border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] px-4 py-3 backdrop-blur-md',
+					'animate-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-3 rounded-[10px] border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] px-4 py-3 shadow-glass-sm backdrop-blur-md',
 					variantBorderMap[toast.variant ?? 'default']
 				)}
 				role="status"

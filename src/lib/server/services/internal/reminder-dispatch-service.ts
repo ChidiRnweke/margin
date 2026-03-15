@@ -25,8 +25,7 @@ export class ReminderDispatchService implements IReminderDispatchService {
 		let failed = 0;
 
 		for (const agg of dueReminders) {
-			const provider =
-				agg.reminder.channel === 'email' ? this.emailProvider : this.inAppProvider;
+			const provider = agg.reminder.channel === 'email' ? this.emailProvider : this.inAppProvider;
 			const task = await this.taskRepo.findById(agg.reminder.taskId);
 
 			try {
@@ -59,9 +58,7 @@ export class ReminderDispatchService implements IReminderDispatchService {
 					);
 					dispatched++;
 				} else {
-					const nextRetry = new Date(
-						now.getTime() + Math.pow(2, agg.attempts.length) * 60000
-					);
+					const nextRetry = new Date(now.getTime() + Math.pow(2, agg.attempts.length) * 60000);
 					const updated = {
 						...agg.reminder,
 						status: ReminderStatus.Failed,
@@ -98,8 +95,7 @@ export class ReminderDispatchService implements IReminderDispatchService {
 				continue;
 			}
 
-			const provider =
-				agg.reminder.channel === 'email' ? this.emailProvider : this.inAppProvider;
+			const provider = agg.reminder.channel === 'email' ? this.emailProvider : this.inAppProvider;
 			const task = await this.taskRepo.findById(agg.reminder.taskId);
 
 			try {
@@ -115,9 +111,7 @@ export class ReminderDispatchService implements IReminderDispatchService {
 					id: crypto.randomUUID(),
 					reminderId: agg.reminder.id,
 					attemptNumber: agg.attempts.length + 1,
-					result: result.success
-						? ReminderAttemptResult.Sent
-						: ReminderAttemptResult.Failed,
+					result: result.success ? ReminderAttemptResult.Sent : ReminderAttemptResult.Failed,
 					errorCode: result.errorCode
 				});
 				await this.reminderRepo.recordAttempt(agg.reminder.id, attempt);
@@ -133,9 +127,7 @@ export class ReminderDispatchService implements IReminderDispatchService {
 						agg.reminder.version
 					);
 				} else {
-					const nextRetry = new Date(
-						now.getTime() + Math.pow(2, agg.attempts.length + 1) * 60000
-					);
+					const nextRetry = new Date(now.getTime() + Math.pow(2, agg.attempts.length + 1) * 60000);
 					const updated = {
 						...agg.reminder,
 						lastAttemptAt: now,

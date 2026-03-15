@@ -34,8 +34,7 @@ export function resolveTimezoneOffset(
 			const janMatch = janTzPart.value.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
 			if (janMatch) {
 				const janSign = janMatch[1] === '+' ? 1 : -1;
-				janOffset =
-					janSign * (parseInt(janMatch[2], 10) * 60 + parseInt(janMatch[3] || '0', 10));
+				janOffset = janSign * (parseInt(janMatch[2], 10) * 60 + parseInt(janMatch[3] || '0', 10));
 			}
 		}
 

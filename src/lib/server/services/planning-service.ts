@@ -227,13 +227,10 @@ export class PlanningService implements IPlanningService {
 
 				const startUtc = new Date(edit.scheduledStartUtc);
 				const endUtc = new Date(edit.scheduledEndUtc);
-				const allocatedMinutes = Math.round(
-					(endUtc.getTime() - startUtc.getTime()) / 60_000
-				);
+				const allocatedMinutes = Math.round((endUtc.getTime() - startUtc.getTime()) / 60_000);
 
-				const { createTaskAllocation } = await import(
-					'$lib/server/domain/models/task-allocation.js'
-				);
+				const { createTaskAllocation } =
+					await import('$lib/server/domain/models/task-allocation.js');
 				addAllocations.push(
 					createTaskAllocation({
 						id: crypto.randomUUID(),
@@ -250,12 +247,16 @@ export class PlanningService implements IPlanningService {
 		}
 
 		const newRevisionId = crypto.randomUUID();
-		const updated = await this.planningCycleRepo.applyPlanEditRevision(cycleId, {
-			newRevisionId,
-			changeReason: 'Manual edit',
-			addAllocations,
-			removeAllocationIds: removeIds
-		}, expectedVersion);
+		const updated = await this.planningCycleRepo.applyPlanEditRevision(
+			cycleId,
+			{
+				newRevisionId,
+				changeReason: 'Manual edit',
+				addAllocations,
+				removeAllocationIds: removeIds
+			},
+			expectedVersion
+		);
 
 		const activeRevision = updated.revisions.find((r) => r.status === 'Active');
 		return {

@@ -109,7 +109,7 @@ services:
       POSTGRES_USER: myapp
       POSTGRES_PASSWORD: myapp
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -117,7 +117,7 @@ services:
     build: ./backend
     env_file: ./backend/.env
     ports:
-      - "8000:8000"
+      - '8000:8000'
     depends_on:
       - db
     volumes:
@@ -127,7 +127,7 @@ services:
     build: ./frontend
     env_file: ./frontend/.env
     ports:
-      - "5173:5173"
+      - '5173:5173'
     depends_on:
       - backend
     volumes:
@@ -203,9 +203,9 @@ Once the pattern is decided, the relevant skills take over. Read them fully befo
 
 ### Pattern A — TypeScript Monolith
 
-| What you're building              | Read                                                                                         |
-| --------------------------------- | -------------------------------------------------------------------------------------------- |
-| Pages, components, UI             | `designing-svelte-ui` skill — design system first, always                                              |
+| What you're building              | Read                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Pages, components, UI             | `designing-svelte-ui` skill — design system first, always                                                     |
 | Loaders, actions, stores, routing | `building-sveltekit-frontend` skill — BFF patterns apply here too, minus the openapi layer                    |
 | Database schema + queries         | Use Drizzle. Follow the repository pattern from `building-sveltekit-frontend` — keep DB access out of loaders |
 
@@ -216,11 +216,11 @@ controllers for multi-service orchestration, stores for client state — applies
 
 ### Pattern B — BFF
 
-| What you're building                        | Read                                   |
-| ------------------------------------------- | -------------------------------------- |
-| Frontend pages, components, UI              | `designing-svelte-ui` skill                      |
+| What you're building                        | Read                                                    |
+| ------------------------------------------- | ------------------------------------------------------- |
+| Frontend pages, components, UI              | `designing-svelte-ui` skill                             |
 | Frontend loaders, actions, stores           | `building-sveltekit-frontend` skill                     |
-| Backend services, controllers, repositories | `building-python-backend` skill                     |
+| Backend services, controllers, repositories | `building-python-backend` skill                         |
 | Typed API client (frontend ↔ backend)       | `building-sveltekit-frontend` → `references/openapi.md` |
 
 The contract between frontend and backend is the OpenAPI spec. The backend owns it. The
@@ -340,6 +340,7 @@ These span both layers and neither skill covers them fully:
 ## Validation Loop
 
 Before handing off the project to the user or an executor agent:
+
 1. Validate the setup by running appropriate package installation (e.g., `pnpm install` or `uv sync`).
 2. Verify structural configuration, such as validating `docker-compose.yml` with `docker compose config`.
 3. If errors occur, autonomously fix them and repeat until the basic scaffolding checks out.

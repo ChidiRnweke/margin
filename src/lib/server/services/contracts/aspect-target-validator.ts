@@ -1,3 +1,3 @@
 export interface IAspectTargetValidator {
-  ensureActiveTargetsTotal100(aspects: unknown[]): void;
+	ensureActiveTargetsTotal100(aspects: unknown[]): void;
 }

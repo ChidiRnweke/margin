@@ -8,16 +8,16 @@ Margin is a weekly planner that helps you allocate time across the areas of your
 
 Margin follows **Domain-Driven Design** with a strict layered architecture:
 
-| Layer | Responsibility | Dependencies |
-|-------|---------------|--------------|
-| **Models / Value Objects** | Domain rules, invariants | None (pure) |
-| **Repository Contracts** | Data access interfaces | Models, VOs |
-| **Repository Implementations** | Postgres via Drizzle ORM | Contracts, Models, DB schema |
-| **Service Contracts** | Business operation interfaces | Models, VOs |
-| **Service Implementations** | Orchestration, state transitions | Contracts (repos + services), Models, VOs |
-| **Controllers** | Request/response mapping | Service contracts, DTOs |
-| **Routes / Pages** | SvelteKit endpoints + SSR | Controllers (via factory), DTOs, Components |
-| **Components** | UI rendering | Stores, DTOs, Primitives |
+| Layer                          | Responsibility                   | Dependencies                                |
+| ------------------------------ | -------------------------------- | ------------------------------------------- |
+| **Models / Value Objects**     | Domain rules, invariants         | None (pure)                                 |
+| **Repository Contracts**       | Data access interfaces           | Models, VOs                                 |
+| **Repository Implementations** | Postgres via Drizzle ORM         | Contracts, Models, DB schema                |
+| **Service Contracts**          | Business operation interfaces    | Models, VOs                                 |
+| **Service Implementations**    | Orchestration, state transitions | Contracts (repos + services), Models, VOs   |
+| **Controllers**                | Request/response mapping         | Service contracts, DTOs                     |
+| **Routes / Pages**             | SvelteKit endpoints + SSR        | Controllers (via factory), DTOs, Components |
+| **Components**                 | UI rendering                     | Stores, DTOs, Primitives                    |
 
 All wiring goes through a single **composition-root factory** — no service-to-service direct imports.
 
@@ -80,17 +80,17 @@ This prints seed definitions for 1 user, 4 aspects, and 6 tasks. A running Postg
 
 ## Development Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start dev server with HMR |
-| `pnpm check` | Type-check (svelte-kit sync + svelte-check) |
-| `pnpm check:watch` | Type-check in watch mode |
-| `pnpm build` | Production build |
-| `pnpm preview` | Preview production build |
-| `pnpm lint` | Prettier + ESLint check |
-| `pnpm format` | Auto-format with Prettier |
-| `pnpm test` | Run unit tests (single run) |
-| `pnpm test:unit` | Run unit tests (watch mode) |
+| Command            | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `pnpm dev`         | Start dev server with HMR                   |
+| `pnpm check`       | Type-check (svelte-kit sync + svelte-check) |
+| `pnpm check:watch` | Type-check in watch mode                    |
+| `pnpm build`       | Production build                            |
+| `pnpm preview`     | Preview production build                    |
+| `pnpm lint`        | Prettier + ESLint check                     |
+| `pnpm format`      | Auto-format with Prettier                   |
+| `pnpm test`        | Run unit tests (single run)                 |
+| `pnpm test:unit`   | Run unit tests (watch mode)                 |
 
 ## Project Structure
 

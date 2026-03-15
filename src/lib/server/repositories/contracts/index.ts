@@ -13,11 +13,7 @@ export type { ISessionRepository } from './session-repository.js';
 export type { IPlanningProfileRepository } from './planning-profile-repository.js';
 
 // Aspect, Milestone, Task
-export type {
-	AspectQuery,
-	AspectSummary,
-	IAspectRepository
-} from './aspect-repository.js';
+export type { AspectQuery, AspectSummary, IAspectRepository } from './aspect-repository.js';
 export type {
 	MilestoneQuery,
 	MilestoneSummary,

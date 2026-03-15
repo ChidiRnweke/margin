@@ -27,12 +27,12 @@ For each invariant, determine its status:
 ```markdown
 ## Invariant Coverage Report
 
-| Invariant | Implemented | Tested | Status |
-|---|---|---|---|
-| Recipe title must be non-empty | `RecipeService.create` raises `InputError` | `test_rejects_empty_title`, `test_rejects_whitespace_only_title` | ✅ Covered |
-| Users can only delete own recipes | `RecipeService.delete` checks `user_id` | `test_non_owner_cannot_delete` | ✅ Covered |
-| Soft-delete for recipes | Not found in `RecipeRepository.delete` | No test | ❌ Missing |
-| Pantry items belong to one user | Enforced by DB FK constraint | `test_find_by_user_id_returns_only_user_recipes` | ⚠️ Implicit (DB only) |
+| Invariant                         | Implemented                                | Tested                                                           | Status                |
+| --------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | --------------------- |
+| Recipe title must be non-empty    | `RecipeService.create` raises `InputError` | `test_rejects_empty_title`, `test_rejects_whitespace_only_title` | ✅ Covered            |
+| Users can only delete own recipes | `RecipeService.delete` checks `user_id`    | `test_non_owner_cannot_delete`                                   | ✅ Covered            |
+| Soft-delete for recipes           | Not found in `RecipeRepository.delete`     | No test                                                          | ❌ Missing            |
+| Pantry items belong to one user   | Enforced by DB FK constraint               | `test_find_by_user_id_returns_only_user_recipes`                 | ⚠️ Implicit (DB only) |
 ```
 
 Status categories:
@@ -75,16 +75,16 @@ config.py      → imports nothing from other layers
 
 **Violations to flag:**
 
-| Violation | Why it's wrong | Fix |
-|---|---|---|
-| Service imports another service | Creates hidden coupling, breaks testability | Push composition to controller, or inject via DI |
-| Service imports `AsyncSession` or ORM types | Service leaks into infrastructure | Repository owns all DB access |
-| Controller contains `if` logic over domain data | Business logic in orchestration layer | Move to service |
-| Route handler contains business logic | HTTP layer doing domain work | Delegate to controller/service |
-| Factory contains conditional logic | Factory should only wire, never decide | Move logic to service |
-| Model imports from service/repository | Data layer depends on behaviour layer | Models are leaf nodes, no upward imports |
-| Route handler assembles services directly | Bypasses factory, loses consistency | Use `factory.get_X_controller()` |
-| ORM type appears outside repository | Infrastructure leaking into domain | Map to domain model in repository |
+| Violation                                       | Why it's wrong                              | Fix                                              |
+| ----------------------------------------------- | ------------------------------------------- | ------------------------------------------------ |
+| Service imports another service                 | Creates hidden coupling, breaks testability | Push composition to controller, or inject via DI |
+| Service imports `AsyncSession` or ORM types     | Service leaks into infrastructure           | Repository owns all DB access                    |
+| Controller contains `if` logic over domain data | Business logic in orchestration layer       | Move to service                                  |
+| Route handler contains business logic           | HTTP layer doing domain work                | Delegate to controller/service                   |
+| Factory contains conditional logic              | Factory should only wire, never decide      | Move logic to service                            |
+| Model imports from service/repository           | Data layer depends on behaviour layer       | Models are leaf nodes, no upward imports         |
+| Route handler assembles services directly       | Bypasses factory, loses consistency         | Use `factory.get_X_controller()`                 |
+| ORM type appears outside repository             | Infrastructure leaking into domain          | Map to domain model in repository                |
 
 ### Frontend (SvelteKit)
 
@@ -100,13 +100,13 @@ stores/        → imports models only
 
 **Violations to flag:**
 
-| Violation | Why it's wrong | Fix |
-|---|---|---|
-| `+page.svelte` imports a service | UI directly calling business logic | Use loader data or store |
-| Store calls `fetch()` | Store doing server work | Populate store from loader data |
-| Loader contains business logic | HTTP layer doing domain work | Delegate to controller/service |
-| Controller imports `createApiClient` | Controller touching infrastructure | Service wraps the client |
-| `components['schemas']['X']` used outside service | API types leaking into domain | Map at service boundary |
+| Violation                                         | Why it's wrong                     | Fix                             |
+| ------------------------------------------------- | ---------------------------------- | ------------------------------- |
+| `+page.svelte` imports a service                  | UI directly calling business logic | Use loader data or store        |
+| Store calls `fetch()`                             | Store doing server work            | Populate store from loader data |
+| Loader contains business logic                    | HTTP layer doing domain work       | Delegate to controller/service  |
+| Controller imports `createApiClient`              | Controller touching infrastructure | Service wraps the client        |
+| `components['schemas']['X']` used outside service | API types leaking into domain      | Map at service boundary         |
 
 ### How to check
 
@@ -150,6 +150,7 @@ Beyond invariant coverage, audit the tests themselves:
 ## Test Quality Audit
 
 ### Summary
+
 - Total test files: 12
 - Total test functions: 47
 - Mocking library usage: 0 (clean)
@@ -159,16 +160,17 @@ Beyond invariant coverage, audit the tests themselves:
 
 ### Issues
 
-| File | Test | Issue | Severity |
-|---|---|---|---|
-| test_recipe_service.py | test_create_recipe | 3 assertions — split into separate tests | High |
-| test_recipe_service.py | test_calls_repository | Asserts method was called — test behaviour instead | High |
-| test_pantry_service.py | test_add_item | Uses `unittest.mock.patch` | Critical |
+| File                   | Test                  | Issue                                              | Severity |
+| ---------------------- | --------------------- | -------------------------------------------------- | -------- |
+| test_recipe_service.py | test_create_recipe    | 3 assertions — split into separate tests           | High     |
+| test_recipe_service.py | test_calls_repository | Asserts method was called — test behaviour instead | High     |
+| test_pantry_service.py | test_add_item         | Uses `unittest.mock.patch`                         | Critical |
 
 ### Gaps
-| Invariant | Status |
-|---|---|
-| Soft-delete for recipes | No test found |
+
+| Invariant                     | Status        |
+| ----------------------------- | ------------- |
+| Soft-delete for recipes       | No test found |
 | Max 100 pantry items per user | No test found |
 ```
 

@@ -20,13 +20,8 @@ export class HealthComputationService implements IHealthComputationService {
 		const aspects = await this.aspectRepo.listActiveForUser(aggregate.cycle.userId);
 		const scores: HealthComputationResult['scores'] = [];
 
-		const nonCancelledAllocations = aggregate.allocations.filter(
-			(a) => a.status !== 'Cancelled'
-		);
-		const totalAllocated = nonCancelledAllocations.reduce(
-			(sum, a) => sum + a.allocatedMinutes,
-			0
-		);
+		const nonCancelledAllocations = aggregate.allocations.filter((a) => a.status !== 'Cancelled');
+		const totalAllocated = nonCancelledAllocations.reduce((sum, a) => sum + a.allocatedMinutes, 0);
 
 		const attendedAllocationIds = new Set(
 			aggregate.outcomes.filter((o) => o.outcome === 'Attended').map((o) => o.taskAllocationId)
@@ -34,8 +29,7 @@ export class HealthComputationService implements IHealthComputationService {
 
 		for (const aspect of aspects) {
 			const target = aspect.targetPercentage ?? 0;
-			const targetMinutes =
-				totalAllocated > 0 ? Math.round((totalAllocated * target) / 100) : 0;
+			const targetMinutes = totalAllocated > 0 ? Math.round((totalAllocated * target) / 100) : 0;
 
 			const completedMinutes = nonCancelledAllocations
 				.filter((a) => attendedAllocationIds.has(a.id))

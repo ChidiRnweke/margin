@@ -44,7 +44,7 @@
 			class="motion-safe:animate-in motion-safe:fade-in fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
 		/>
 		<Dialog.Content
-			class="shadow-glass motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-6 backdrop-blur-lg"
+			class="motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-6 shadow-glass backdrop-blur-lg"
 		>
 			<Dialog.Title class="mb-2 text-xl font-semibold text-[var(--color-text)]"
 				>{title}</Dialog.Title

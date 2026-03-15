@@ -106,20 +106,12 @@ export class AvailabilityWindowResolver implements IAvailabilityWindowResolver {
 				const dayOfWeek = current.getUTCDay();
 				const dayBit = 1 << dayOfWeek;
 
-				if (
-					mask & dayBit &&
-					block.localStartMinute !== null &&
-					block.localEndMinute !== null
-				) {
+				if (mask & dayBit && block.localStartMinute !== null && block.localEndMinute !== null) {
 					const dayStart = new Date(current);
 					dayStart.setUTCHours(0, 0, 0, 0);
 					windows.push({
-						startUtc: new Date(
-							dayStart.getTime() + block.localStartMinute * 60_000
-						).toISOString(),
-						endUtc: new Date(
-							dayStart.getTime() + block.localEndMinute * 60_000
-						).toISOString(),
+						startUtc: new Date(dayStart.getTime() + block.localStartMinute * 60_000).toISOString(),
+						endUtc: new Date(dayStart.getTime() + block.localEndMinute * 60_000).toISOString(),
 						sourceBlockId: block.id
 					});
 				}

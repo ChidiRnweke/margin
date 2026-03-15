@@ -15,13 +15,12 @@ export const aspectCycleHealth = pgTable(
 		targetMinutes: integer('target_minutes').notNull(),
 		completedMinutes: integer('completed_minutes').notNull(),
 		healthScore: real('health_score').notNull(),
-		computedAt: timestamp('computed_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+		computedAt: timestamp('computed_at', { withTimezone: true, mode: 'date' })
+			.notNull()
+			.defaultNow()
 	},
 	(table) => [
-		uniqueIndex('uq_aspect_cycle_health_cycle_aspect').on(
-			table.planningCycleId,
-			table.aspectId
-		),
+		uniqueIndex('uq_aspect_cycle_health_cycle_aspect').on(table.planningCycleId, table.aspectId),
 		index('idx_aspect_cycle_health_cycle_id').on(table.planningCycleId),
 		index('idx_aspect_cycle_health_aspect_id').on(table.aspectId)
 	]

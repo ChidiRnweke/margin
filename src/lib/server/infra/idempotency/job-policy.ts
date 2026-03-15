@@ -16,9 +16,7 @@ export class JobIdempotencyPolicy {
 		handler: () => Promise<T>
 	): Promise<{ result: T; replayed: boolean }> {
 		const keyHash = options.jobRunKey;
-		const requestHash = options.requestPayload
-			? computeRequestHash(options.requestPayload)
-			: null;
+		const requestHash = options.requestPayload ? computeRequestHash(options.requestPayload) : null;
 
 		const existing = await this.repo.findByJobRunKey(options.jobName, keyHash);
 		if (existing && existing.status === JobStatus.Succeeded) {

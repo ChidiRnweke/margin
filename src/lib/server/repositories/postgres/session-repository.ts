@@ -41,10 +41,7 @@ export class PostgresSessionRepository implements ISessionRepository {
 			.select()
 			.from(sessions)
 			.where(
-				and(
-					eq(sessions.sessionTokenHash, tokenHash),
-					eq(sessions.status, SessionStatus.Active)
-				)
+				and(eq(sessions.sessionTokenHash, tokenHash), eq(sessions.status, SessionStatus.Active))
 			)
 			.limit(1);
 		return rows.length > 0 ? this.toDomain(rows[0]) : null;

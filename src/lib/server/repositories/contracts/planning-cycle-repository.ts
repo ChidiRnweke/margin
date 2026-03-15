@@ -47,23 +47,15 @@ export interface OutcomeInput {
 }
 
 export interface IPlanningCycleRepository {
-	findCycleForWeek(
-		userId: string,
-		weekStart: string
-	): Promise<PlanningCycleAggregate | null>;
+	findCycleForWeek(userId: string, weekStart: string): Promise<PlanningCycleAggregate | null>;
 	findById(cycleId: string): Promise<PlanningCycleAggregate | null>;
-	createCycleWithRevision(
-		aggregate: PlanningCycleAggregate
-	): Promise<PlanningCycleAggregate>;
+	createCycleWithRevision(aggregate: PlanningCycleAggregate): Promise<PlanningCycleAggregate>;
 	createDraftRevision(
 		cycleId: string,
 		input: DraftRevisionInput,
 		expectedVersion: number
 	): Promise<PlanningCycleAggregate>;
-	confirmCycle(
-		cycleId: string,
-		expectedVersion: number
-	): Promise<PlanningCycleAggregate>;
+	confirmCycle(cycleId: string, expectedVersion: number): Promise<PlanningCycleAggregate>;
 	supersedeAndCreateRevision(
 		cycleId: string,
 		input: DraftRevisionInput,
@@ -79,13 +71,7 @@ export interface IPlanningCycleRepository {
 		input: OutcomeInput,
 		expectedVersion: number
 	): Promise<AllocationOutcome>;
-	persistHealthScores(
-		cycleId: string,
-		scores: AspectCycleHealth[]
-	): Promise<AspectCycleHealth[]>;
-	queryCycles(
-		userId: string,
-		query: PlanningCycleQuery
-	): Promise<Page<PlanningCycleHistoryItem>>;
+	persistHealthScores(cycleId: string, scores: AspectCycleHealth[]): Promise<AspectCycleHealth[]>;
+	queryCycles(userId: string, query: PlanningCycleQuery): Promise<Page<PlanningCycleHistoryItem>>;
 	deleteByUserId(userId: string): Promise<number>;
 }

@@ -130,15 +130,13 @@ export function updateTask(
 		...task,
 		title: input.title !== undefined ? input.title.trim() : task.title,
 		description:
-			input.description !== undefined ? (input.description?.trim() || null) : task.description,
+			input.description !== undefined ? input.description?.trim() || null : task.description,
 		effortMinutes: input.effortMinutes ?? task.effortMinutes,
 		remainingMinutes: input.remainingMinutes ?? task.remainingMinutes,
-		dueDate: input.dueDate !== undefined ? (input.dueDate || null) : task.dueDate,
+		dueDate: input.dueDate !== undefined ? input.dueDate || null : task.dueDate,
 		importanceScore: input.importanceScore ?? task.importanceScore,
 		splittableOverride:
-			input.splittableOverride !== undefined
-				? input.splittableOverride
-				: task.splittableOverride,
+			input.splittableOverride !== undefined ? input.splittableOverride : task.splittableOverride,
 		updatedAt: new Date()
 	};
 }

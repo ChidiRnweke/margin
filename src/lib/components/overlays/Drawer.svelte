@@ -25,7 +25,7 @@
 		/>
 		<Sheet.Content
 			{side}
-			class="shadow-glass motion-safe:animate-in motion-safe:slide-in-from-right fixed top-0 bottom-0 z-50 flex w-full max-w-sm flex-col border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] backdrop-blur-lg"
+			class="motion-safe:animate-in motion-safe:slide-in-from-right fixed top-0 bottom-0 z-50 flex w-full max-w-sm flex-col border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] shadow-glass backdrop-blur-lg"
 		>
 			<Sheet.Header
 				class="flex items-center justify-between border-b border-[var(--color-glass-border)] px-6 py-4"

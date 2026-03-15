@@ -1,4 +1,12 @@
-import { pgTable, uuid, varchar, integer, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	varchar,
+	integer,
+	timestamp,
+	uniqueIndex,
+	index
+} from 'drizzle-orm/pg-core';
 import { users } from './users.js';
 
 export const planningCycles = pgTable(

@@ -11,12 +11,7 @@ export class PostgresSystemJobRunRepository implements ISystemJobRunRepository {
 		const rows = await this.db
 			.select()
 			.from(systemJobRuns)
-			.where(
-				and(
-					eq(systemJobRuns.jobName, jobName),
-					eq(systemJobRuns.jobRunKeyHash, keyHash)
-				)
-			)
+			.where(and(eq(systemJobRuns.jobName, jobName), eq(systemJobRuns.jobRunKeyHash, keyHash)))
 			.limit(1);
 
 		if (rows.length === 0) return null;

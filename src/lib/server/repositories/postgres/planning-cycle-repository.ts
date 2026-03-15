@@ -22,9 +22,7 @@ import type {
 	RevisionEditInput,
 	OutcomeInput
 } from '$lib/server/repositories/contracts/planning-cycle-repository.js';
-import {
-	OptimisticConcurrencyError
-} from '$lib/server/errors/domain-errors.js';
+import { OptimisticConcurrencyError } from '$lib/server/errors/domain-errors.js';
 
 export class PostgresPlanningCycleRepository implements IPlanningCycleRepository {
 	constructor(private db: Database) {}
@@ -37,10 +35,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 			.select()
 			.from(planningCycles)
 			.where(
-				and(
-					eq(planningCycles.userId, userId),
-					eq(planningCycles.weekStartIsoMonday, weekStart)
-				)
+				and(eq(planningCycles.userId, userId), eq(planningCycles.weekStartIsoMonday, weekStart))
 			)
 			.limit(1);
 
@@ -133,9 +128,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 				currentRevisionId: input.revisionId,
 				version: sql`${planningCycles.version} + 1`
 			})
-			.where(
-				and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion))
-			)
+			.where(and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion)))
 			.returning();
 
 		if (updated.length === 0) {
@@ -188,10 +181,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 		return (await this.findById(cycleId))!;
 	}
 
-	async confirmCycle(
-		cycleId: string,
-		expectedVersion: number
-	): Promise<PlanningCycleAggregate> {
+	async confirmCycle(cycleId: string, expectedVersion: number): Promise<PlanningCycleAggregate> {
 		const now = new Date();
 		const updated = await this.db
 			.update(planningCycles)
@@ -200,9 +190,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 				confirmedAt: now,
 				version: sql`${planningCycles.version} + 1`
 			})
-			.where(
-				and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion))
-			)
+			.where(and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion)))
 			.returning();
 
 		if (updated.length === 0) {
@@ -221,9 +209,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 		const cycleRows = await this.db
 			.select()
 			.from(planningCycles)
-			.where(
-				and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion))
-			)
+			.where(and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion)))
 			.limit(1);
 
 		if (cycleRows.length === 0) {
@@ -307,9 +293,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 		const cycleRows = await this.db
 			.select()
 			.from(planningCycles)
-			.where(
-				and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion))
-			)
+			.where(and(eq(planningCycles.id, cycleId), eq(planningCycles.version, expectedVersion)))
 			.limit(1);
 
 		if (cycleRows.length === 0) {
@@ -425,10 +409,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 			.select()
 			.from(taskAllocations)
 			.where(
-				and(
-					eq(taskAllocations.id, allocationId),
-					eq(taskAllocations.version, expectedVersion)
-				)
+				and(eq(taskAllocations.id, allocationId), eq(taskAllocations.version, expectedVersion))
 			)
 			.limit(1);
 
@@ -454,9 +435,7 @@ export class PostgresPlanningCycleRepository implements IPlanningCycleRepository
 		scores: AspectCycleHealth[]
 	): Promise<AspectCycleHealth[]> {
 		// Delete old scores for this cycle
-		await this.db
-			.delete(aspectCycleHealth)
-			.where(eq(aspectCycleHealth.planningCycleId, cycleId));
+		await this.db.delete(aspectCycleHealth).where(eq(aspectCycleHealth.planningCycleId, cycleId));
 
 		if (scores.length === 0) return [];
 

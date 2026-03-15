@@ -40,10 +40,7 @@ export class DataPortabilityService implements IDataPortabilityService {
 		await this.importJobRepo.createRunning(job);
 
 		try {
-			const { remappedCount } = await this.importRemapService.remapImportGraph(
-				payload,
-				userId
-			);
+			const { remappedCount } = await this.importRemapService.remapImportGraph(payload, userId);
 
 			await this.importJobRepo.markSucceeded(job.id, {
 				createdEntities: remappedCount,
@@ -52,10 +49,7 @@ export class DataPortabilityService implements IDataPortabilityService {
 
 			return { createdEntities: remappedCount, conflictedEntitiesRemapped: 0 };
 		} catch (e) {
-			await this.importJobRepo.markFailed(
-				job.id,
-				e instanceof Error ? e.message : 'Unknown error'
-			);
+			await this.importJobRepo.markFailed(job.id, e instanceof Error ? e.message : 'Unknown error');
 			throw e;
 		}
 	}

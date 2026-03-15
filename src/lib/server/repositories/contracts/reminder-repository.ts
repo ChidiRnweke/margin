@@ -8,14 +8,8 @@ export interface ReminderAggregate {
 
 export interface IReminderRepository {
 	findById(reminderId: string): Promise<ReminderAggregate | null>;
-	findActiveByTaskChannel(
-		taskId: string,
-		channel: string
-	): Promise<ReminderAggregate | null>;
-	save(
-		aggregate: ReminderAggregate,
-		expectedVersion: number | null
-	): Promise<ReminderAggregate>;
+	findActiveByTaskChannel(taskId: string, channel: string): Promise<ReminderAggregate | null>;
+	save(aggregate: ReminderAggregate, expectedVersion: number | null): Promise<ReminderAggregate>;
 	recordAttempt(reminderId: string, attempt: ReminderAttempt): Promise<ReminderAttempt>;
 	queryDue(now: Date): Promise<ReminderAggregate[]>;
 	queryFailedForRetry(now: Date): Promise<ReminderAggregate[]>;

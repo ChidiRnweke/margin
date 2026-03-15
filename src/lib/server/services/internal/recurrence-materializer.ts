@@ -59,19 +59,13 @@ export class RecurrenceMaterializer implements IRecurrenceMaterializer {
 		await this.taskRepo.save(task, null);
 
 		const updatedSeries = { ...series, nextOccurrenceDateLocal: nextDate };
-		await this.recurringSeriesRepo.save(
-			{ ...aggregate, series: updatedSeries },
-			series.version
-		);
+		await this.recurringSeriesRepo.save({ ...aggregate, series: updatedSeries }, series.version);
 
 		return { generated: true, taskId: task.id };
 	}
 }
 
-function computeNextOccurrence(
-	rule: RecurrenceRule,
-	currentDate: string | null
-): string | null {
+function computeNextOccurrence(rule: RecurrenceRule, currentDate: string | null): string | null {
 	const anchor = currentDate ?? rule.anchorDateLocal;
 	if (!anchor) return null;
 

@@ -104,9 +104,7 @@ export class RecurrenceService implements IRecurrenceService {
 		expectedVersion: number
 	): Promise<RecurringTaskSeriesAggregate> {
 		const aggregate = await this.loadOwnedAggregate(userId, seriesId);
-		const updated = paused
-			? pauseSeries(aggregate.series)
-			: resumeSeries(aggregate.series);
+		const updated = paused ? pauseSeries(aggregate.series) : resumeSeries(aggregate.series);
 
 		const saved = await this.recurringSeriesRepo.save(
 			{ ...aggregate, series: updated },

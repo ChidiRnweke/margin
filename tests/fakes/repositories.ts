@@ -393,9 +393,12 @@ export class FakeTaskRepository {
 	}
 
 	async bulkLoad(taskIds: string[]) {
-		return taskIds
-			.map((id) => this.tasks.get(id))
-			.filter(Boolean) as (typeof this.tasks extends Map<string, infer V> ? V[] : never[]);
+		return taskIds.map((id) => this.tasks.get(id)).filter(Boolean) as typeof this.tasks extends Map<
+			string,
+			infer V
+		>
+			? V[]
+			: never[];
 	}
 
 	async query(userId: string, _query: unknown) {
@@ -452,9 +455,7 @@ export class FakeMilestoneRepository {
 	> = new Map();
 
 	async findById(milestoneId: string) {
-		return this.milestones.get(milestoneId)
-			? { ...this.milestones.get(milestoneId)! }
-			: undefined;
+		return this.milestones.get(milestoneId) ? { ...this.milestones.get(milestoneId)! } : undefined;
 	}
 
 	async save(
@@ -576,11 +577,7 @@ export class FakePlanningCycleRepository {
 		this.cycles.set(aggregate.id, aggregate);
 		return aggregate;
 	}
-	async createDraftRevision(
-		_cycleId: string,
-		_draftInput: unknown,
-		_expectedVersion: number
-	) {
+	async createDraftRevision(_cycleId: string, _draftInput: unknown, _expectedVersion: number) {
 		return {};
 	}
 	async confirmCycle(_cycleId: string, _expectedVersion: number) {
@@ -593,18 +590,10 @@ export class FakePlanningCycleRepository {
 	) {
 		return {};
 	}
-	async applyPlanEditRevision(
-		_cycleId: string,
-		_editInput: unknown,
-		_expectedVersion: number
-	) {
+	async applyPlanEditRevision(_cycleId: string, _editInput: unknown, _expectedVersion: number) {
 		return {};
 	}
-	async persistOutcome(
-		_allocationId: string,
-		_outcomeInput: unknown,
-		_expectedVersion: number
-	) {
+	async persistOutcome(_allocationId: string, _outcomeInput: unknown, _expectedVersion: number) {
 		return {};
 	}
 	async persistHealthScores(_cycleId: string, _scores: unknown[]) {

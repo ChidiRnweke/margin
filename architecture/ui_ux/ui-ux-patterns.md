@@ -15,12 +15,12 @@ First-run completion requires at least one active aspect (`INV-013`). Users must
 
 ### Step Flow
 
-| Step | Title | Content | Validation Gate |
-|---|---|---|---|
-| 1 | Welcome | App introduction, value proposition. "Margin helps you balance your week." No inputs. | None — always valid. |
-| 2 | Define your aspects | Create 1–8 aspects (name + purpose). Inline add/remove. | ≥ 1 aspect created. |
-| 3 | Set balance targets | Slider/input per aspect, live total indicator. Must total exactly 100%. | Sum = 100. |
-| 4 | Set your availability | Quick availability setup: pick recurring weekly blocks. Optional — can skip. | None — can skip. |
+| Step | Title                 | Content                                                                               | Validation Gate      |
+| ---- | --------------------- | ------------------------------------------------------------------------------------- | -------------------- |
+| 1    | Welcome               | App introduction, value proposition. "Margin helps you balance your week." No inputs. | None — always valid. |
+| 2    | Define your aspects   | Create 1–8 aspects (name + purpose). Inline add/remove.                               | ≥ 1 aspect created.  |
+| 3    | Set balance targets   | Slider/input per aspect, live total indicator. Must total exactly 100%.               | Sum = 100.           |
+| 4    | Set your availability | Quick availability setup: pick recurring weekly blocks. Optional — can skip.          | None — can skip.     |
 
 ### Rules Applied
 
@@ -143,12 +143,12 @@ The weekly plan is fundamentally temporal — allocations have start/end times, 
 
 ### Plan Actions
 
-| Action | When Available | UI |
-|---|---|---|
-| Generate draft | No plan for this week | Primary button in header |
-| Confirm plan | Draft exists, targets = 100 | Primary button, replaces Generate |
-| Regenerate | Confirmed plan exists | Secondary button, creates new revision |
-| Edit allocation | Draft or confirmed | Click block → popover with actions |
+| Action          | When Available              | UI                                     |
+| --------------- | --------------------------- | -------------------------------------- |
+| Generate draft  | No plan for this week       | Primary button in header               |
+| Confirm plan    | Draft exists, targets = 100 | Primary button, replaces Generate      |
+| Regenerate      | Confirmed plan exists       | Secondary button, creates new revision |
+| Edit allocation | Draft or confirmed          | Click block → popover with actions     |
 
 ---
 
@@ -163,11 +163,11 @@ An aspect has three peer content areas (overview, milestones, tasks) that users 
 
 ### Tab Structure
 
-| Tab | Content |
-|---|---|
-| **Overview** | Aspect name/purpose (inline editable), status, target %, health ring for current cycle, default splittable toggle. |
+| Tab            | Content                                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Overview**   | Aspect name/purpose (inline editable), status, target %, health ring for current cycle, default splittable toggle.   |
 | **Milestones** | List of milestones with status badges, progress bars (done tasks / total tasks), target dates. Create milestone CTA. |
-| **Tasks** | Filtered task list for this aspect only. Same layout as the master-detail task list but scoped. |
+| **Tasks**      | Filtered task list for this aspect only. Same layout as the master-detail task list but scoped.                      |
 
 ### Rules Applied
 
@@ -291,6 +291,7 @@ Tasks are the most interacted-with entity. Users need to rapidly scan, filter, s
 ### Layout
 
 Always visible:
+
 - Urgency weight slider (0–100)
 - Importance weight slider (0–100)
 - Balance weight slider (0–100)
@@ -298,6 +299,7 @@ Always visible:
 - Live explanation of what each weight influences
 
 Collapsible "Advanced tuning":
+
 - Urgent threshold days (0–30)
 - Minimum chunk minutes (5–120)
 - Default effort minutes
@@ -397,6 +399,7 @@ Collapsible "Advanced tuning":
 ### Item Structure
 
 Each revision feed item shows:
+
 - Revision number + status (Active / Superseded)
 - Change reason text
 - Diff summary (collapsed, expandable)
@@ -468,6 +471,7 @@ Opens as a side drawer with Progressive Disclosure:
 ### Empty States
 
 Every list and grid must have a contextual empty state:
+
 - **Aspects overview (no aspects):** "Define your first life aspect to start planning." → CTA to create
 - **Tasks (no tasks):** "No tasks match your filters." or "Create your first task." → CTA
 - **Plan (no plan):** "Generate your weekly plan to see allocations." → Generate button

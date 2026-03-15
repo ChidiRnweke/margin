@@ -23,6 +23,7 @@ For each component, when to use it, when not to, and how to integrate it.
 ### Integration pattern
 
 **Workflow definition:**
+
 ```python
 from hatchet_sdk import Hatchet, Context
 
@@ -50,6 +51,7 @@ class GenerateReportWorkflow:
 ```
 
 **Cron workflow:**
+
 ```python
 @hatchet.workflow(on_crons=["0 3 * * *"])
 class NightlyCleanupWorkflow:
@@ -62,6 +64,7 @@ class NightlyCleanupWorkflow:
 ```
 
 **Triggering from application code:**
+
 ```python
 # In a controller, after the synchronous part:
 await hatchet.client.admin.run_workflow(
@@ -72,6 +75,7 @@ await hatchet.client.admin.run_workflow(
 ```
 
 **Worker entry point:**
+
 ```python
 # myapp/workers.py
 from hatchet_sdk import Hatchet
@@ -86,15 +90,16 @@ worker.start()
 ```
 
 **Docker (dev):**
+
 ```yaml
 hatchet-engine:
   image: ghcr.io/hatchet-dev/hatchet/hatchet-engine:latest
   environment:
     DATABASE_URL: postgresql://${DB_USER:-myapp}:${DB_PASSWORD:-myapp}@postgres:5432/hatchet
-    SERVER_AUTH_COOKIE_INSECURE: "true"
+    SERVER_AUTH_COOKIE_INSECURE: 'true'
   ports:
-    - "8080:8080"
-    - "7077:7077"
+    - '8080:8080'
+    - '7077:7077'
   depends_on:
     postgres:
       condition: service_healthy
@@ -113,6 +118,7 @@ worker:
 In prod, Hatchet engine is already running. The project only deploys the worker.
 
 **Config:**
+
 ```
 # .env (dev)
 HATCHET_CLIENT_TOKEN=<from local hatchet dashboard at localhost:8080>
@@ -142,6 +148,7 @@ HATCHET_CLIENT_TOKEN=<production token>
 ### Integration pattern
 
 **Session caching:**
+
 ```python
 async def resolve_token(self, token_hash: str) -> User | None:
     # Check cache first
@@ -160,6 +167,7 @@ async def invalidate_session(self, token_hash: str):
 ```
 
 **Computed value caching:**
+
 ```python
 async def get_dashboard_stats(self, project_id: str) -> DashboardStats:
     key = f"stats:{project_id}"
@@ -181,22 +189,24 @@ async def update_project(self, project_id: str, input: UpdateInput) -> Project:
 **Key naming:** `{concern}:{identifier}` — `session:{token_hash}`, `stats:{project_id}`, `rate:{user_id}:{window}`
 
 **Docker (dev):**
+
 ```yaml
 redis:
   image: redis:7-alpine
   command: redis-server --appendonly yes
   ports:
-    - "${REDIS_PORT:-6379}:6379"
+    - '${REDIS_PORT:-6379}:6379'
   volumes:
     - redisdata:/data
   healthcheck:
-    test: ["CMD", "redis-cli", "ping"]
+    test: ['CMD', 'redis-cli', 'ping']
     interval: 5s
     timeout: 3s
     retries: 5
 ```
 
 **Config:**
+
 ```
 # .env (dev)
 REDIS_URL=redis://localhost:6379/0
@@ -245,6 +255,7 @@ class AppConfig:
 ```
 
 **Bucket/key structure:** `{project-bucket}/{type}/{identifier}.{ext}`
+
 ```
 myproject/
 ├── exports/{job_id}.json
@@ -254,6 +265,7 @@ myproject/
 ```
 
 **Upload:**
+
 ```python
 async def store_artifact(self, key: str, data: bytes, content_type: str) -> str:
     await self.minio.put_object(
@@ -264,6 +276,7 @@ async def store_artifact(self, key: str, data: bytes, content_type: str) -> str:
 ```
 
 **Pre-signed download:**
+
 ```python
 async def get_download_url(self, key: str, expires: int = 3600) -> str:
     return await self.minio.presigned_get_object(
@@ -272,6 +285,7 @@ async def get_download_url(self, key: str, expires: int = 3600) -> str:
 ```
 
 **Docker (dev):**
+
 ```yaml
 minio:
   image: minio/minio:latest
@@ -282,16 +296,17 @@ minio:
   volumes:
     - miniodata:/data
   ports:
-    - "9000:9000"
-    - "9001:9001"
+    - '9000:9000'
+    - '9001:9001'
   healthcheck:
-    test: ["CMD", "mc", "ready", "local"]
+    test: ['CMD', 'mc', 'ready', 'local']
     interval: 5s
     timeout: 3s
     retries: 5
 ```
 
 **Config:**
+
 ```
 # .env (dev)
 MINIO_ENDPOINT=localhost:9000

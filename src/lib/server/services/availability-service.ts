@@ -14,7 +14,10 @@ import type {
 import type { IAvailabilityWindowResolver } from '$lib/server/services/contracts/availability-window-resolver.js';
 import type { AuditEmitter } from '$lib/server/infra/audit/audit-emitter.js';
 import type { IUserRepository } from '$lib/server/repositories/contracts/user-repository.js';
-import { createOneOffBlock, createRecurringBlock } from '$lib/server/domain/models/availability-block.js';
+import {
+	createOneOffBlock,
+	createRecurringBlock
+} from '$lib/server/domain/models/availability-block.js';
 import { createAvailabilityException } from '$lib/server/domain/models/availability-exception.js';
 import { NotFoundError } from '$lib/server/errors/domain-errors.js';
 import type { AvailabilityExceptionAction } from '$lib/server/domain/enums.js';
@@ -69,9 +72,7 @@ export class AvailabilityService implements IAvailabilityService {
 			overrideStartsAtUtc: input.overrideStartsAtUtc
 				? new Date(input.overrideStartsAtUtc)
 				: undefined,
-			overrideEndsAtUtc: input.overrideEndsAtUtc
-				? new Date(input.overrideEndsAtUtc)
-				: undefined,
+			overrideEndsAtUtc: input.overrideEndsAtUtc ? new Date(input.overrideEndsAtUtc) : undefined,
 			overrideLocalStartMinute: input.overrideLocalStartMinute,
 			overrideLocalEndMinute: input.overrideLocalEndMinute
 		});
@@ -116,10 +117,7 @@ export class AvailabilityService implements IAvailabilityService {
 		return { windows };
 	}
 
-	private async loadOwnedBlock(
-		userId: string,
-		blockId: string
-	): Promise<AvailabilityAggregate> {
+	private async loadOwnedBlock(userId: string, blockId: string): Promise<AvailabilityAggregate> {
 		const aggregate = await this.availabilityRepo.findById(blockId);
 		if (!aggregate || aggregate.block.userId !== userId) {
 			throw new NotFoundError('AvailabilityBlock', blockId);

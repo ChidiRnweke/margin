@@ -14,14 +14,8 @@ export const auditEvents = pgTable(
 		eventType: varchar('event_type', { length: 100 }).notNull(),
 		entityType: varchar('entity_type', { length: 100 }).notNull(),
 		entityId: varchar('entity_id', { length: 255 }),
-		redactedBefore: jsonb('redacted_before')
-			.$type<Record<string, unknown>>()
-			.notNull()
-			.default({}),
-		redactedAfter: jsonb('redacted_after')
-			.$type<Record<string, unknown>>()
-			.notNull()
-			.default({}),
+		redactedBefore: jsonb('redacted_before').$type<Record<string, unknown>>().notNull().default({}),
+		redactedAfter: jsonb('redacted_after').$type<Record<string, unknown>>().notNull().default({}),
 		occurredAt: timestamp('occurred_at', { withTimezone: true, mode: 'date' })
 			.notNull()
 			.defaultNow()

@@ -371,9 +371,7 @@ export class AppFactory {
 		return (this._recurrenceController ??= new RecurrenceController(this.recurrenceService));
 	}
 	get availabilityController() {
-		return (this._availabilityController ??= new AvailabilityController(
-			this.availabilityService
-		));
+		return (this._availabilityController ??= new AvailabilityController(this.availabilityService));
 	}
 	get planningController() {
 		return (this._planningController ??= new PlanningController(this.planningService));

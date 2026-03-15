@@ -8,11 +8,11 @@ This document is the single source of truth for Margin's visual identity, design
 
 ### Core Identity
 
-Margin is a **glassmorphic** application first and foremost. Every surface, card, and panel uses frosted-glass layering over animated ambient backgrounds. The Swiss/minimalist influence governs **structure only** — grid alignment, typographic hierarchy, and spacing discipline — but the **visual character** is defined by deep glass layering, soft pastel blobs, and translucent depth.
+Margin is a **glassmorphic** application first and foremost. Every surface, card, and panel uses frosted-glass layering over animated ambient backgrounds. The Swiss/minimalist influence governs **structure only** — grid alignment, typographic hierarchy, and spacing discipline — but the **visual character** is defined by deep glass layering, soft sophisticated neutral blobs, and translucent depth.
 
-| Role | What it controls | Weight |
-|---|---|---|
-| **Visual language** | Glassmorphism | Primary — all surfaces |
+| Role                      | What it controls   | Weight                                       |
+| ------------------------- | ------------------ | -------------------------------------------- |
+| **Visual language**       | Glassmorphism      | Primary — all surfaces                       |
 | **Structural discipline** | Swiss / Minimalism | Governs grid, type scale, spacing, alignment |
 
 ### How Glass Works Everywhere
@@ -25,6 +25,7 @@ Margin is a **glassmorphic** application first and foremost. Every surface, card
 ### What Swiss Controls (Structure Only)
 
 Swiss principles govern the invisible scaffolding beneath the glass:
+
 - Strict grid alignment (12-column, consistent gutters)
 - Modular type scale with clear hierarchy
 - Consistent spacing tokens (no ad-hoc values)
@@ -178,36 +179,36 @@ All tokens are defined in `tailwind.config.ts` under `theme.extend`. Components 
 
 Dark mode colors override via Tailwind's `dark:` variant. Define as CSS variables toggled by `prefers-color-scheme: dark` so glass composites reference the right values.
 
-| Token | Light | Dark |
-|---|---|---|
-| `bg` | `oklch(0.985 0.005 280)` | `oklch(0.13 0.02 280)` — deep blue-purple, **NOT gray** |
-| `surface` | `oklch(0.995 0.003 280)` | `oklch(0.20 0.018 280)` |
-| `glass` | `oklch(0.98 0.005 280 / 0.55)` | `oklch(0.20 0.025 280 / 0.45)` — richer tint |
-| `glass-strong` | `oklch(0.98 0.005 280 / 0.70)` | `oklch(0.22 0.025 280 / 0.60)` |
-| `glass-border` | `oklch(0.95 0.01 280 / 0.40)` | `oklch(0.50 0.03 280 / 0.30)` — brighter edge |
-| `glass-border-subtle` | `oklch(0.90 0.01 280 / 0.20)` | `oklch(0.30 0.02 280 / 0.15)` |
-| `glass-shadow` | `oklch(0.50 0.03 280 / 0.08)` | `oklch(0.10 0.03 280 / 0.30)` |
-| `text` | `oklch(0.22 0.02 280)` | `oklch(0.92 0.01 280)` |
-| `text-muted` | `oklch(0.48 0.02 280)` | `oklch(0.68 0.015 280)` |
-| `text-faint` | `oklch(0.62 0.015 280)` | `oklch(0.50 0.012 280)` |
-| `border` | `oklch(0.88 0.012 280)` | `oklch(0.32 0.02 280)` |
-| `accent` | `oklch(0.55 0.15 280)` | `oklch(0.68 0.14 280)` |
-| Aspect colors | `oklch(0.72 ...)` | `oklch(0.75 ...)` — slightly brighter |
+| Token                 | Light                         | Dark                                                         |
+| --------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `bg`                  | `oklch(0.98 0.002 260)`       | `oklch(0.12 0.005 260)` — deep neutral slate, **NOT purple** |
+| `surface`             | `oklch(0.96 0.005 260)`       | `oklch(0.16 0.005 260)`                                      |
+| `glass`               | `oklch(1 0 0 / 0.5)`          | `oklch(1 0 0 / 0.02)` — pure white, ultra-low opacity        |
+| `glass-strong`        | `oklch(1 0 0 / 0.7)`          | `oklch(1 0 0 / 0.04)`                                        |
+| `glass-border`        | `oklch(1 0 0 / 0.8)`          | `oklch(1 0 0 / 0.12)` — bright specular edge                 |
+| `glass-border-subtle` | `oklch(1 0 0 / 0.2)`          | `oklch(1 0 0 / 0.02)`                                        |
+| `glass-shadow`        | `0 8px 32px rgba(0,0,0,0.08)` | `0 8px 32px rgba(0,0,0,0.4)`                                 |
+| `text`                | `oklch(0.22 0.01 260)`        | `oklch(0.95 0.01 260)`                                       |
+| `text-muted`          | `oklch(0.45 0.01 260)`        | `oklch(0.70 0.01 260)`                                       |
+| `text-faint`          | `oklch(0.65 0.01 260)`        | `oklch(0.55 0.01 260)`                                       |
+| `border`              | `oklch(0.85 0.01 260)`        | `oklch(0.35 0.005 260)`                                      |
+| `accent`              | `oklch(0.55 0.15 280)`        | `oklch(0.85 0.04 260)`                                       |
+| Aspect colors         | `oklch(0.75 0.04 ...)`        | `oklch(0.75 0.04 ...)` — muted, sophisticated                |
 
 ---
 
 ## Typography Ladder
 
-| Use | Classes | Example |
-|---|---|---|
-| Display / hero | `text-4xl font-bold tracking-tight` | Onboarding headline |
-| Page title | `text-3xl font-bold tracking-tight` | "This Week" |
-| Section heading | `text-2xl font-semibold tracking-tight` | "Aspects", "Tasks" |
-| Card title | `text-xl font-semibold` | Aspect card header |
-| Subtitle | `text-lg font-medium` | Panel subtitle |
-| Body | `text-base font-normal` | Descriptions, paragraphs |
-| Small / meta | `text-sm font-normal` or `text-sm font-medium` | Timestamps, helper text |
-| Caption / badge | `text-xs font-medium tracking-wide uppercase` | Status badges, labels |
+| Use             | Classes                                        | Example                  |
+| --------------- | ---------------------------------------------- | ------------------------ |
+| Display / hero  | `text-4xl font-bold tracking-tight`            | Onboarding headline      |
+| Page title      | `text-3xl font-bold tracking-tight`            | "This Week"              |
+| Section heading | `text-2xl font-semibold tracking-tight`        | "Aspects", "Tasks"       |
+| Card title      | `text-xl font-semibold`                        | Aspect card header       |
+| Subtitle        | `text-lg font-medium`                          | Panel subtitle           |
+| Body            | `text-base font-normal`                        | Descriptions, paragraphs |
+| Small / meta    | `text-sm font-normal` or `text-sm font-medium` | Timestamps, helper text  |
+| Caption / badge | `text-xs font-medium tracking-wide uppercase`  | Status badges, labels    |
 
 ---
 
@@ -250,6 +251,7 @@ bg-glass-strong backdrop-blur-lg border border-glass-border rounded-xl shadow-gl
 ### Luminous Border (Critical Detail)
 
 The directional border is what makes glass look like a physical surface with light catching its top-left edge. Every glass surface MUST have this:
+
 - `border-glass-border` on top and left (brighter)
 - `border-b-glass-border-subtle border-r-glass-border-subtle` on bottom and right (dimmer)
 
@@ -284,6 +286,7 @@ The `AmbientBackground` container itself uses `fixed inset-0 z-0 overflow-hidden
 **Density:** Airy — generous whitespace, one focus per viewport section.
 
 Standard Tailwind spacing scale (4px base) plus semantic aliases:
+
 - `p-gutter` / `px-gutter` — 32px page gutter
 - `gap-section-gap` — 48px between major sections
 - `p-card-pad` — 24px inside cards
@@ -301,12 +304,12 @@ Standard Tailwind spacing scale (4px base) plus semantic aliases:
 
 Every elevation level is a glass surface. Hierarchy is expressed through **blur intensity**, **opacity**, and **shadow depth** — not by switching between glass and opaque.
 
-| Level | Use | Pattern to Apply |
-|---|---|---|
-| 1 — Panel | Dashboard panels, content cards | Glass Panel classes |
-| 2 — Card | Nested cards, KPIs | Glass Card classes |
-| 3 — Overlay | Dropdowns, tooltips, toasts | Glass Panel classes + higher `z-*` |
-| 4 — Modal | Dialogs, drawers | Glass Modal classes |
+| Level       | Use                             | Pattern to Apply                   |
+| ----------- | ------------------------------- | ---------------------------------- |
+| 1 — Panel   | Dashboard panels, content cards | Glass Panel classes                |
+| 2 — Card    | Nested cards, KPIs              | Glass Card classes                 |
+| 3 — Overlay | Dropdowns, tooltips, toasts     | Glass Panel classes + higher `z-*` |
+| 4 — Modal   | Dialogs, drawers                | Glass Modal classes                |
 
 **Key principle:** Deeper blur + higher opacity + larger shadow = more elevated. Never use flat/opaque surfaces to indicate elevation.
 
@@ -357,20 +360,20 @@ KPI cards use **Glass Card** pattern. Schedule/Upcoming panels use **Glass Panel
 
 ## UX Pattern Assignments
 
-| Feature | Primary Pattern | Notes |
-|---|---|---|
-| Onboarding | **Wizard** | Full-viewport, 3–4 steps, no app shell |
-| Weekly dashboard | **Dashboard** | KPIs top, charts middle, activity bottom; fits above fold |
-| Weekly plan | **Timeline** | Day-column layout, horizontal scroll, zoom day/week |
-| Aspects overview | **Dashboard** (card grid) | Responsive card grid with health indicators |
-| Aspect detail | **Tabs** | Overview / Milestones / Tasks — max 3 tabs |
-| All tasks | **Master-Detail** | Left list + right detail pane; collapses to drill-down on mobile |
-| Task create/edit | **Progressive Disclosure** | Quick-create with expandable advanced fields |
-| Availability | **Timeline** + list | Visual weekly grid + block list |
-| Settings hub | **Hub & Spoke** | Card grid dispatching to isolated setting screens |
-| Planning profile | **Progressive Disclosure** | Sliders primary, thresholds advanced |
-| Audit log | **Feed** | Cursor-paginated, load-more, skeleton loading |
-| Plan history | **Feed** | Revision list with diff summaries |
+| Feature          | Primary Pattern            | Notes                                                            |
+| ---------------- | -------------------------- | ---------------------------------------------------------------- |
+| Onboarding       | **Wizard**                 | Full-viewport, 3–4 steps, no app shell                           |
+| Weekly dashboard | **Dashboard**              | KPIs top, charts middle, activity bottom; fits above fold        |
+| Weekly plan      | **Timeline**               | Day-column layout, horizontal scroll, zoom day/week              |
+| Aspects overview | **Dashboard** (card grid)  | Responsive card grid with health indicators                      |
+| Aspect detail    | **Tabs**                   | Overview / Milestones / Tasks — max 3 tabs                       |
+| All tasks        | **Master-Detail**          | Left list + right detail pane; collapses to drill-down on mobile |
+| Task create/edit | **Progressive Disclosure** | Quick-create with expandable advanced fields                     |
+| Availability     | **Timeline** + list        | Visual weekly grid + block list                                  |
+| Settings hub     | **Hub & Spoke**            | Card grid dispatching to isolated setting screens                |
+| Planning profile | **Progressive Disclosure** | Sliders primary, thresholds advanced                             |
+| Audit log        | **Feed**                   | Cursor-paginated, load-more, skeleton loading                    |
+| Plan history     | **Feed**                   | Revision list with diff summaries                                |
 
 ---
 
@@ -429,7 +432,8 @@ src/lib/components/
 - **Glass without `AmbientBackground`** — glass over a solid color is just a slightly transparent box.
 - **Missing `backdrop-blur-*`** — translucent background without blur is NOT glass.
 - **Missing luminous directional borders** — glass without bright-top-left / dim-bottom-right edges looks like a hole, not a surface.
-- **Using Tailwind default grays** (`bg-gray-800`, `bg-slate-900`, etc.) — the dark bg is deep blue-purple, NOT neutral gray.
+- **Using Tailwind default grays** (`bg-gray-800`, `bg-slate-900`, etc.) — the dark bg is deep neutral slate, NOT neutral gray.
+- **Using highly saturated "neon" gradients** — blobs should be muted, sophisticated, and barely-there, not synthwave/AI-generator aesthetic.
 - **Using `bg-white` or `bg-black`** — use token colors only.
 - Random `text-sm`, `text-lg` without following the typography ladder.
 - Bare shadcn components without token integration.

@@ -84,10 +84,7 @@ export function loadConfig(): AppConfig {
 			snoozeLimit: requirePositiveInt('REMINDER_SNOOZE_LIMIT', 5),
 			maxRetries: requirePositiveInt('REMINDER_MAX_RETRIES', 3),
 			retryBaseMinutes: requirePositiveInt('REMINDER_RETRY_BASE_MINUTES', 15),
-			dailyRetryWindowStartHour: requireNonNegativeInt(
-				'REMINDER_DAILY_RETRY_WINDOW_START_HOUR',
-				8
-			),
+			dailyRetryWindowStartHour: requireNonNegativeInt('REMINDER_DAILY_RETRY_WINDOW_START_HOUR', 8),
 			dailyRetryWindowEndHour: requirePositiveInt('REMINDER_DAILY_RETRY_WINDOW_END_HOUR', 22)
 		},
 		timezone: {

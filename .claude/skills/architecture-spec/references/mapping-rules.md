@@ -16,13 +16,13 @@ Before deriving any service or controller, scan the interaction matrix and invar
 
 ### Common cross-cutting patterns
 
-| Pattern | Signal in interaction matrix | Mechanism |
-|---|---|---|
-| Authorization / ownership scoping | Most rows list "403 if not owner" or "ownership check" | Middleware that injects a scoped query filter or decorator that checks ownership before method body |
-| Idempotency | Write operations list "idempotency key" or "retry-safe" | Middleware that deduplicates by request ID |
-| Audit emission | Most mutations note "audit event emitted" | Decorator on service methods or event hook |
-| Optimistic concurrency | Entities have `version` fields, rows note "409 on version mismatch" | Repository-level concern: version check on every write |
-| Soft-delete filtering | Most reads note "exclude archived" | Repository-level default filter |
+| Pattern                           | Signal in interaction matrix                                        | Mechanism                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Authorization / ownership scoping | Most rows list "403 if not owner" or "ownership check"              | Middleware that injects a scoped query filter or decorator that checks ownership before method body |
+| Idempotency                       | Write operations list "idempotency key" or "retry-safe"             | Middleware that deduplicates by request ID                                                          |
+| Audit emission                    | Most mutations note "audit event emitted"                           | Decorator on service methods or event hook                                                          |
+| Optimistic concurrency            | Entities have `version` fields, rows note "409 on version mismatch" | Repository-level concern: version check on every write                                              |
+| Soft-delete filtering             | Most reads note "exclude archived"                                  | Repository-level default filter                                                                     |
 
 ### Extraction decision
 
@@ -37,11 +37,13 @@ Once extracted, these concerns are **removed from individual service and control
 ### Worked example
 
 Given an interaction matrix where:
+
 - 12 of 14 interactions have "403 if actor ≠ owner" in the error column
 - 10 of 14 interactions note "audit event emitted"
 - 4 of 14 interactions note "idempotency key required"
 
 Result:
+
 - **Ownership scoping** → cross-cutting (86%). Middleware injects `owner_id` filter.
 - **Audit emission** → cross-cutting (71%). Close to threshold — check if the 4 non-audit interactions are reads. If all mutations emit audit and only reads don't, it's 100% of mutations → cross-cutting. Decorator on mutation service methods.
 - **Idempotency** → NOT cross-cutting (29%). Stays as explicit logic in the 4 services that need it.
@@ -78,16 +80,19 @@ ExecutionLog ||--|{ StageResult : "contains"
 The aggregates are:
 
 **Pipeline aggregate** — `Pipeline` (root) + `Stage` (child)
+
 - Stages don't exist without a Pipeline
 - Adding/removing/reordering stages is an operation on the Pipeline
 - Stages and Pipeline must be consistent (ordering, status)
 
 **Transform aggregate** — `Transform` (root, standalone)
+
 - Transforms have independent lifecycles
 - Stages reference Transforms by ID, not by containment
 - A Transform can exist without any Stage using it
 
 **ExecutionLog aggregate** — `ExecutionLog` (root) + `StageResult` (child)
+
 - StageResults only exist as part of an ExecutionLog
 - The log and its results are written atomically
 - ExecutionLogs are immutable once created
@@ -141,17 +146,17 @@ class CreatePipelineInput:
 
 ### Attribute to field mapping
 
-| ERD attribute type | Model field type |
-|---|---|
-| `string` with no invariant | `str` |
-| `string` with an invariant | Value object (e.g., `PipelineName`, `EmailAddress`) |
-| `int` / `float` with no invariant | `int` / `float` |
-| `int` / `float` with an invariant | Value object (e.g., `PositiveInt`, `Percentage`) |
-| `enum` | Python `Enum` or TypeScript string union |
-| `boolean` | `bool` |
-| `date` / `datetime` | `date` / `datetime` |
-| `list` of children (within aggregate) | `list[ChildModel]` |
-| Reference to another aggregate | `str` (ID only) |
+| ERD attribute type                    | Model field type                                    |
+| ------------------------------------- | --------------------------------------------------- |
+| `string` with no invariant            | `str`                                               |
+| `string` with an invariant            | Value object (e.g., `PipelineName`, `EmailAddress`) |
+| `int` / `float` with no invariant     | `int` / `float`                                     |
+| `int` / `float` with an invariant     | Value object (e.g., `PositiveInt`, `Percentage`)    |
+| `enum`                                | Python `Enum` or TypeScript string union            |
+| `boolean`                             | `bool`                                              |
+| `date` / `datetime`                   | `date` / `datetime`                                 |
+| `list` of children (within aggregate) | `list[ChildModel]`                                  |
+| Reference to another aggregate        | `str` (ID only)                                     |
 
 ### Value objects
 
@@ -219,28 +224,31 @@ Services map to **domain concerns**, not individual entities. The interaction ma
 Given an interaction matrix with these sections:
 
 **Section: "Pipeline Lifecycle"**
+
 - Create Pipeline (entities: Pipeline, Stage)
 - Update Pipeline (entities: Pipeline, Stage)
 - Archive Pipeline (entities: Pipeline, Stage, ExecutionLog)
 - Clone Pipeline (entities: Pipeline, Stage)
 
 **Section: "Execution & Monitoring"**
+
 - Execute Pipeline (entities: Pipeline, Stage, Transform, ExecutionLog, StageResult)
 - Retry Failed Execution (entities: Pipeline, ExecutionLog, StageResult)
 - Get Execution History (entities: ExecutionLog, StageResult)
 
 **Section: "Transform Management"**
+
 - Create Transform (entities: Transform)
 - Update Transform (entities: Transform)
 - Validate Transform Config (entities: Transform)
 
 Service derivation:
 
-| Service | Concern | Entities involved | Interactions |
-|---|---|---|---|
-| `PipelineLifecycleService` | Creating, updating, archiving, cloning pipelines | Pipeline, Stage | Create, Update, Archive, Clone |
-| `ExecutionService` | Running pipelines and tracking results | Pipeline, Stage, Transform, ExecutionLog, StageResult | Execute, Retry, Get History |
-| `TransformService` | Managing transform definitions | Transform | Create, Update, Validate |
+| Service                    | Concern                                          | Entities involved                                     | Interactions                   |
+| -------------------------- | ------------------------------------------------ | ----------------------------------------------------- | ------------------------------ |
+| `PipelineLifecycleService` | Creating, updating, archiving, cloning pipelines | Pipeline, Stage                                       | Create, Update, Archive, Clone |
+| `ExecutionService`         | Running pipelines and tracking results           | Pipeline, Stage, Transform, ExecutionLog, StageResult | Execute, Retry, Get History    |
+| `TransformService`         | Managing transform definitions                   | Transform                                             | Create, Update, Validate       |
 
 Note: `Pipeline` and `Stage` appear in both `PipelineLifecycleService` and `ExecutionService`. Each service accesses them through `IPipelineRepository` — the entity isn't "owned" by one service. The **concern** determines the boundary, not entity containment.
 
@@ -290,9 +298,9 @@ For single-service interactions within a section with no orchestration: still a 
 
 Some interactions come from background jobs, schedulers, or system triggers — not from users through HTTP. Check the actor column in the interaction matrix.
 
-| Actor type | Routing |
-|---|---|
-| User, Operator, Admin | Controller method → HTTP route |
+| Actor type                      | Routing                                        |
+| ------------------------------- | ---------------------------------------------- |
+| User, Operator, Admin           | Controller method → HTTP route                 |
 | System, Scheduler, Cron, Worker | Job runner → factory → service method directly |
 
 Job-triggered interactions:
@@ -344,12 +352,14 @@ System → Operator: Execution result
 ```
 
 **Controller:** `ExecutionController` (covers all interactions in "Execution & Monitoring")
+
 - Method: `execute_pipeline(pipeline_id: str) -> ExecutionLog`
 - Method: `retry_execution(pipeline_id: str) -> ExecutionLog`
 - Method: `get_execution_history(pipeline_id: str) -> list[ExecutionLog]`
 - Dependencies: `IExecutionService`
 
 **Service:** `ExecutionService` (concern: running pipelines and tracking results)
+
 - methods: `execute(pipeline_id) -> ExecutionLog`, `retry(pipeline_id) -> ExecutionLog`, `get_history(pipeline_id) -> list[ExecutionLog]`
 - Dependencies: `IPipelineRepository`, `ITransformRepository`, `IExecutionLogRepository`
 
@@ -361,14 +371,14 @@ Note: the sequence diagram participants are Pipeline, Stage, Transform, Executio
 
 ### Classification rules
 
-| Invariant type | Enforcement point | Examples |
-|---|---|---|
-| **Construction-time** — about the shape/validity of a single field or entity | Model layer: value object, Pydantic validator, `__post_init__` | "Name must be non-empty", "Quantity must be positive", "Email must match pattern" |
-| **Behavioral** — about what operations are allowed given context | Service layer: checked in the service method before performing the operation | "Can't execute while already running", "Max 10 items per list" |
-| **Aggregate** — about consistency between related entities | Repository layer: enforced by persisting the aggregate atomically | "Stages must be contiguously ordered within their Pipeline", "Aggregate saved atomically" |
-| **State transition** — about valid lifecycle progressions | Service layer: checked before transitioning, enum restricts valid states | "Pipeline: idle → running → complete, no other transitions" |
-| **Cross-aggregate** — about consistency across aggregate boundaries | Controller or saga: checked at orchestration level, may be eventually consistent | "Transform referenced by a Stage must exist" |
-| **Cross-cutting** — repeats identically across 80%+ of interactions | Middleware, decorator, or infrastructure | "All mutations require ownership", "All writes emit audit events" |
+| Invariant type                                                               | Enforcement point                                                                | Examples                                                                                  |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Construction-time** — about the shape/validity of a single field or entity | Model layer: value object, Pydantic validator, `__post_init__`                   | "Name must be non-empty", "Quantity must be positive", "Email must match pattern"         |
+| **Behavioral** — about what operations are allowed given context             | Service layer: checked in the service method before performing the operation     | "Can't execute while already running", "Max 10 items per list"                            |
+| **Aggregate** — about consistency between related entities                   | Repository layer: enforced by persisting the aggregate atomically                | "Stages must be contiguously ordered within their Pipeline", "Aggregate saved atomically" |
+| **State transition** — about valid lifecycle progressions                    | Service layer: checked before transitioning, enum restricts valid states         | "Pipeline: idle → running → complete, no other transitions"                               |
+| **Cross-aggregate** — about consistency across aggregate boundaries          | Controller or saga: checked at orchestration level, may be eventually consistent | "Transform referenced by a Stage must exist"                                              |
+| **Cross-cutting** — repeats identically across 80%+ of interactions          | Middleware, decorator, or infrastructure                                         | "All mutations require ownership", "All writes emit audit events"                         |
 
 ### Construction-time invariants in detail
 
@@ -447,14 +457,14 @@ Use both sources:
 
 ### Mapping table
 
-| Failure type in sequence diagram | Error type | HTTP mapping (at route edge) |
-|---|---|---|
-| Input validation fails | `InputError` | 400 |
-| Entity not found | `NotFoundError` | 404 |
-| Permission/ownership check fails | `UnauthorisedError` | 401 / 403 |
-| State conflict (already running, already deleted) | `InputError` or domain-specific subtype | 409 |
-| External system failure | `InfraError` | 500 |
-| Business limit exceeded | `InputError` or domain-specific subtype | 400 / 422 |
+| Failure type in sequence diagram                  | Error type                              | HTTP mapping (at route edge) |
+| ------------------------------------------------- | --------------------------------------- | ---------------------------- |
+| Input validation fails                            | `InputError`                            | 400                          |
+| Entity not found                                  | `NotFoundError`                         | 404                          |
+| Permission/ownership check fails                  | `UnauthorisedError`                     | 401 / 403                    |
+| State conflict (already running, already deleted) | `InputError` or domain-specific subtype | 409                          |
+| External system failure                           | `InfraError`                            | 500                          |
+| Business limit exceeded                           | `InputError` or domain-specific subtype | 400 / 422                    |
 
 ### Annotating the sequence diagram
 
@@ -489,13 +499,13 @@ If this feels constraining for a particular entity, it might not be a child — 
 
 A repository method handles the **full atomic scope** of its operation — including cascade effects on children.
 
-| Operation | What the repository method does atomically |
-|---|---|
-| `save(root)` | Upserts root + all children. Diffs children to handle adds/removes/reorders. |
-| `delete(id)` | Deletes root + all children within the aggregate. |
-| `archive(id)` | Sets archived flag on root + propagates to all children. |
-| `restore(id)` | Clears archived flag on root + all children. |
-| `update_status(id, status)` | Updates root status + propagates status-dependent changes to children. |
+| Operation                   | What the repository method does atomically                                   |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `save(root)`                | Upserts root + all children. Diffs children to handle adds/removes/reorders. |
+| `delete(id)`                | Deletes root + all children within the aggregate.                            |
+| `archive(id)`               | Sets archived flag on root + propagates to all children.                     |
+| `restore(id)`               | Clears archived flag on root + all children.                                 |
+| `update_status(id, status)` | Updates root status + propagates status-dependent changes to children.       |
 
 The method name communicates the full scope. `archive(id)` means "archive the root and cascade to all children" — not "set a flag on the root and hope the caller handles children."
 
@@ -505,7 +515,7 @@ The method name communicates the full scope. `archive(id)` means "archive the ro
 class IPipelineRepository(Protocol):
     def archive(self, pipeline_id: str) -> None:
         """Archive pipeline and all its stages atomically.
-        
+
         Sets archived_at on the Pipeline and all child Stages.
         Archived pipelines are excluded from default queries.
         Raises NotFoundError if pipeline doesn't exist.

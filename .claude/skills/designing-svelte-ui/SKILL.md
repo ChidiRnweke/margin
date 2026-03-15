@@ -32,8 +32,8 @@ Offer the user a constrained choice: **1 Primary style** (+ optional 1 Secondary
 
 **Style registry (with reference files):**
 
-| Style                                | What it looks like                                   | Best used for                         | Reference                                                    |
-| ------------------------------------ | ---------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| Style                                | What it looks like                                   | Best used for                         | Reference                                                   |
+| ------------------------------------ | ---------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------- |
 | Minimalism / Swiss                   | strict grid, whitespace, typographic hierarchy       | settings, dashboards, “quiet premium” | `references/style-minimalism-swiss.md`                      |
 | Editorial / Typography-led           | big type, rhythm, magazine-like layouts              | content-heavy products, warm brands   | `references/style-editorial-typography-led.md`              |
 | Flat design                          | solid fills, crisp borders, minimal depth            | clarity-first product UIs             | `references/style-flat-design.md`                           |
@@ -104,28 +104,30 @@ Style dictates how things look; **UX Patterns dictate how things work.** Before 
 
 Identify the **1 primary UX pattern** that best serves the user's feature request. Do not invent custom layouts from scratch if a proven pattern exists.
 
-| Pattern | Signature & Use Case | Reference |
-| --- | --- | --- |
-| **Canvas** | Freeform spatial workspace (Whiteboards, node editors) | `references/ux-canvas.md` |
-| **Conversational** | Persistent chronological thread (Chatbots, AI assistants) | `references/ux-conversational.md` |
-| **Dashboard** | High-density overview of metrics (Home screens, analytics) | `references/ux-dashboard.md` |
-| **Document** | Continuous linear text flow (Long-form content, wikis) | `references/ux-document.md` |
-| **Drill Down** | Strict hierarchy traversal (Deep settings, nested folders) | `references/ux-drill-down.md` |
-| **Feed** | Vertical stream of items (Timelines, activity logs) | `references/ux-feed.md` |
-| **Hub & Spoke** | Central dispatcher to isolated modes (Task-focused apps) | `references/ux-hub-spoke.md` |
-| **Kanban** | Columns representing state (Project mgmt, pipelines) | `references/ux-kanban.md` |
-| **Launcher** | Keyboard-first search overlay (Global search, cmd palettes) | `references/ux-launcher.md` |
-| **Master-Detail** | Bifurcated list + content view (Email clients, dense logs) | `references/ux-master-detail.md` |
-| **Matrix** | 2D data grid (Ledgers, bulk data entry) | `references/ux-matrix.md` |
-| **Prog. Disclosure**| Depth on demand (Complex settings, advanced forms) | `references/ux-progressive-disclosure.md`|
-| **Tabs** | Parallel contexts (Grouped peer settings) | `references/ux-tabs.md` |
-| **Timeline** | Spatial representation of time (Schedules, video editors) | `references/ux-timeline.md` |
-| **Wizard** | Linear sequential flow (Onboarding, complex forms) | `references/ux-wizard.md` |
-| **Workbench** | Omnipresent unscrollable UI (Expert devtools, IDEs) | `references/ux-workbench.md` |
+| Pattern              | Signature & Use Case                                        | Reference                                 |
+| -------------------- | ----------------------------------------------------------- | ----------------------------------------- |
+| **Canvas**           | Freeform spatial workspace (Whiteboards, node editors)      | `references/ux-canvas.md`                 |
+| **Conversational**   | Persistent chronological thread (Chatbots, AI assistants)   | `references/ux-conversational.md`         |
+| **Dashboard**        | High-density overview of metrics (Home screens, analytics)  | `references/ux-dashboard.md`              |
+| **Document**         | Continuous linear text flow (Long-form content, wikis)      | `references/ux-document.md`               |
+| **Drill Down**       | Strict hierarchy traversal (Deep settings, nested folders)  | `references/ux-drill-down.md`             |
+| **Feed**             | Vertical stream of items (Timelines, activity logs)         | `references/ux-feed.md`                   |
+| **Hub & Spoke**      | Central dispatcher to isolated modes (Task-focused apps)    | `references/ux-hub-spoke.md`              |
+| **Kanban**           | Columns representing state (Project mgmt, pipelines)        | `references/ux-kanban.md`                 |
+| **Launcher**         | Keyboard-first search overlay (Global search, cmd palettes) | `references/ux-launcher.md`               |
+| **Master-Detail**    | Bifurcated list + content view (Email clients, dense logs)  | `references/ux-master-detail.md`          |
+| **Matrix**           | 2D data grid (Ledgers, bulk data entry)                     | `references/ux-matrix.md`                 |
+| **Prog. Disclosure** | Depth on demand (Complex settings, advanced forms)          | `references/ux-progressive-disclosure.md` |
+| **Tabs**             | Parallel contexts (Grouped peer settings)                   | `references/ux-tabs.md`                   |
+| **Timeline**         | Spatial representation of time (Schedules, video editors)   | `references/ux-timeline.md`               |
+| **Wizard**           | Linear sequential flow (Onboarding, complex forms)          | `references/ux-wizard.md`                 |
+| **Workbench**        | Omnipresent unscrollable UI (Expert devtools, IDEs)         | `references/ux-workbench.md`              |
 
 ### 1.2 Mandatory Pattern Review
-Once a pattern is identified, you **MUST read its corresponding markdown reference file** before writing code. 
+
+Once a pattern is identified, you **MUST read its corresponding markdown reference file** before writing code.
 These files contain:
+
 - Recommended `shadcn-svelte` components to use.
 - Strict `Do / Don't` interaction rules.
 - A fully typed Svelte 5 Component Recipe.
@@ -174,9 +176,11 @@ Put tokens at the top of `src/app.css` (or `src/lib/styles/tokens.css`), with a 
 ## Phase 3 & 4: Tokens and Theming
 
 Once tokens are defined, you **MUST read the detailed reference guide**:
+
 - `references/tokens-theming.md`
 
 This guide covers:
+
 - The required **Phase 3: Tokens (Design System First)**
 - The required **Phase 4: Tailwind + shadcn-svelte Theming**
 
@@ -309,6 +313,7 @@ Use `references/audit.md` for the detailed workflow.
 ## Validation Loop
 
 Before concluding any UI implementation:
+
 1. Run the type-checker (`pnpm svelte-check`).
 2. Run the linter to catch accessibility and syntax issues.
 3. Review warnings in the terminal. If errors occur, autonomously fix them and repeat the loop until the checks pass.
@@ -316,6 +321,7 @@ Before concluding any UI implementation:
 ## Checklist Before Shipping Any UI
 
 Copy this checklist into your initial response scratchpad to track your progress:
+
 - [ ] Style Application Plan exists in `DESIGN_SYSTEM.md` and matches implementation.
 - [ ] **Primary UX Pattern identified** for the feature and Reference file read.
 - [ ] UX Pattern Do/Don't rules strictly followed (e.g., proper scrolling, URL syncing, focus states).

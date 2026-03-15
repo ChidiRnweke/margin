@@ -139,10 +139,7 @@ export class PostgresRecurringSeriesRepository implements IRecurringSeriesReposi
 				version: sql`${recurringTaskSeries.version} + 1`
 			})
 			.where(
-				and(
-					eq(recurringTaskSeries.id, seriesId),
-					eq(recurringTaskSeries.version, expectedVersion)
-				)
+				and(eq(recurringTaskSeries.id, seriesId), eq(recurringTaskSeries.version, expectedVersion))
 			)
 			.returning();
 
@@ -173,9 +170,7 @@ export class PostgresRecurringSeriesRepository implements IRecurringSeriesReposi
 		return deleted.length;
 	}
 
-	private async loadAggregate(
-		series: RecurringTaskSeries
-	): Promise<RecurringTaskSeriesAggregate> {
+	private async loadAggregate(series: RecurringTaskSeries): Promise<RecurringTaskSeriesAggregate> {
 		const ruleRows = await this.db
 			.select()
 			.from(recurrenceRules)

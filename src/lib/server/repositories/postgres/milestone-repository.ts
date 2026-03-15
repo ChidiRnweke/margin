@@ -144,8 +144,7 @@ export class PostgresMilestoneRepository implements IMilestoneRepository {
 					title: milestones.title,
 					status: milestones.status,
 					targetDate: milestones.targetDate,
-					taskCount:
-						sql<number>`(SELECT count(*) FROM tasks WHERE tasks.milestone_id = ${milestones.id})`,
+					taskCount: sql<number>`(SELECT count(*) FROM tasks WHERE tasks.milestone_id = ${milestones.id})`,
 					completedAt: milestones.completedAt,
 					createdAt: milestones.createdAt
 				})
@@ -153,9 +152,7 @@ export class PostgresMilestoneRepository implements IMilestoneRepository {
 				.innerJoin(aspects, eq(milestones.aspectId, aspects.id))
 				.where(whereClause)
 				.orderBy(
-					query.sortDirection === 'asc'
-						? asc(milestones.createdAt)
-						: desc(milestones.createdAt)
+					query.sortDirection === 'asc' ? asc(milestones.createdAt) : desc(milestones.createdAt)
 				)
 				.limit(limit)
 				.offset(offset)

@@ -80,9 +80,7 @@ export class PostgresReminderRepository implements IReminderRepository {
 					nextRetryAt: reminder.nextRetryAt,
 					terminalFailedAt: reminder.terminalFailedAt
 				})
-				.where(
-					and(eq(reminders.id, reminder.id), eq(reminders.version, expectedVersion))
-				)
+				.where(and(eq(reminders.id, reminder.id), eq(reminders.version, expectedVersion)))
 				.returning();
 
 			if (updated.length === 0) {

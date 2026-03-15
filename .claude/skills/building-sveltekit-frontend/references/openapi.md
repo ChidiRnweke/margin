@@ -28,11 +28,12 @@ npx openapi-typescript ./openapi.yaml -o src/lib/api/schema.d.ts
 ```
 
 Add to `package.json` scripts:
+
 ```json
 {
-  "scripts": {
-    "generate:api": "openapi-typescript ./openapi.yaml -o src/lib/api/schema.d.ts"
-  }
+	"scripts": {
+		"generate:api": "openapi-typescript ./openapi.yaml -o src/lib/api/schema.d.ts"
+	}
 }
 ```
 
@@ -49,12 +50,12 @@ import { env } from '$env/dynamic/private';
 export type ApiClient = ReturnType<typeof createClient<paths>>;
 
 export function createApiClient(): ApiClient {
-  return createClient<paths>({
-    baseUrl: env.API_BASE_URL,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+	return createClient<paths>({
+		baseUrl: env.API_BASE_URL,
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
 }
 ```
 
@@ -72,46 +73,46 @@ import type { components } from '$lib/api/schema';
 type RawRecipe = components['schemas']['Recipe'];
 
 export class RecipeService implements IRecipeService {
-  constructor(private readonly client: ApiClient) {}
+	constructor(private readonly client: ApiClient) {}
 
-  async getByUserId(userId: string): Promise<Recipe[]> {
-    const { data, error } = await this.client.GET('/users/{userId}/recipes', {
-      params: {
-        path: { userId },
-        query: { limit: 50 },
-      }
-    });
+	async getByUserId(userId: string): Promise<Recipe[]> {
+		const { data, error } = await this.client.GET('/users/{userId}/recipes', {
+			params: {
+				path: { userId },
+				query: { limit: 50 }
+			}
+		});
 
-    if (error) {
-      // Map HTTP error to domain error — see error-handling.md
-      throw new ServiceError('Failed to fetch recipes', { cause: error });
-    }
+		if (error) {
+			// Map HTTP error to domain error — see error-handling.md
+			throw new ServiceError('Failed to fetch recipes', { cause: error });
+		}
 
-    return data.items.map(mapToRecipe);
-  }
+		return data.items.map(mapToRecipe);
+	}
 
-  async create(input: CreateRecipeInput): Promise<Recipe> {
-    const { data, error } = await this.client.POST('/recipes', {
-      body: {
-        title: input.title,
-        cuisine: input.cuisine,
-      }
-    });
+	async create(input: CreateRecipeInput): Promise<Recipe> {
+		const { data, error } = await this.client.POST('/recipes', {
+			body: {
+				title: input.title,
+				cuisine: input.cuisine
+			}
+		});
 
-    if (error) throw new ServiceError('Failed to create recipe', { cause: error });
-    return mapToRecipe(data);
-  }
+		if (error) throw new ServiceError('Failed to create recipe', { cause: error });
+		return mapToRecipe(data);
+	}
 }
 
 // Mapper — private to this file, never export raw API types
 function mapToRecipe(raw: RawRecipe): Recipe {
-  return {
-    id: raw.id,
-    title: raw.title,
-    cuisine: raw.cuisine ?? 'unknown',
-    servings: raw.servings ?? 1,
-    createdAt: new Date(raw.created_at), // rename, transform, normalise here
-  };
+	return {
+		id: raw.id,
+		title: raw.title,
+		cuisine: raw.cuisine ?? 'unknown',
+		servings: raw.servings ?? 1,
+		createdAt: new Date(raw.created_at) // rename, transform, normalise here
+	};
 }
 ```
 
@@ -133,13 +134,13 @@ If your API requires a bearer token per-request (not cookie-based), inject it at
 
 ```typescript
 export function createApiClient(token?: string): ApiClient {
-  return createClient<paths>({
-    baseUrl: env.API_BASE_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+	return createClient<paths>({
+		baseUrl: env.API_BASE_URL,
+		headers: {
+			'Content-Type': 'application/json',
+			...(token ? { Authorization: `Bearer ${token}` } : {})
+		}
+	});
 }
 ```
 

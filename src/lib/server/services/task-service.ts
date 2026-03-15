@@ -13,7 +13,13 @@ import type {
 import type { IRecurrenceMaterializer } from '$lib/server/services/contracts/recurrence-materializer.js';
 import type { AuditEmitter } from '$lib/server/infra/audit/audit-emitter.js';
 import type { Task } from '$lib/server/domain/models/task.js';
-import { createTask, updateTask, startTask, completeTask, reopenTask } from '$lib/server/domain/models/task.js';
+import {
+	createTask,
+	updateTask,
+	startTask,
+	completeTask,
+	reopenTask
+} from '$lib/server/domain/models/task.js';
 import { NotFoundError } from '$lib/server/errors/domain-errors.js';
 
 export class TaskService implements ITaskService {

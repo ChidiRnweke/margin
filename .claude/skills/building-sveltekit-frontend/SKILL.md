@@ -98,6 +98,7 @@ src/routes/
 ## Code Examples
 
 For full code examples of the architecture layers in practice, please read:
+
 - **`references/patterns-examples.md`** — Examples for Models, Services, Controllers, Factory, and Stores.
 
 ---
@@ -111,6 +112,7 @@ For full code examples of the architecture layers in practice, please read:
 ## Validation Checklist
 
 Before concluding any implementation task, copy this checklist into your response scratchpad to track your progress:
+
 - [ ] Run the type-checker (`pnpm svelte-check`).
 - [ ] Run the linter (`pnpm lint`).
 - [ ] Run tests if applicable.

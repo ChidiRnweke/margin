@@ -97,9 +97,7 @@ export class SchedulerEngine implements ISchedulerEngine {
 				const allocMinutes = Math.max(chunkMinutes, typedProfile.minChunkMinutes);
 				const actualMinutes = Math.min(allocMinutes, slot.remainingMinutes);
 
-				const startUtc = new Date(
-					slot.endUtc.getTime() - slot.remainingMinutes * 60_000
-				);
+				const startUtc = new Date(slot.endUtc.getTime() - slot.remainingMinutes * 60_000);
 				const endUtc = new Date(startUtc.getTime() + actualMinutes * 60_000);
 
 				allocations.push(
@@ -156,9 +154,7 @@ export class SchedulerEngine implements ISchedulerEngine {
 			// Overlap: reduce remaining minutes
 			const overlapStart = lockStart > slot.startUtc ? lockStart : slot.startUtc;
 			const overlapEnd = lockEnd < slot.endUtc ? lockEnd : slot.endUtc;
-			const overlapMinutes = Math.round(
-				(overlapEnd.getTime() - overlapStart.getTime()) / 60_000
-			);
+			const overlapMinutes = Math.round((overlapEnd.getTime() - overlapStart.getTime()) / 60_000);
 			slot.remainingMinutes = Math.max(0, slot.remainingMinutes - overlapMinutes);
 		}
 	}

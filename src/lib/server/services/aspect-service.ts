@@ -89,7 +89,7 @@ export class AspectService implements IAspectService {
 		const updated: Aspect = {
 			...aspect,
 			name: input.name !== undefined ? input.name.trim() : aspect.name,
-			purpose: input.purpose !== undefined ? (input.purpose.trim() || null) : aspect.purpose,
+			purpose: input.purpose !== undefined ? input.purpose.trim() || null : aspect.purpose,
 			targetPercentage:
 				input.targetPercentage !== undefined ? input.targetPercentage : aspect.targetPercentage,
 			defaultSplittable:
@@ -124,11 +124,7 @@ export class AspectService implements IAspectService {
 		});
 	}
 
-	async restoreAspect(
-		userId: string,
-		aspectId: string,
-		expectedVersion: number
-	): Promise<Aspect> {
+	async restoreAspect(userId: string, aspectId: string, expectedVersion: number): Promise<Aspect> {
 		await this.loadOwnedAspect(userId, aspectId);
 		const restored = await this.aspectRepo.restoreToDraft(aspectId, expectedVersion);
 

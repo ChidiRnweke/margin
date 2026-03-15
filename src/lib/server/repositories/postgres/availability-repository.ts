@@ -8,9 +8,7 @@ import type {
 	AvailabilityAggregate,
 	DateRange
 } from '$lib/server/repositories/contracts/availability-repository.js';
-import {
-	OptimisticConcurrencyError
-} from '$lib/server/errors/domain-errors.js';
+import { OptimisticConcurrencyError } from '$lib/server/errors/domain-errors.js';
 
 export class PostgresAvailabilityRepository implements IAvailabilityRepository {
 	constructor(private db: Database) {}
@@ -66,10 +64,7 @@ export class PostgresAvailabilityRepository implements IAvailabilityRepository {
 					archivedAt: block.archivedAt
 				})
 				.where(
-					and(
-						eq(availabilityBlocks.id, block.id),
-						eq(availabilityBlocks.version, expectedVersion)
-					)
+					and(eq(availabilityBlocks.id, block.id), eq(availabilityBlocks.version, expectedVersion))
 				)
 				.returning();
 
@@ -111,10 +106,7 @@ export class PostgresAvailabilityRepository implements IAvailabilityRepository {
 				version: sql`${availabilityBlocks.version} + 1`
 			})
 			.where(
-				and(
-					eq(availabilityBlocks.id, blockId),
-					eq(availabilityBlocks.version, expectedVersion)
-				)
+				and(eq(availabilityBlocks.id, blockId), eq(availabilityBlocks.version, expectedVersion))
 			)
 			.returning();
 
@@ -132,10 +124,7 @@ export class PostgresAvailabilityRepository implements IAvailabilityRepository {
 				version: sql`${availabilityBlocks.version} + 1`
 			})
 			.where(
-				and(
-					eq(availabilityBlocks.id, blockId),
-					eq(availabilityBlocks.version, expectedVersion)
-				)
+				and(eq(availabilityBlocks.id, blockId), eq(availabilityBlocks.version, expectedVersion))
 			)
 			.returning();
 

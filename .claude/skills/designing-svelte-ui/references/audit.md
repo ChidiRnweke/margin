@@ -20,7 +20,6 @@ Use this workflow when the user wants to improve an existing SvelteKit project r
 
 ## Step 1: Reconnaissance
 
-
 Before suggesting any changes, read the following files:
 
 1. `src/app.css` — does a token system exist in `:root`? Is there an `@theme inline` block wiring tokens to Tailwind utilities?
@@ -31,7 +30,6 @@ Before suggesting any changes, read the following files:
 Form a picture of the current state before saying anything. Don't start listing fixes yet.
 
 If `DESIGN_SYSTEM.md` doesn't exist, you will gather information to create it, map out the tokens and primitives you find, and propose a structure for it in the diagnosis report. You can also suggest running the `designing-svelte-ui` skill to create one based on the audit findings.
-
 
 ---
 
@@ -64,6 +62,7 @@ Produce a structured diagnosis. Be specific — reference actual file paths and 
 ```
 
 Severity guide:
+
 - **High** — Affects consistency across the whole codebase (missing token system, raw HTML elements, unthemed shadcn)
 - **Medium** — Localised inconsistency (one component using wrong spacing, one-off colour)
 - **Low** — Polish (missing letter-spacing, could use a skeleton instead of spinner)
@@ -75,15 +74,18 @@ Severity guide:
 Don't rewrite everything at once. Propose a phased approach:
 
 **Phase A — Foundation (do this first, unblocks everything else)**
+
 - Establish token system in `app.css`
 - Wire tokens into Tailwind via `@theme inline`
 - Remap shadcn variables if used
 
 **Phase B — Primitives (do before touching pages)**
+
 - Create/fix `Button`, `Card`, `Input`, `Badge` primitives
 - Replace raw HTML tags with primitives across the codebase
 
 **Phase C — Pages (do last)**
+
 - Apply tokens and primitives to each page
 - Fix spacing rhythm
 - Fix typography
@@ -104,15 +106,19 @@ Work through one file or component at a time. For each change:
 Example:
 
 > **Before** (`src/routes/+page.svelte:42`):
+>
 > ```svelte
-> <button class="bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
+> <button class="rounded bg-blue-500 px-4 py-2 text-white">Add Item</button>
 > ```
+>
 > Problem: raw `<button>` tag, Tailwind default blue (`bg-blue-500`), arbitrary padding not on spacing scale.
 >
 > **After**:
+>
 > ```svelte
 > <Button variant="default">Add Item</Button>
 > ```
+>
 > Now uses the `Button` primitive which pulls from `--color-primary` and `--space-*` tokens.
 
 ---

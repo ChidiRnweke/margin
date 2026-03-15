@@ -52,6 +52,7 @@ domain_input = CreateRecipeInput(title=body.title, user_id=user_id)
 ```
 
 **Anti-patterns:**
+
 - ❌ `from myapp.services import X` inside a model file
 - ❌ Methods that do computation or I/O on a model
 - ❌ ORM columns or SQLAlchemy types on domain models
@@ -110,6 +111,7 @@ class RecipeService:
 Logger is always module-level — never an instance field on the dataclass.
 
 **Anti-patterns:**
+
 - ❌ `from myapp.services.pantry_service import PantryService` inside a service
 - ❌ `AsyncSession` or SQLAlchemy imports inside a service
 - ❌ HTTP concerns (`status_code`, `HTTPException`) inside a service
@@ -124,6 +126,7 @@ Own the ORM. Deserialise to domain models immediately. No business logic.
 See `references/sqlalchemy.md` for full patterns.
 
 **Key rules:**
+
 - Repository interface defined as a Protocol alongside the implementation
 - ORM types (`RecipeORM`) are private — `_to_domain()` is always called before returning
 - Wrap infrastructure failures in `InfraError`
@@ -167,11 +170,13 @@ class RecipeController:
 ```
 
 **When to use a controller vs calling a service directly:**
+
 - Single service call from a route → call the service via factory directly (no controller needed)
 - Multiple services needed → always introduce a controller
 - Sequential dependency between services → controller
 
 **Anti-patterns:**
+
 - ❌ `if recipe.cuisine == "italian":` — that's business logic, move to service
 - ❌ Direct DB access or repository imports
 - ❌ `asyncio.gather()` — always `TaskGroup`
@@ -212,6 +217,7 @@ class AppFactory:
 The factory carries `user_id` so every method has user context without it being threaded through every call. Instantiated once per request via FastAPI dependency — never as a singleton.
 
 **Anti-patterns:**
+
 - ❌ `@staticmethod` on any factory method
 - ❌ Assembling services inside route handlers
 - ❌ Any conditional logic in the factory
