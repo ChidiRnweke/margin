@@ -21,16 +21,19 @@ loop, doing one thing per iteration, with the plan as its fixed reference point.
 
 **The blueprint must be good enough that you can walk away.** If you can't, the plan isn't specific enough or it's missing context the agent will need.
 
+Assume the executor may be a junior developer with limited project context. The blueprint must remove structural ambiguity: the executor should know what to read, what file to open, what to name things, what test to write, and how to verify completion without making architectural decisions.
+
 ---
 
 ## Planner Workflow Checklist
 
 Copy this checklist into your initial response scratchpad to track your progress while building the blueprint:
+
 - [ ] Phase 1: Interview the user to gather context, scope, and constraints.
 - [ ] Phase 2: Perform reconnaissance using tools to map codebase patterns.
 - [ ] Phase 3: (Optional) Propose interfaces and test cases for review.
 - [ ] Phase 4: Write the Blueprint with fine-grained, verifiable steps.
-- [ ] Phase 5: Self-validate the Blueprint against the evaluation heuristics.
+- [ ] Phase 5: Red-team and self-validate the Blueprint against the evaluation heuristics.
 
 ---
 
@@ -172,9 +175,19 @@ Include specific commands, URLs to visit, or behaviours to confirm.]
 This is the most important calibration in the entire skill. Steps must be fine-grained
 and prescriptive:
 
+- **There is no upper bound on step count.** A plan can be short or long. The correct number of
+  steps is whatever removes structural ambiguity for the executor. If the work spans many
+  layers, files, contracts, or verification surfaces, the plan should expand until each step is
+  safe to execute without invention.
+
 - **One file or one coherent concern per step.** "Implement RecipeService" is too broad —
   that's a domain model, a Protocol, an implementation class, and wired dependencies. Split
   it: one step for the model, one for the Protocol, one for the implementation, one for wiring.
+
+- **Do not leave design work for the executor.** If a step requires the executor to choose
+  names, DTO shapes, route shapes, layer placement, sequencing, or dependency wiring, the step
+  is too large or the plan is missing an earlier decision-making step. Resolve those ambiguities
+  in the plan or surface them to the user before execution.
 
 - **Specify exact names.** The step must name the files to create or modify, the classes and
   methods to add, and the function signatures where they're non-obvious. The executor should
@@ -196,7 +209,10 @@ A good heuristic: if you described this step to a developer, would they know exa
 file to open and what to type? If they'd still have to decide what to name something, which
 layer to put it in, or how to wire it — the step is too vague. Split it or add more detail.
 
-When in doubt, split. A plan with 20 sharp steps is far better than one with 8 ambiguous ones.
+Another heuristic: if a junior developer could reasonably ask "which file do I open first?" or
+"how am I supposed to decide that?" the step is too broad.
+
+When in doubt, split. A plan with many sharp steps is far better than one with a few ambiguous ones.
 
 ### Referencing existing patterns
 
@@ -247,18 +263,20 @@ existing file to use as a pattern, how the pieces wire together. What they don't
 dictate is the internal logic — the executor can work out how to implement a method given
 a clear signature and a model to follow.
 
-Vague step (bad): "Implement RecipeService with get_by_id and create methods. Follow the
-same pattern as PantryService. Include the Protocol interface. Wire it into the factory."
+Vague step (bad): "Implement reporting feature. Add the backend, frontend, and tests."
 
-This leaves too much open: which file? what exact signatures? what does the Protocol look
-like? which part of the factory?
+This leaves too much open: which file? which layer? what DTOs? what route? what tests?
 
-Prescriptive step (good): "Create `backend/src/myapp/services/recipe_service.py`. Define
-`RecipeServiceProtocol` with `get_by_id(recipe_id: str) -> Recipe | None` and
-`create(data: RecipeCreate) -> Recipe`. Implement `RecipeService` as a dataclass following
-the same structure as `PantryService` in `pantry_service.py` — repository injected via
-constructor, module-level structlog logger. Register it in `factory.py` alongside
-`PantryService`. Verify: `pytest tests/services/test_recipe_service.py` passes."
+Prescriptive step (good): "Create `backend/reports/report_query.py`. Define `ReportQuery`
+with the exact filter and cursor fields described in the plan. Verify with
+`pytest tests/unit/reports/test_report_query.py`.
+
+Create `backend/reports/report_repository.py`. Add `ReportRepository.list_reports(query:
+ReportQuery) -> ReportPage` following the same structure as `backend/invoices/invoice_repository.py`.
+Verify with `pytest tests/integration/reports/test_report_repository.py`.
+
+Create `frontend/routes/reports/+page.server.ts`. Return `ReportsPageData` exactly as defined
+in the plan. Verify with `pnpm test -- reports-page.server.spec.ts`."
 
 ### Don't plan what you can't verify
 
@@ -286,7 +304,11 @@ produced it, not the git history, the blueprint.
 ## Self-Validation Loop
 
 Before showing the final `<feature>-plan.md` to the user, you must validate your own work:
+
 1. **Check step granularity:** Are the steps too broad? Do they specify exact file paths, class names, and method signatures?
 2. **Check verifiability:** Does every step have a clear, objective verification command or action?
 3. **Check pattern adherence:** Do steps that create new code explicitly point to existing files as structural examples?
+4. **Check ambiguity ownership:** Have you resolved the major naming, contract, routing, DTO, and layering decisions yourself rather than leaving them to the executor?
+5. **Red-team the plan with a subagent:** Launch a subagent to critique the blueprint for ambiguity, hallucination risk, missing tests, missing reference reads, wrong sequencing, and opportunities for an executor to violate the spec. Revise the blueprint and repeat until no blocker-grade issues remain.
+
 If the plan fails any of these checks, autonomously revise it to be more prescriptive and fine-grained before presenting it to the user.
