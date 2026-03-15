@@ -1,2 +1,23 @@
-// Schema modules will be added as aggregates are implemented in Step 12
-export {};
+export { users } from './users.js';
+export { sessions } from './sessions.js';
+export { planningProfiles } from './planning-profiles.js';
+export { aspects } from './aspects.js';
+export { milestones } from './milestones.js';
+export { tasks } from './tasks.js';
+export { taskLocks } from './task-locks.js';
+export { recurringTaskSeries } from './recurring-task-series.js';
+export { recurrenceRules } from './recurrence-rules.js';
+export { recurrenceExceptions } from './recurrence-exceptions.js';
+export { availabilityBlocks } from './availability-blocks.js';
+export { availabilityExceptions } from './availability-exceptions.js';
+export { planningCycles } from './planning-cycles.js';
+export { planningRevisions } from './planning-revisions.js';
+export { taskAllocations } from './task-allocations.js';
+export { allocationOutcomes } from './allocation-outcomes.js';
+export { aspectCycleHealth } from './aspect-cycle-health.js';
+export { reminders } from './reminders.js';
+export { reminderAttempts } from './reminder-attempts.js';
+export { importJobs } from './import-jobs.js';
+export { auditEvents } from './audit-events.js';
+export { idempotencyKeys } from './idempotency-keys.js';
+export { systemJobRuns } from './system-job-runs.js';
