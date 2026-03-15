@@ -2,331 +2,1024 @@
 
 ## Executor Instructions
 
-You are executing this blueprint. Follow these rules:
+You are executing this blueprint. Follow these rules on every loop.
 
-1. Read this file first on every loop. After context compaction, this file is the source of truth.
-2. Copy the remaining unchecked steps into your scratchpad before starting work.
-3. Validate the plan assumptions against the live repo before the first execution step; update this file if paths need to shift.
-4. Do the next unchecked step only. Do not combine steps unless this file explicitly says to.
-5. Verify each step exactly as written before checking it off.
-6. After a passing verification, change the step from `- [ ]` to `- [x]` and commit with `git add -A && git commit -m "blueprint: [step title]"`.
-7. Do not invent new architecture. Follow `architecture/software-architecture/`, `architecture/ui_ux/`, and `DESIGN_SYSTEM.md` exactly.
-8. Keep controllers thin, keep models pure, keep repositories aggregate-scoped, and keep cross-cutting logic in shared infrastructure.
-9. If blocked, add a note under the step describing the blocker, what was verified, and what assumption future steps must respect.
-10. Keep this file current if execution discoveries change later steps.
+1. Read this file first. After context compaction, this file is your ground truth.
+2. Before Step 1, read this mandatory reference packet in full and treat it as binding:
+   - `architecture/software-architecture/index.md`
+   - `architecture/software-architecture/01-overview-and-cross-cutting.md`
+   - `architecture/software-architecture/02-aggregates-and-models.md`
+   - `architecture/software-architecture/03-services.md`
+   - `architecture/software-architecture/04-controllers-and-jobs.md`
+   - `architecture/software-architecture/05-repositories.md`
+   - `architecture/software-architecture/06-invariants-and-errors.md`
+   - `architecture/software-architecture/07-wiring-and-config.md`
+   - `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+   - `architecture/software-architecture/09-interaction-traceability.md`
+   - `architecture/software-architecture/10-sequence-failure-mapping.md`
+   - `architecture/software-architecture/11-aggregate-boundary-audit.md`
+   - `architecture/software-architecture/12-mechanical-audit.md`
+   - `architecture/software-architecture/13-infrastructure-considerations.md`
+   - `architecture/ui_ux/ui-screen-inventory.md`
+   - `architecture/ui_ux/ui-ux-patterns.md`
+   - `architecture/ui_ux/ui-wireframes.md`
+   - `DESIGN_SYSTEM.md`
+   - `.claude/skills/qa/references/testing-patterns.md`
+   - `.claude/skills/qa/references/validation.md`
+3. Before each step, reread the specific references listed in that step. Do not rely on memory for names, states, routes, DTOs, or visual behavior.
+4. Do the next unchecked step only. If a later step depends on information missing from the current step, update the relevant ledger file in this blueprint first, then continue.
+5. Maintain these living reference files from Step 1 onward and update them whenever a later discovery matters:
+   - `docs/execution/reference-ledger.md`
+   - `docs/execution/invariant-coverage.md`
+   - `docs/execution/interaction-route-map.md`
+   - `docs/execution/transport-contracts.md`
+   - `docs/execution/ui-acceptance-map.md`
+   - `docs/execution/architecture-compliance.md`
+6. No invention is allowed. Method names, aggregate boundaries, route groups, job entry points, UI patterns, and transport DTOs must come from the reference packet, the binding supplements in this blueprint, or the Step 1 ledgers copied from them.
+7. Source precedence is fixed:
+   - architecture docs override the starter scaffold.
+   - `architecture/software-architecture/13-infrastructure-considerations.md` overrides older UI wording for data portability: `DAT-01` is synchronous inline export in v1, `DAT-02` is async import with job status polling.
+   - `architecture/ui_ux/ui-ux-patterns.md` overrides the generic glass allowance for confirmation dialogs: modal backdrops may be frosted, but destructive confirmation dialog content must remain opaque.
+8. Step 2 is the TDD setup step. After Step 2, every implementation step follows red -> green -> refactor: extend or unskip the failing tests for the cited invariants/interactions first, then implement until they pass, then clean up without changing behavior.
+9. QA rules are mandatory for all tests:
+   - no mocking libraries
+   - one assertion per test
+   - behavior and invariants over implementation details
+   - shared fakes in `tests/fakes/` or `src/lib/__tests__/fakes/`
+   - test names must describe the invariant or behavior being checked
+10. Every behavior-changing step must update `docs/execution/invariant-coverage.md` with one of: `Covered`, `Partial`, `Implicit`, `Missing implementation`, `Missing test`, `False confidence`.
+11. Every UI step must update `docs/execution/ui-acceptance-map.md` with route, screen, pattern, responsive behavior, empty/loading states, keyboard behavior, and verification status.
+12. Every interaction/API step must update both `docs/execution/interaction-route-map.md` and `docs/execution/transport-contracts.md` with controller method, service method, page-loader shape, action or endpoint shape, request DTO fields, response DTO fields, cursor payload shape, idempotency rule, version inputs, and documented failure mapping.
+13. Do not write page-level UI, `+page.server.ts`, form actions, or endpoint handlers until the relevant transport contract row exists in `docs/execution/transport-contracts.md`.
+14. Verify before checking off. If verification passes, change `- [ ]` to `- [x]` and commit with `git add -A && git commit -m "blueprint: [step title]"`.
+15. If blocked, add a note under the step with the blocker, the exact references reviewed, the failed verification, and the smallest plan update needed for later steps.
 
 ## Context
 
-Margin is specified as a full personal planning product, not a simple CRUD app. The domain docs in `architecture/domain/` define user-scoped aspects, milestones, tasks, recurring task series, availability blocks, weekly planning cycles, allocations, reminders, audit events, idempotency records, and portability jobs. The sequence diagrams in `architecture/sequence-diagrams/` define the exact end-to-end flows, alternate paths, cascades, retries, and background processing behavior. The translation in `architecture/software-architecture/` further fixes the implementation shape: pure domain models, aggregate repositories, orchestration services, thin controllers, job entry points, a single composition root, and explicit cross-cutting infrastructure for authorization, audit, idempotency, cursor pagination, and optimistic concurrency.
+Margin is a full planning product with validated domain diagrams, sequence diagrams, invariant sets, and UI/UX specifications. The implementation must reproduce those artifacts faithfully, not approximate them. The architecture translation in `architecture/software-architecture/` fixes the aggregate boundaries, dependency graph, controller/service/repository surface, failure ownership, wiring, and infrastructure topology. The UI docs in `architecture/ui_ux/` plus `DESIGN_SYSTEM.md` fix the route groups, screen inventory, interaction patterns, responsive behavior, visual rules, accessibility constraints, and shared component conventions.
 
-The UI docs in `architecture/ui_ux/` and `DESIGN_SYSTEM.md` specify the complete product surface: auth entry, auth callback, a four-step onboarding wizard, dashboard, weekly plan timeline, plan revision history feed, aspects overview and detail, tasks master-detail with progressive disclosure creation, recurrence controls, reminders, availability management, settings hub and spokes, data portability, and audit timeline. These documents also fix the UX patterns, responsive breakpoints, deep-linking, loading and empty states, glass usage limits, accessibility requirements, and component conventions.
-
-The current repository is only a scaffold. `src/routes/+page.svelte` is still the default welcome page, `src/routes/+layout.svelte` only imports the global stylesheet, `src/lib/server/db/schema.ts` contains a toy SQLite `task` table, and `package.json` currently reflects a starter SvelteKit + Drizzle + SQLite setup. This plan therefore covers the full implementation from platform foundation through backend, frontend, jobs, tests, and release verification. The architecture docs are treated as the contract whenever they differ from the starter scaffold.
+The current repository is still a starter scaffold: `src/routes/+page.svelte` is the default SvelteKit page, `src/routes/+layout.svelte` only imports global CSS, `src/lib/server/db/schema.ts` is a toy SQLite table, and `package.json` still reflects a starter runtime. This blueprint therefore starts by deriving exact implementation ledgers from the architecture packet, then creates tests immediately so the executor is forced to implement against the spec rather than hallucinating interfaces.
 
 ## Scope
 
 **In scope:**
 
-- Replace the starter persistence/runtime assumptions with the architecture-aligned implementation baseline.
-- Implement every documented domain aggregate, value object, enum, invariant, interaction, controller, repository, service, job, and UI route.
-- Implement the full design system, route groups, overlays, empty states, loading states, accessibility behavior, and responsive layouts.
-- Implement idempotency, optimistic concurrency, audit emission, cursor pagination, import/export, reminder retry logic, and scheduler-driven weekly planning.
-- Add automated tests and end-to-end verification that cover the documented flows and failure paths.
+- Replace the starter runtime and data model with the architecture-aligned baseline.
+- Implement every documented aggregate, value object, invariant, interaction, service, controller, repository, job, route group, screen, and cross-cutting policy.
+- Implement the full UI surface defined by the screen inventory, UX patterns, wireframes, and design system.
+- Implement automated tests that prove invariant coverage, architecture compliance, UI acceptance criteria, and end-to-end journey correctness.
 
 **Out of scope:**
 
-- Production vendor selection beyond the architecture's required abstractions; concrete providers should plug into the interfaces defined here.
-- Features not present in the architecture docs.
-- Redis, MinIO, pgvector, or additional infrastructure explicitly ruled out in `architecture/software-architecture/13-infrastructure-considerations.md`.
+- Features not present in the architecture or UI docs.
+- Infrastructure ruled out by `architecture/software-architecture/13-infrastructure-considerations.md`, including Redis, MinIO, and pgvector.
+- Inventing alternate aggregate boundaries, extra lifecycle states, extra route groups, or extra background systems.
 
 ## Architecture Decisions
 
-- The implementation follows the architecture docs literally, including the move away from the current SQLite starter toward the architecture baseline of Postgres as the system of record and Hatchet-style background execution. The starter schema and DB bootstrap are transitional and should be replaced rather than extended. See `drizzle.config.ts`, `src/lib/server/db/index.ts`, and `architecture/software-architecture/13-infrastructure-considerations.md`.
-- The server code will live under `src/lib/server/` with explicit layers: `domain`, `errors`, `repositories`, `services`, `controllers`, `jobs`, `factory`, and `infra`. Route files under `src/routes/` remain transport adapters that resolve request-scoped controllers from the factory.
-- The frontend code will use token-aware primitives and layout components under `src/lib/components/` exactly as prescribed by `DESIGN_SYSTEM.md`. No raw buttons, inputs, ad hoc spacing, or unstructured layouts should survive in feature code.
-- The task list, plan history, audit feed, and aspect/milestone queries use cursor pagination, never numbered pages. Task selection and aspect tab selection must be deep-linkable.
-- Cross-cutting guarantees are treated as infrastructure, not repeated business logic: authorization scope, verified identity, idempotent command execution, job idempotency, audit emission, cursor validation, and optimistic concurrency enforcement.
-- The scheduler is a deterministic heuristic greedy engine, not an optimizer. It must preserve locks, past allocations, due-feasibility, minimum chunk behavior, splittable vs non-splittable behavior, and deferred-but-feasible tasks.
-- Account erasure is a true hard-delete cascade of user-owned data and operational records, including audit history, sessions, idempotency keys, and portability jobs, per the sequence diagrams.
+- Aggregate boundaries are fixed by `architecture/software-architecture/11-aggregate-boundary-audit.md`. `Aspect`, `Milestone`, `Task`, `Reminder`, and `PlanningCycle` are not to be merged just because they are ownership-related.
+- Public service names, controller method names, repository method names, and job entry points are fixed by `architecture/software-architecture/03-services.md`, `architecture/software-architecture/04-controllers-and-jobs.md`, and `architecture/software-architecture/05-repositories.md`.
+- Every behavioral rule must trace back to `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/09-interaction-traceability.md`, and `architecture/software-architecture/10-sequence-failure-mapping.md`.
+- Postgres is the single source of truth. Hatchet is the only background execution mechanism. Export is synchronous in v1. Import is async with job status persistence. See `architecture/software-architecture/13-infrastructure-considerations.md`.
+- UI structure is fixed by route groups and screen contracts in `architecture/ui_ux/ui-screen-inventory.md`; interaction patterns are fixed by `architecture/ui_ux/ui-ux-patterns.md`; layout geometry and responsive behavior are fixed by `architecture/ui_ux/ui-wireframes.md`; visual tokens and component rules are fixed by `DESIGN_SYSTEM.md`.
+- Tests are specification work, not cleanup work. The executor must use the QA pattern documents as hard rules and must keep the invariant coverage ledger current.
 
-## Interfaces and Models
+## Canonical Surface
 
-The implementation must define these packages and types before feature work starts:
+These are the non-negotiable implementation surfaces to reproduce.
 
-- `src/lib/server/domain/value-objects/`: `EmailAddress`, `DisplayName`, `IanaTimezone`, `PlannerWeight`, `UrgentThresholdDays`, `MinChunkMinutes`, `PositiveMinutes`, `NonNegativeMinutes`, `ImportanceScore`, `TargetPercentage`, `AspectName`, `AspectPurpose`, `MilestoneTitle`, `TaskTitle`, `TaskTitleTemplate`, `PositiveInterval`, `WeekdayMask`, `MonthDay`, `RevisionNumber`, local-date and UTC-window helper value objects, cursor tokens, request hashes, idempotency keys, and any remaining value objects named in `architecture/software-architecture/02-aggregates-and-models.md`.
-- `src/lib/server/domain/models/`: `User`, `Session`, `PlanningProfile`, `Aspect`, `Milestone`, `Task`, `TaskLock`, `RecurringTaskSeries`, `RecurrenceRule`, `RecurrenceException`, `AvailabilityBlock`, `AvailabilityException`, `PlanningCycle`, `PlanningRevision`, `TaskAllocation`, `AllocationOutcome`, `AspectCycleHealth`, `Reminder`, `ReminderAttempt`, `ImportJob`, `AuditEvent`, `IdempotencyKey`, `SystemJobRun`.
-- `src/lib/server/repositories/contracts/`: one repository contract per aggregate root plus read-model/query contracts for task list/detail, aspect list, milestone list, planning history, audit feed, and effective availability.
-- `src/lib/server/services/contracts/`: `AuthService`, `ProfileService`, `AspectService`, `MilestoneService`, `TaskService`, `RecurrenceService`, `AvailabilityService`, `PlanningService`, `ExecutionService`, `ReminderService`, `DataPortabilityService`, `AuditQueryService`.
-- `src/lib/server/services/internal/`: `IdentityProviderGateway`, `RecurrenceMaterializer`, `SchedulerEngine`, `AvailabilityWindowResolver`, `AspectTargetValidator`, `HealthComputationService`, `ReminderDispatchService`, `AccountErasureService`, `ImportRemapService`.
-- `src/lib/server/controllers/`: one controller per concern mirroring the service surface and interaction IDs.
-- `src/lib/server/infra/`: auth/session middleware, principal context, audit emitter, idempotency wrappers, cursor codec, clock abstraction, timezone utilities, request hashing, DTO validation, transport error mapping, and provider adapters.
+- Aggregate roots and contained children:
+  - `User`
+  - `PlanningProfile`
+  - `Session`
+  - `Aspect`
+  - `Milestone`
+  - `Task` + `TaskLock`
+  - `RecurringTaskSeries` + `RecurrenceRule` + `RecurrenceException`
+  - `AvailabilityBlock` + `AvailabilityException`
+  - `PlanningCycle` + `PlanningRevision` + `TaskAllocation` + `AllocationOutcome` + `AspectCycleHealth`
+  - `Reminder` + `ReminderAttempt`
+  - `ImportJob`
+  - `AuditEvent`
+  - `IdempotencyKey`
+  - `SystemJobRun`
+- Public services to reproduce exactly: `IAuthService`, `IProfileService`, `IAspectService`, `IMilestoneService`, `ITaskService`, `IRecurrenceService`, `IAvailabilityService`, `IPlanningService`, `IExecutionService`, `IReminderService`, `IDataPortabilityService`, `IAuditQueryService`.
+- Private services to reproduce exactly: `IIdentityProviderGateway`, `IRecurrenceMaterializer`, `ISchedulerEngine`, `IAvailabilityWindowResolver`, `IAspectTargetValidator`, `IHealthComputationService`, `IReminderDispatchService`, `IAccountErasureService`, `IImportRemapService`.
+- Controllers to reproduce exactly: `AuthController`, `ProfileController`, `AspectController`, `MilestoneController`, `TaskController`, `RecurrenceController`, `AvailabilityController`, `PlanningController`, `ExecutionController`, `ReminderController`, `DataPortabilityController`, `AuditController`.
+- Jobs to reproduce exactly: `SessionExpiryJob`, `DayBoundaryReplanJob`, `HealthJob`, `ReminderDispatchJob`, `ReminderRetryJob`, `TaskCompletionHook`, `JobIdempotencyWrapper`, plus the concrete import workflow worker entry point.
+- Route groups to reproduce exactly: `/(auth)`, `/(onboarding)`, `/(app)`, and the settings spokes under `/(app)/settings/*`.
+
+## Binding Supplements
+
+These supplements close the remaining ambiguities in the architecture packet. They are planner-authored binding decisions for the executor, not optional design work.
+
+- **Transport decomposition for `DAT-02`:**
+  - Keep `DataPortabilityController.export_json` for `DAT-01`.
+  - Decompose `DAT-02` transport into three explicit surfaces:
+    - `POST /(app)/api/data/import/preview`
+    - `POST /(app)/api/data/import/start`
+    - `GET /(app)/api/data/import/[jobId]`
+  - Preserve the architecture intent by treating preview/start as two transport variants of the single import use case. The controller layer may therefore expose `preview_import_json`, `start_import_json`, and `get_import_status` as planner-specified transport adapters backed by the same `IDataPortabilityService` concern. Do not invent any additional import endpoints.
+  - Hatchet enqueueing belongs in infra/job wiring, never in page components, route files, or domain services.
+- **Account settings scope resolution:**
+  - `/(app)/settings/account` is not an editable profile screen.
+  - It shows account identity summary data read-only plus `logout` and `delete account` actions.
+  - Editable planning preferences live only in `/(app)/settings/profile`.
+  - Do not invent account-update writes unless the architecture packet is amended with new interactions.
+- **Page-loader and query DTO naming:** use these exact route-level DTO names in `docs/execution/transport-contracts.md` and code:
+  - `DashboardPageData`
+  - `AspectsPageData`
+  - `AspectDetailPageData`
+  - `TasksPageData`
+  - `TaskDetailPageData`
+  - `PlanPageData`
+  - `PlanHistoryPageData`
+  - `AvailabilitySettingsPageData`
+  - `ProfileSettingsPageData`
+  - `AccountSettingsPageData`
+  - `DataSettingsPageData`
+  - `AuditSettingsPageData`
+- **List/query envelope rules:**
+  - cursor-paginated list/query DTOs use the envelope `{ items, nextCursor }`
+  - detail/page DTOs use explicit named properties, not anonymous nested blobs
+  - query DTOs always separate `filters`, `sort`, and `cursor` fields when more than one concern is present
+  - status/result polling DTOs for `DAT-02` use `{ jobId, status, summary, errors }`
+- **Dashboard projection minimum fields:** `DashboardPageData` must contain KPI summary, aspect health summary, today's schedule blocks, and upcoming task summaries.
+- **Aspect list/detail minimum fields:**
+  - `AspectsPageData` contains paginated aspect summaries and create affordance state.
+  - `AspectDetailPageData` contains `aspect`, `overview`, `milestones`, `tasks`, and `activeTab`.
+- **Task list/detail minimum fields:**
+  - `TasksPageData` contains list items, current filters, selected task id, and next cursor.
+  - `TaskDetailPageData` contains core task fields, milestone summary, recurrence section data, reminder section data, and allocation summary.
+- **Planning page minimum fields:**
+  - `PlanPageData` contains cycle summary, current revision summary, availability lanes, allocation blocks, and generate/confirm/regenerate affordance state.
+  - `PlanHistoryPageData` contains revision/history items in `{ items, nextCursor }` form.
+- **Settings page minimum fields:**
+  - `AvailabilitySettingsPageData` contains effective windows plus source blocks and exceptions.
+  - `ProfileSettingsPageData` contains planning profile values and dirty-state baseline.
+  - `AccountSettingsPageData` contains read-only identity/account summary plus destructive-action affordances.
+  - `DataSettingsPageData` contains export availability plus import preview/start/status state.
+  - `AuditSettingsPageData` contains audit feed items in `{ items, nextCursor }` form.
 
 ## Plan
 
-- [ ] **Step 1: Replace the starter runtime assumptions with the architecture baseline**
+- [ ] **Step 1: Create the fidelity ledgers, package skeleton, and exact contracts**
+      **Refs:** `architecture/software-architecture/index.md`, `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/03-services.md`, `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`, `architecture/software-architecture/13-infrastructure-considerations.md`, `architecture/ui_ux/ui-screen-inventory.md`
+      **Files:** `docs/execution/reference-ledger.md` (create), `docs/execution/invariant-coverage.md` (create), `docs/execution/interaction-route-map.md` (create), `docs/execution/transport-contracts.md` (create), `docs/execution/ui-acceptance-map.md` (create), `docs/execution/architecture-compliance.md` (create), `src/lib/server/domain/README.md` (create), `src/lib/server/errors/index.ts` (create), `src/lib/server/repositories/contracts/` (create package and contract files), `src/lib/server/services/contracts/` (create package and contract files), `src/lib/server/controllers/index.ts` (create), `src/lib/server/jobs/index.ts` (create), `src/lib/server/factory/app-factory.ts` (create stub), `src/lib/server/infra/index.ts` (create)
+      **What:** Derive exact ledgers from the reference packet and the `Binding Supplements` section above before any implementation work. The ledgers must record aggregate boundaries, service/controller/repository method names, interaction IDs, job entry points, route groups, screen contracts, and known source-precedence resolutions. `docs/execution/transport-contracts.md` must copy the canonical request DTO fields, response DTO fields, page-loader outputs, cursor payload shapes, query DTO fields, and action or endpoint shapes for every interaction using the supplement decisions above. Do not redesign open transport surfaces during execution; if a source doc is silent, the supplement in this blueprint is the answer. Reconcile the `DAT-02` async API shape and fix the Hatchet enqueue boundary here: controllers stay transport-only, services own business orchestration, and any Hatchet client or workflow dispatcher adapter stays in infra/job wiring rather than leaking into controllers or domain services. Create the server package skeleton and contract files only; do not add concrete logic yet.
+      **Verify:** `pnpm check` passes, every interaction in `architecture/software-architecture/09-interaction-traceability.md` appears in `docs/execution/interaction-route-map.md`, every aggregate in `architecture/software-architecture/11-aggregate-boundary-audit.md` appears in `docs/execution/reference-ledger.md`, every UI screen in `architecture/ui_ux/ui-screen-inventory.md` appears in `docs/execution/ui-acceptance-map.md`, and every interactive route or endpoint has a corresponding transport row in `docs/execution/transport-contracts.md`.
+
+- [ ] **Step 2: Create the QA harness, shared fakes, and failing specification tests**
+      **Refs:** `.claude/skills/qa/references/testing-patterns.md`, `.claude/skills/qa/references/validation.md`, `architecture/software-architecture/06-invariants-and-errors.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`, `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `tests/fakes/` (create shared fake packages), `tests/unit/models/` (create), `tests/unit/services/` (create), `tests/unit/controllers/` (create), `tests/integration/repositories/` (create), `src/lib/__tests__/fakes/` (create), `src/lib/__tests__/routes/` (create), `src/lib/__tests__/components/` (create), `vitest.config.ts` (create or modify), `playwright.config.ts` (create if needed for placeholders), `docs/execution/invariant-coverage.md` (modify), `docs/execution/ui-acceptance-map.md` (modify)
+      **What:** This is the mandatory TDD step. Create shared hand-rolled fakes, repository integration harness, frontend test harness, and the first wave of intentionally failing tests derived from the ledgers created in Step 1. Route, action, and UI tests must assert against `docs/execution/transport-contracts.md` and `docs/execution/ui-acceptance-map.md`, not against guessed payloads. Repository integration tests must run against an isolated ephemeral Postgres harness (`testcontainers` or an equivalent throwaway Postgres workflow), never SQLite. Cover domain construction rules, service behaviors, controller transport mapping, repository persistence constraints, job behaviors, route contracts, and UI acceptance criteria. Every test must follow the QA rules: no mocks, one assertion per test, behavior-focused names, and shared fakes implementing full contracts. Mark unfinished cases as skipped only if the missing implementation truly blocks execution, and record each skipped or failing case in the invariant and UI ledgers.
+      **Verify:** Test tooling runs, no mocking-library usage exists, the failing or skipped tests are mapped to invariants/interactions/screens in the ledgers, and the suite is intentionally red for missing implementation rather than green by omission.
+
+- [ ] **Step 3: Replace the starter runtime assumptions with the architecture baseline**
+      **Refs:** `architecture/software-architecture/07-wiring-and-config.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
       **Files:** `package.json` (modify), `drizzle.config.ts` (modify), `.env.example` (modify), `README.md` (modify), `src/lib/server/db/index.ts` (modify or replace), `docker-compose.yml` (create), `src/lib/server/config/runtime.ts` (create)
-      **What:** Replace the current SQLite-oriented setup with the architecture-aligned baseline: Postgres connection config, worker/runtime scripts, and environment placeholders for app URL, session secrets, identity provider config, reminder policy, email/notification provider credentials, and Hatchet token. Keep Drizzle if useful, but the dialect and DB bootstrap must target Postgres. Document local runtime services (`postgres`, app, worker, Hatchet engine or equivalent dev runtime) and the expected startup flow.
-      **Verify:** `pnpm install`, `pnpm check`, and a local config smoke test command such as `pnpm exec tsx src/lib/server/config/runtime.ts` succeed without referencing SQLite.
+      **What:** Replace the SQLite starter assumptions with the architecture baseline: Postgres, backend process, worker process, and Hatchet runtime. Document the local runtime topology and add scripts for the app, worker, database tasks, and full-stack verification. Keep the runtime names and config expectations aligned with `13-infrastructure-considerations.md`.
+      **Test first:** Unskip or extend the failing runtime/config smoke tests from Step 2 before implementing.
+      **Verify:** `pnpm install`, `pnpm check`, and the runtime smoke test pass without any SQLite dependency in the active runtime path.
 
-- [ ] **Step 2: Create the server package skeleton and dependency boundaries**
-      **Files:** `src/lib/server/domain/README.md` (create), `src/lib/server/errors/index.ts` (create), `src/lib/server/repositories/contracts/index.ts` (create), `src/lib/server/services/contracts/index.ts` (create), `src/lib/server/controllers/index.ts` (create), `src/lib/server/jobs/index.ts` (create), `src/lib/server/factory/app-factory.ts` (create), `src/lib/server/infra/index.ts` (create)
-      **What:** Establish the exact package layout the architecture expects. Add barrel files and short module comments only where necessary to communicate layer intent. Ensure there is no leftover starter-only structure implying business logic should live in route files.
-      **Verify:** `pnpm check` passes and imports can resolve through the new package skeleton.
-
-- [ ] **Step 3: Implement validated environment and startup configuration**
+- [ ] **Step 4: Implement validated environment and startup configuration**
+      **Refs:** `architecture/software-architecture/07-wiring-and-config.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
       **Files:** `src/lib/server/config/env.ts` (create), `src/lib/server/config/public.ts` (create), `src/lib/server/config/private.ts` (create), `src/lib/server/config/reminder-policy.ts` (create), `src/lib/server/config/timezone-policy.ts` (create), `src/lib/server/config/index.ts` (create)
-      **What:** Build the startup validation layer described by the architecture docs. Validate database URL, app base URL, session lifetime, identity provider credentials, session secret, reminder snooze limit, exponential retry schedule, daily retry window, timezone defaults, email/notification provider credentials for reminder channels, and Hatchet token. Add an explicit boot-time database connectivity check so the app and worker fail fast if the URL is syntactically valid but the database cannot be contacted. Export typed config objects for app runtime and worker runtime.
-      **Verify:** A config unit test or smoke test proves invalid env fails fast, unreachable databases fail startup fast, and valid env produces typed config.
+      **What:** Add the typed startup validation layer for database connectivity, app base URL, session secrets, identity provider settings, reminder policy, retry windows, timezone policy, email provider config, and Hatchet token. Fail fast for invalid or unreachable configuration.
+      **Test first:** Turn the config validation tests from Step 2 red without adding production logic to the tests.
+      **Verify:** Config tests pass for valid config and fail fast for invalid env or unreachable database.
 
-- [ ] **Step 4: Implement shared domain errors and transport mapping**
-      **Files:** `src/lib/server/errors/domain-errors.ts` (create), `src/lib/server/errors/http-error-mapper.ts` (create), `src/lib/server/errors/index.ts` (modify), `src/hooks.server.ts` (create or modify)
-      **What:** Define the architecture-specified domain error taxonomy (`UnauthorisedError`, `SessionExpiredError`, `InputError`, `StateTransitionError`, `OwnershipError`, `NotFoundError`, `TargetPercentTotalError`, `OptimisticConcurrencyError`, `LockConflictError`, `CursorShapeError`, `IdempotencyHashMismatchError`, `SnoozeLimitExceededError`, `ImportRemapError`, `RetryExhaustedError`). Add a transport mapper so route handlers and hooks can convert domain failures into stable HTTP responses.
-      **Verify:** Unit tests prove each error maps to the expected HTTP status and response shape.
+- [ ] **Step 5: Implement shared domain errors, transport mapping, and auth principal plumbing**
+      **Refs:** `architecture/software-architecture/01-overview-and-cross-cutting.md`, `architecture/software-architecture/06-invariants-and-errors.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/errors/domain-errors.ts` (create), `src/lib/server/errors/http-error-mapper.ts` (create), `src/lib/server/errors/index.ts` (modify), `src/lib/server/infra/auth/principals.ts` (create), `src/lib/server/infra/auth/session-context.ts` (create), `src/lib/server/infra/auth/authorization-scope.ts` (create), `src/lib/server/infra/auth/verified-identity-guard.ts` (create), `src/app.d.ts` (modify), `src/hooks.server.ts` (create or modify)
+      **What:** Define the architecture-specified error taxonomy, transport mapping, request-scoped principal types, session loading, authorization scope helpers, and verified identity guards. Keep auth/session failure ownership in infrastructure where the failure mapping says it belongs.
+      **Test first:** Turn on the failing hook, principal, and error-mapping tests from Step 2.
+      **Verify:** Hook and mapper tests pass, and `docs/execution/invariant-coverage.md` records the implemented auth/error invariants.
 
-- [ ] **Step 5: Implement principal context, auth scope, and verified identity guards**
-      **Files:** `src/lib/server/infra/auth/principals.ts` (create), `src/lib/server/infra/auth/session-context.ts` (create), `src/lib/server/infra/auth/authorization-scope.ts` (create), `src/lib/server/infra/auth/verified-identity-guard.ts` (create), `src/app.d.ts` (modify), `src/hooks.server.ts` (modify)
-      **What:** Introduce `UserSession` and `ServicePrincipal` models, request-scoped principal loading, verified identity checks, and reusable authorization helpers. This must support the rule that all domain reads/writes happen under a principal except pre-session auth flows.
-      **Verify:** Hook/middleware tests prove anonymous requests stay anonymous, valid sessions resolve to `locals`, expired/revoked sessions fail correctly, and mutation guards reject unverified identities.
-
-- [ ] **Step 6: Implement shared clock, timezone, cursor, and hashing utilities**
+- [ ] **Step 6: Implement shared clock, timezone, cursor, and hashing infrastructure**
+      **Refs:** `architecture/software-architecture/01-overview-and-cross-cutting.md`, `architecture/software-architecture/06-invariants-and-errors.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
       **Files:** `src/lib/server/infra/time/clock.ts` (create), `src/lib/server/infra/time/timezone.ts` (create), `src/lib/server/infra/pagination/cursor-codec.ts` (create), `src/lib/server/infra/pagination/cursor-shape.ts` (create), `src/lib/server/infra/idempotency/request-hash.ts` (create)
-      **What:** Build reusable infrastructure for time handling, timezone-aware local date operations, cursor encoding/decoding bound to query shape, and normalized request hashing for commands and jobs. These utilities are prerequisites for recurrence, planning, reminders, and cursor-based list UIs.
-      **Verify:** Unit tests cover DST-sensitive local date conversion, cursor encode/decode round-trips, invalid cursor rejection, and stable request hash generation.
+      **What:** Implement shared time, timezone, cursor, and request-hash utilities used by recurrence, planning, pagination, and idempotency. Cursor validation must remain query-shape aware.
+      **Test first:** Enable the failing infrastructure tests from Step 2 for DST handling, cursor round-trips, invalid cursor rejection, and stable request hashing.
+      **Verify:** Those tests pass and any cursor-related failure mappings are marked covered.
 
 - [ ] **Step 7: Implement domain enums and value objects**
-      **Files:** `src/lib/server/domain/enums.ts` (create), `src/lib/server/domain/value-objects/email-address.ts` (create), `src/lib/server/domain/value-objects/iana-timezone.ts` (create), `src/lib/server/domain/value-objects/planner-weight.ts` (create), `src/lib/server/domain/value-objects/urgent-threshold-days.ts` (create), `src/lib/server/domain/value-objects/min-chunk-minutes.ts` (create), `src/lib/server/domain/value-objects/positive-minutes.ts` (create), `src/lib/server/domain/value-objects/non-negative-minutes.ts` (create), `src/lib/server/domain/value-objects/importance-score.ts` (create), `src/lib/server/domain/value-objects/target-percentage.ts` (create), `src/lib/server/domain/value-objects/index.ts` (create)
-      **What:** Encode all status enums and validated primitives that the architecture expects. This step must not stop at the short seed list above: add every value object and enum named or implied by `architecture/software-architecture/02-aggregates-and-models.md`, including display/name/title template objects, recurrence cadence helpers, weekday masks, month-day objects, and revision numbers. Keep them free of persistence concerns and enforce exact allowed ranges and construction-time validation derived from the invariants.
-      **Verify:** Domain unit tests cover valid ranges, invalid construction, enum exhaustiveness, and one test per value object named in the aggregate spec.
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/06-invariants-and-errors.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/domain/enums.ts` (create), `src/lib/server/domain/value-objects/` (create full set), `src/lib/server/domain/value-objects/index.ts` (create)
+      **What:** Implement every enum and value object named or implied by the aggregate spec, not only the short starter list. Keep them pure, construction-validated, and free of persistence concerns.
+      **Test first:** Unskip the value-object tests from Step 2 and add any missing invariant cases before implementation.
+      **Verify:** Domain value-object tests pass and each named value object is marked covered in `docs/execution/invariant-coverage.md`.
 
-- [ ] **Step 8: Implement identity, profile, and session aggregate models**
+- [ ] **Step 8: Implement identity, profile, and session models**
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
       **Files:** `src/lib/server/domain/models/user.ts` (create), `src/lib/server/domain/models/session.ts` (create), `src/lib/server/domain/models/planning-profile.ts` (create), `src/lib/server/domain/models/index.ts` (modify)
-      **What:** Model `User`, `Session`, and `PlanningProfile` exactly as defined in the ERD and aggregate docs, including timezone snapshots, identity verification, session lifecycle, profile weights, urgent threshold, min chunk, default effort, and optimistic concurrency where required.
-      **Verify:** Unit tests cover one-profile assumptions, valid/invalid profile ranges, session terminal states, and value-object composition.
+      **What:** Implement `User`, `Session`, and `PlanningProfile` exactly as specified, including lifecycle states, timezone snapshots, versioning, and single-profile assumptions.
+      **Test first:** Turn the Step 2 model tests for identity/profile/session invariants red and then green.
+      **Verify:** Model tests pass and the profile/session invariant rows move to `Covered`.
 
-- [ ] **Step 9: Implement aspect and milestone aggregate models**
+- [ ] **Step 9: Implement aspect and milestone models**
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
       **Files:** `src/lib/server/domain/models/aspect.ts` (create), `src/lib/server/domain/models/milestone.ts` (create), `src/lib/server/domain/models/index.ts` (modify)
-      **What:** Model flat aspects, status transitions, target percentages, default splittable policy, milestone ownership, milestone statuses, and archive/restore metadata. Do not embed child tasks inside the models; keep aggregate boundaries aligned with the architecture.
-      **Verify:** Unit tests cover valid state construction, archive/restore reset semantics, and target percentage constraints.
+      **What:** Implement flat aspect and milestone models with the exact state and restoration semantics from the architecture. Do not smuggle child-task collections into these roots.
+      **Test first:** Enable the failing aspect and milestone model tests from Step 2.
+      **Verify:** Model tests pass and the aggregate-boundary ledger still matches `11-aggregate-boundary-audit.md`.
 
-- [ ] **Step 10: Implement task, lock, recurrence, and reminder aggregate models**
+- [ ] **Step 10: Implement task, recurrence, and reminder models**
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
       **Files:** `src/lib/server/domain/models/task.ts` (create), `src/lib/server/domain/models/task-lock.ts` (create), `src/lib/server/domain/models/recurring-task-series.ts` (create), `src/lib/server/domain/models/recurrence-rule.ts` (create), `src/lib/server/domain/models/recurrence-exception.ts` (create), `src/lib/server/domain/models/reminder.ts` (create), `src/lib/server/domain/models/reminder-attempt.ts` (create), `src/lib/server/domain/models/index.ts` (modify)
-      **What:** Implement task lifecycle, effort and remaining minutes, due-date day granularity, milestone linkage, recurring series metadata, recurrence rules and exceptions, reminder channels/statuses, retry/snooze fields, and time snapshot fields. Capture the exact distinctions between paused, closed, failed, cancelled, sent, backlog, in-progress, done, and archived.
-      **Verify:** Unit tests cover task state validity, recurrence rule shapes, exception action validity, and reminder state field requirements.
+      **What:** Implement task lifecycle models, `TaskLock` as a child of `Task`, recurrence series/rule/exception as one aggregate, and reminder/attempt as a separate root with append-only attempts.
+      **Test first:** Turn on the failing Step 2 model tests for task, recurrence, and reminder invariants.
+      **Verify:** Those model tests pass and the coverage ledger reflects the correct aggregate boundaries.
 
-- [ ] **Step 11: Implement availability, planning, execution, audit, portability, idempotency, and job aggregate models**
+- [ ] **Step 11: Implement availability, planning, audit, portability, idempotency, and job-run models**
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
       **Files:** `src/lib/server/domain/models/availability-block.ts` (create), `src/lib/server/domain/models/availability-exception.ts` (create), `src/lib/server/domain/models/planning-cycle.ts` (create), `src/lib/server/domain/models/planning-revision.ts` (create), `src/lib/server/domain/models/task-allocation.ts` (create), `src/lib/server/domain/models/allocation-outcome.ts` (create), `src/lib/server/domain/models/aspect-cycle-health.ts` (create), `src/lib/server/domain/models/import-job.ts` (create), `src/lib/server/domain/models/audit-event.ts` (create), `src/lib/server/domain/models/idempotency-key.ts` (create), `src/lib/server/domain/models/system-job-run.ts` (create), `src/lib/server/domain/models/index.ts` (modify)
-      **What:** Model one-off and recurring availability, exceptions, weekly planning cycles, immutable revisions, allocations, outcomes, health snapshots, async import jobs, immutable audit events, idempotency records, and system job runs. Do not add a persisted export job in v1; `DAT-01` remains synchronous. Preserve all time snapshots and state machines from the ERD and the software architecture.
-      **Verify:** Unit tests cover availability shape validation, revision immutability metadata, allocation status constraints, and append-only audit/job state construction.
+      **What:** Implement the remaining aggregates, preserving `PlanningCycle` as the historical root for revisions, allocations, outcomes, and health, and keeping audit/idempotency/job-run records append-only or first-write-only as required.
+      **Test first:** Turn on the failing model tests from Step 2 for planning, availability, audit, portability, and infra records.
+      **Verify:** Model tests pass and the invariant ledger reflects append-only and revision-history guarantees.
 
 - [ ] **Step 12: Implement the relational schema and migrations for all aggregates**
-      **Files:** `src/lib/server/db/schema/users.ts` (create), `src/lib/server/db/schema/sessions.ts` (create), `src/lib/server/db/schema/planning-profiles.ts` (create), `src/lib/server/db/schema/aspects.ts` (create), `src/lib/server/db/schema/milestones.ts` (create), `src/lib/server/db/schema/tasks.ts` (create), `src/lib/server/db/schema/recurrence.ts` (create), `src/lib/server/db/schema/availability.ts` (create), `src/lib/server/db/schema/planning.ts` (create), `src/lib/server/db/schema/reminders.ts` (create), `src/lib/server/db/schema/portability.ts` (create), `src/lib/server/db/schema/audit.ts` (create), `src/lib/server/db/schema/idempotency.ts` (create), `src/lib/server/db/schema/system-jobs.ts` (create), `src/lib/server/db/schema/index.ts` (create), `src/lib/server/db/index.ts` (replace), `src/lib/server/db/migrations/*` (generate)
-      **What:** Replace the toy starter schema with the full relational model. Encode foreign keys, unique constraints, indexes, current revision pointer integrity, one planning profile per user, one cycle per user/week, contiguous revision support, one active lock per task, one active reminder per task/channel, and query indexes for task search, feed pagination, and planning lookups.
-      **Verify:** `pnpm db:generate` and migration application succeed on a fresh database; schema inspection shows the required constraints.
+      **Refs:** `architecture/software-architecture/02-aggregates-and-models.md`, `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/db/schema/` (create full schema modules), `src/lib/server/db/schema/index.ts` (create), `src/lib/server/db/index.ts` (replace), `src/lib/server/db/migrations/*` (generate)
+      **What:** Replace the toy schema with the full Postgres relational model, including all unique constraints, FKs, indexes, current-revision integrity, per-user uniqueness constraints, and append-only record shapes implied by the repository rules and invariant matrix.
+      **Test first:** Turn on the repository integration tests from Step 2 that validate schema-backed constraints.
+      **Verify:** `pnpm db:generate` and migration application succeed on a fresh Postgres database, and the repository integration tests that only need the schema now pass.
 
-- [ ] **Step 13: Implement repository contracts for every aggregate root and read model**
-      **Files:** `src/lib/server/repositories/contracts/user-repository.ts` (create), `src/lib/server/repositories/contracts/session-repository.ts` (create), `src/lib/server/repositories/contracts/planning-profile-repository.ts` (create), `src/lib/server/repositories/contracts/aspect-repository.ts` (create), `src/lib/server/repositories/contracts/milestone-repository.ts` (create), `src/lib/server/repositories/contracts/task-repository.ts` (create), `src/lib/server/repositories/contracts/recurring-series-repository.ts` (create), `src/lib/server/repositories/contracts/availability-repository.ts` (create), `src/lib/server/repositories/contracts/planning-cycle-repository.ts` (create), `src/lib/server/repositories/contracts/reminder-repository.ts` (create), `src/lib/server/repositories/contracts/import-job-repository.ts` (create), `src/lib/server/repositories/contracts/audit-event-repository.ts` (create), `src/lib/server/repositories/contracts/idempotency-key-repository.ts` (create), `src/lib/server/repositories/contracts/system-job-run-repository.ts` (create), `src/lib/server/repositories/contracts/query-models.ts` (create)
-      **What:** Define repository interfaces and query DTOs for both aggregate persistence and list/detail reads. Include methods needed for task list search, task detail projection, aspect list pagination, milestone list pagination, planning history, audit feed, and effective availability windows.
-      **Verify:** `pnpm check` passes and service-layer stubs can compile against the contracts.
+- [ ] **Step 13: Implement core repository contracts for identity and profile roots**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/contracts/user-repository.ts` (create), `src/lib/server/repositories/contracts/session-repository.ts` (create), `src/lib/server/repositories/contracts/planning-profile-repository.ts` (create)
+      **What:** Create the exact repository interfaces for `User`, `Session`, and `PlanningProfile` using the method names and boundaries from `05-repositories.md`. Keep method signatures aligned with Step 1 ledgers.
+      **Test first:** Turn on the contract compilation tests and fake implementations for these three repositories.
+      **Verify:** `pnpm check` passes and the contract ledger matches the architecture docs exactly.
 
-- [ ] **Step 14: Implement Postgres repository adapters for auth/profile/aspect/milestone roots**
-      **Files:** `src/lib/server/repositories/postgres/user-repository.ts` (create), `src/lib/server/repositories/postgres/session-repository.ts` (create), `src/lib/server/repositories/postgres/planning-profile-repository.ts` (create), `src/lib/server/repositories/postgres/aspect-repository.ts` (create), `src/lib/server/repositories/postgres/milestone-repository.ts` (create)
-      **What:** Implement aggregate persistence, optimistic concurrency, user scoping, cursor pagination where applicable, and helper queries for onboarding status and active aspect target totals. The aspect and milestone repositories must support archive and restore state changes and paged querying.
-      **Verify:** Repository integration tests pass against a test database for create, update, stale write rejection, and paged queries.
+- [ ] **Step 14: Implement repository contracts for aspect, milestone, and task roots**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/contracts/aspect-repository.ts` (create), `src/lib/server/repositories/contracts/milestone-repository.ts` (create), `src/lib/server/repositories/contracts/task-repository.ts` (create)
+      **What:** Create the contract files for `Aspect`, `Milestone`, and `Task` + `TaskLock`, including the exact archive, restore, projection, and lock methods required by the architecture.
+      **Test first:** Turn on the matching contract compilation tests and full fake implementations.
+      **Verify:** Contracts compile and match the Step 1 reference ledger.
 
-- [ ] **Step 15: Implement Postgres repository adapters for tasks, recurrence, and reminders**
-      **Files:** `src/lib/server/repositories/postgres/task-repository.ts` (create), `src/lib/server/repositories/postgres/recurring-series-repository.ts` (create), `src/lib/server/repositories/postgres/reminder-repository.ts` (create)
-      **What:** Implement same-aspect milestone checks, task search/query defaults, detail projection loading, recurring series persistence with single active rule and exception history, reminder uniqueness per channel, reminder attempt history, and cancellation/update helpers used by task lifecycle flows.
-      **Verify:** Integration tests cover task list sort/filter rules, detail reads, recurring series upsert semantics, and one-active-reminder-per-channel enforcement.
+- [ ] **Step 15: Implement repository contracts for recurrence, availability, and planning roots**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/contracts/recurring-series-repository.ts` (create), `src/lib/server/repositories/contracts/availability-repository.ts` (create), `src/lib/server/repositories/contracts/planning-cycle-repository.ts` (create)
+      **What:** Create the contracts for recurrence, availability, and planning history, keeping the audited aggregate boundaries intact and not splitting children into standalone repositories.
+      **Test first:** Turn on the matching contract and fake-implementation tests.
+      **Verify:** Contracts compile and the planning-cycle contract still owns revisions, allocations, outcomes, and health.
 
-      **What:** Implement aggregate persistence, optimistic concurrency, user scoping, cursor pagination where applicable, and helper queries for onboarding status and active aspect target totals. The aspect and milestone repositories must support archive and restore state changes and paged querying.
-      **Verify:** Repository integration tests pass against a test database for create, update, stale write rejection, and paged queries.
+- [ ] **Step 16: Implement repository contracts for reminders and operational records**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/repositories/contracts/reminder-repository.ts` (create), `src/lib/server/repositories/contracts/import-job-repository.ts` (create), `src/lib/server/repositories/contracts/audit-event-repository.ts` (create), `src/lib/server/repositories/contracts/idempotency-key-repository.ts` (create), `src/lib/server/repositories/contracts/system-job-run-repository.ts` (create)
+      **What:** Create the contracts for reminder lifecycle, import jobs, audit, idempotency, and job-run dedupe exactly as documented.
+      **Test first:** Turn on the matching contract compilation tests and fakes.
+      **Verify:** Contracts compile and the interaction ledger references them without invented methods.
 
-- [ ] **Step 16: Implement Postgres repository adapters for availability, planning, portability, audit, idempotency, and jobs**
-      **Files:** `src/lib/server/repositories/postgres/availability-repository.ts` (create), `src/lib/server/repositories/postgres/planning-cycle-repository.ts` (create), `src/lib/server/repositories/postgres/import-job-repository.ts` (create), `src/lib/server/repositories/postgres/audit-event-repository.ts` (create), `src/lib/server/repositories/postgres/idempotency-key-repository.ts` (create), `src/lib/server/repositories/postgres/system-job-run-repository.ts` (create)
-      **What:** Implement effective availability source persistence, cycle/revision/allocation persistence, current revision pointer updates, lock uniqueness, `ImportJob` state only, immutable audit storage, command idempotency lookups, and job-run dedupe. `DAT-01` has no persisted export-job record in v1. Keep revisions immutable and audit append-only.
-      **Verify:** Integration tests prove one cycle per user/week, one active revision, lock uniqueness, import-job lifecycle behavior, idempotent replay behavior, and immutable audit appends.
+- [ ] **Step 17: Implement query models and read projection DTO contracts**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/12-mechanical-audit.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/repositories/contracts/query-models.ts` (create), `docs/execution/transport-contracts.md` (modify), `docs/execution/reference-ledger.md` (modify)
+      **What:** Turn the Step 1 transport decisions into explicit query DTO types for task list/detail, aspect list/detail, milestone list, planning history, audit feed, dashboard projections, and availability projections. This is where the executor fixes the under-specified read-model surface before repository implementations start.
+      **Test first:** Turn on the DTO shape tests and fake projection tests from Step 2.
+      **Verify:** Every loader and query interaction in the ledgers points to a concrete DTO type and cursor shape.
 
-- [ ] **Step 17: Implement command idempotency and job idempotency wrappers**
-      **Files:** `src/lib/server/infra/idempotency/command-policy.ts` (create), `src/lib/server/infra/idempotency/job-policy.ts` (create), `src/lib/server/infra/idempotency/index.ts` (create)
-      **What:** Build reusable wrappers that enforce required idempotency key semantics for all create/mutate commands and job-run key semantics for mutation-capable jobs. Exact behavior must match the sequence diagrams: same key + same hash replays prior result, same key + different hash raises mismatch.
-      **Verify:** Unit and integration tests cover first execution, replay, hash mismatch, and job dedupe.
+- [ ] **Step 18: Implement Postgres `UserRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/repositories/postgres/user-repository.ts` (create), `tests/integration/repositories/test_user_repository.ts` (create or unskip)
+      **What:** Implement identity lookup, create, delete, and user fetch behavior with the exact persistence rules from the architecture.
+      **Test first:** Enable the `UserRepository` integration tests before implementation.
+      **Verify:** User repository integration tests pass on Postgres.
 
-- [ ] **Step 18: Implement immutable audit emission infrastructure**
-      **Files:** `src/lib/server/infra/audit/audit-diff.ts` (create), `src/lib/server/infra/audit/audit-emitter.ts` (create), `src/lib/server/infra/audit/ownership-stamped-audit.ts` (create), `src/lib/server/infra/audit/index.ts` (create)
-      **What:** Build the shared audit emitter used by services and wrappers. It must produce exactly one immutable, redacted before/after event per successful write, support `UserSession` and `ServicePrincipal` actor types, and stamp affected user IDs for service-principal mutations.
-      **Verify:** Tests prove audit events emit once per successful mutation, redact payloads, remain append-only, and support service-principal attribution.
+- [ ] **Step 19: Implement Postgres `SessionRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/repositories/postgres/session-repository.ts` (create), `tests/integration/repositories/test_session_repository.ts` (create or unskip)
+      **What:** Implement session create, active lookup by token hash, revoke, revoke-all, and expiry sweep behavior.
+      **Test first:** Enable the `SessionRepository` integration tests before implementation.
+      **Verify:** Session repository integration tests pass, including expiry and revoke behavior.
 
-- [ ] **Step 19: Implement the external identity provider gateway and session token handling**
-      **Files:** `src/lib/server/services/internal/identity-provider-gateway.ts` (create), `src/lib/server/infra/auth/session-cookie.ts` (create), `src/lib/server/infra/providers/oidc-provider.ts` (create), `src/lib/server/infra/providers/dev-provider.ts` (create)
-      **What:** Create a provider abstraction for auth initiation and callback claim resolution plus session cookie/signing helpers. Support a concrete OIDC-compatible provider adapter and a dev-friendly adapter so the application can be exercised locally without breaking the architecture boundary.
-      **Verify:** Unit tests cover sign-in URL generation, callback claim mapping, and session cookie issuance/clear flows.
+- [ ] **Step 20: Implement Postgres `PlanningProfileRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/repositories/postgres/planning-profile-repository.ts` (create), `tests/integration/repositories/test_planning_profile_repository.ts` (create or unskip)
+      **What:** Implement single-profile-per-user persistence with optimistic concurrency.
+      **Test first:** Enable the planning profile integration tests before implementation.
+      **Verify:** Integration tests pass for create/load/save/stale-write rejection.
 
-- [ ] **Step 19b: Implement reminder delivery provider adapters**
-      **Files:** `src/lib/server/infra/providers/reminder-provider.ts` (create), `src/lib/server/infra/providers/in-app-reminder-provider.ts` (create), `src/lib/server/infra/providers/email-reminder-provider.ts` (create)
-      **What:** Create the provider boundary used by reminder dispatch. Add concrete adapters for the required channels in v1, including in-app delivery and email delivery, with a stable success/failure result contract that `ReminderDispatchService` can consume.
-      **Verify:** Provider tests cover success and failure mapping for each channel adapter.
+- [ ] **Step 21: Implement Postgres `AspectRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/repositories/postgres/aspect-repository.ts` (create), `tests/integration/repositories/test_aspect_repository.ts` (create or unskip)
+      **What:** Implement aspect save, archive, restore-to-draft, query, list-active, and delete-by-user behavior.
+      **Test first:** Enable the aspect repository integration tests before implementation.
+      **Verify:** Integration tests pass for pagination, archive/restore, and stale-write cases.
 
-- [ ] **Step 20: Implement `AuthService`, `ProfileService`, and account erasure orchestration**
-      **Files:** `src/lib/server/services/auth-service.ts` (create), `src/lib/server/services/profile-service.ts` (create), `src/lib/server/services/internal/account-erasure-service.ts` (create)
-      **What:** Implement `AUTH-01` through `AUTH-06` and `PRF-01`: sign-in start, callback bootstrap, logout, onboarding completion, session expiry compatibility, profile update, and full hard-delete cascade of user-owned data and operational records. The callback path must match-or-create a user, bootstrap the single planning profile, and issue a session. The erase path must explicitly delete reminders, attempts, planning data, locks, availability, aspects, recurrence, the planning profile, import jobs, idempotency records, audit timeline, sessions, and user.
-      **Verify:** Service tests cover sign-in bootstrap, logout, profile optimistic concurrency, onboarding gate, and full-account-erasure side effects, including planning-profile removal.
+- [ ] **Step 22: Implement Postgres `MilestoneRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/repositories/postgres/milestone-repository.ts` (create), `tests/integration/repositories/test_milestone_repository.ts` (create or unskip)
+      **What:** Implement milestone save, archive, restore, query, and delete-by-aspect behavior.
+      **Test first:** Enable the milestone repository integration tests before implementation.
+      **Verify:** Integration tests pass for lifecycle and query behavior.
 
-- [ ] **Step 21: Implement `AspectService` and `MilestoneService`**
-      **Files:** `src/lib/server/services/aspect-service.ts` (create), `src/lib/server/services/milestone-service.ts` (create), `src/lib/server/services/internal/aspect-target-validator.ts` (create)
-      **What:** Implement `ASP-01` through `ASP-06` and `MLS-01` through `MLS-07`, including draft creation, activation, metadata update, archive/restore cascades, paged querying, milestone lifecycle transitions, and all cascade/reset semantics from the sequence diagrams. Keep target-total enforcement deferred to planning boundaries while still validating aspect-level inputs.
-      **Verify:** Service tests cover activation rules, archive/restore side effects, milestone done gating, milestone archive/restore, and paged query behavior.
+- [ ] **Step 23: Implement Postgres `TaskRepository` write paths and lock behavior**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/postgres/task-repository.ts` (create), `tests/integration/repositories/test_task_repository_writes.ts` (create or unskip)
+      **What:** Implement task save, archive, restore, bulk load, active-lock lookup, lock replacement, lock release, and side-effect helpers for cancelling future allocations and pending reminders.
+      **Test first:** Enable the task write-path integration tests before implementation.
+      **Verify:** Integration tests pass for optimistic concurrency and one-active-lock-per-task guarantees.
 
-- [ ] **Step 22: Implement `TaskService` with lifecycle, search, detail, and bulk mutation behavior**
-      **Files:** `src/lib/server/services/task-service.ts` (create), `src/lib/server/services/dto/task-dtos.ts` (create)
-      **What:** Implement `TSK-01` through `TSK-11`, including create, update, move within same aspect, start, complete, reopen, archive, restore, partial-success bulk mutation, cursor-based query/search, and detail reads that include reminders, recurrence, and allocations. Respect same-aspect milestone rules, force completion semantics, default query filters, and canonical sort order.
-      **Verify:** Service tests cover every transition, same-aspect move rules, future reminder/allocation cancellations, bulk per-item results, cursor validation, and detail hydration.
+- [ ] **Step 24: Implement Postgres `TaskRepository` read projections and query behavior**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/repositories/postgres/task-repository.ts` (modify), `tests/integration/repositories/test_task_repository_queries.ts` (create or unskip)
+      **What:** Implement task list query, canonical sort order, filters, case-insensitive search, and detail projection loading exactly as fixed in the ledgers.
+      **Test first:** Enable the task query integration tests before implementation.
+      **Verify:** Integration tests pass for default filters, search, sorting, cursor pagination, and detail hydration.
 
-- [ ] **Step 23: Implement `RecurrenceService` and `RecurrenceMaterializer`**
-      **Files:** `src/lib/server/services/recurrence-service.ts` (create), `src/lib/server/services/internal/recurrence-materializer.ts` (create)
-      **What:** Implement `REC-01` through `REC-05`, including series upsert, first-instance materialization, pause/resume, skip/move exceptions, next-instance generation on completion, overdue suppression, timezone-aware local recurrence evaluation, monthly clamp behavior, and close-with-history-preserved semantics.
-      **Verify:** Service tests cover immediate first materialization, pause/resume, skip vs move, overdue suppression, monthly edge dates, and close behavior.
+- [ ] **Step 25: Implement Postgres `RecurringSeriesRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/postgres/recurring-series-repository.ts` (create), `tests/integration/repositories/test_recurring_series_repository.ts` (create or unskip)
+      **What:** Implement load/save/close/find-by-task-instance behavior for the recurrence aggregate.
+      **Test first:** Enable the recurrence repository integration tests before implementation.
+      **Verify:** Integration tests pass for single active rule, exception history, and close semantics.
 
-- [ ] **Step 24: Implement `AvailabilityService` and `AvailabilityWindowResolver`**
-      **Files:** `src/lib/server/services/availability-service.ts` (create), `src/lib/server/services/internal/availability-window-resolver.ts` (create)
-      **What:** Implement `AVL-01` through `AVL-05`, covering one-off vs recurring creation, exception management, update/archive/restore, and effective availability read modeling with exception application and overlap merging. Preserve source blocks; derive effective windows at read time.
-      **Verify:** Service tests cover invalid time shapes, exception application, overlap normalization, and archive/restore behavior.
+- [ ] **Step 26: Implement Postgres `ReminderRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/repositories/postgres/reminder-repository.ts` (create), `tests/integration/repositories/test_reminder_repository.ts` (create or unskip)
+      **What:** Implement active reminder lookup by task/channel, save, attempt recording, due-query, failed-for-retry query, cancel-pending-for-task, and delete-by-user behavior.
+      **Test first:** Enable the reminder repository integration tests before implementation.
+      **Verify:** Integration tests pass for one-active-reminder-per-task-per-channel and retry queries.
 
-- [ ] **Step 25: Implement `SchedulerEngine`**
-      **Files:** `src/lib/server/services/internal/scheduler-engine.ts` (create), `src/lib/server/services/internal/scoring.ts` (create)
-      **What:** Implement the deterministic heuristic weekly scheduler defined by the architecture. It must rank tasks using the planning profile, enforce constraint order (lock, due-feasibility, min chunk, capacity), respect aspect targets and splittable rules, preserve locked/past allocations where relevant, and return both placed and deferred work with stable tie-break behavior.
-      **Verify:** Engine tests cover deterministic ranking, due-feasibility, min chunk behavior, splittable vs non-splittable tasks, deferred tasks, and lock preservation.
+- [ ] **Step 27: Implement Postgres `AvailabilityRepository` and tests**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/postgres/availability-repository.ts` (create), `tests/integration/repositories/test_availability_repository.ts` (create or unskip)
+      **What:** Implement availability block save, archive, restore, add-exception, range query, and delete-by-user behavior.
+      **Test first:** Enable the availability repository integration tests before implementation.
+      **Verify:** Integration tests pass for recurring exceptions and range reads.
 
-- [ ] **Step 26: Implement `PlanningService`**
-      **Files:** `src/lib/server/services/planning-service.ts` (create)
-      **What:** Implement `PLN-01`, `PLN-02`, `PLN-03`, `PLN-04`, `PLN-05`, and `PLN-06`: draft generation, confirmation, regeneration, allocation edit/lock/unlock/cancel, day-boundary replan, and cycle/revision query. Expose the documented service-level `replan_active_cycles(now)` behavior for `PLN-05`, including the no-material-change no-op branch, the safe-replan new-revision branch, and the lock-conflict branch. Enforce ISO week boundaries, exact 100 target-total gating at generation and confirmation, immutable revisions, superseding logic, current revision pointer updates, stale-write protection, and lock conflict detection.
-      **Verify:** Service tests cover draft creation, confirm flow, regenerate preserving past/locked allocations, edit generating a new revision, `replan_active_cycles(now)` no-op behavior, safe day-boundary replan creating a new revision, lock conflicts, and planning history queries.
+- [ ] **Step 28: Implement Postgres `PlanningCycleRepository` cycle and revision creation**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`, `architecture/software-architecture/11-aggregate-boundary-audit.md`
+      **Files:** `src/lib/server/repositories/postgres/planning-cycle-repository.ts` (create), `tests/integration/repositories/test_planning_cycle_repository_revisions.ts` (create or unskip)
+      **What:** Implement cycle lookup, create-cycle-with-revision, create-draft-revision, confirm-cycle, and supersede/create-revision behavior with contiguity and single-current-revision guarantees.
+      **Test first:** Enable the planning revision integration tests before implementation.
+      **Verify:** Integration tests pass for cycle creation, current revision pointer integrity, and stale-write rejection.
 
-- [ ] **Step 27: Implement `ExecutionService`, `HealthComputationService`, and `ReminderService`**
-      **Files:** `src/lib/server/services/execution-service.ts` (create), `src/lib/server/services/reminder-service.ts` (create), `src/lib/server/services/internal/health-computation-service.ts` (create), `src/lib/server/services/internal/reminder-dispatch-service.ts` (create)
-      **What:** Implement `EXE-01`, `EXE-02`, `REM-01`, and `REM-02`: manual attended/missed outcome marking, aspect health computation from attended vs target minutes, reminder create/update, and reminder snooze behavior. Also implement delivery-state transitions, one-active-reminder-per-channel enforcement, exponential retries, daily retry window, terminal failure rules, and provider-bound dispatch behavior for later jobs.
-      **Verify:** Service tests cover one outcome per allocation, health computation persistence format, reminder uniqueness, snooze limits, retry scheduling, terminal failure thresholds, and provider success/failure mapping.
+- [ ] **Step 29: Implement Postgres `PlanningCycleRepository` edits, outcomes, health, and history query**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/repositories/postgres/planning-cycle-repository.ts` (modify), `tests/integration/repositories/test_planning_cycle_repository_history.ts` (create or unskip)
+      **What:** Implement apply-plan-edit-revision, outcome persistence, health persistence, cycle history query, and delete-by-user behavior.
+      **Test first:** Enable the planning history integration tests before implementation.
+      **Verify:** Integration tests pass for edit-generated revisions, one outcome per allocation, and history pagination.
 
-- [ ] **Step 28: Implement `DataPortabilityService` and `AuditQueryService`**
-      **Files:** `src/lib/server/services/data-portability-service.ts` (create), `src/lib/server/services/audit-query-service.ts` (create), `src/lib/server/services/internal/import-remap-service.ts` (create)
-      **What:** Implement `DAT-01`, `DAT-02`, `AUD-02`, and supporting parts of `AUD-01`. `DAT-01` must remain synchronous inline export returning the full allowed live state as JSON while excluding sessions, idempotency keys, audit events, and operational job records. `DAT-02` must expose a validation-preview path before execution, then an async start-import flow that validates payload shape, creates an `ImportJob`, and delegates persistence/remapping to the worker job. Add status/result read methods so the UI can poll and resume import progress after reload. Import must reject forbidden entities, remap IDs and references, persist supported entities, and never recreate audit history.
-      **Verify:** Service tests cover synchronous export inclusion/exclusion rules, import-preview validation, forbidden-entity preview, import-start job creation, import-status polling, collision remapping, and paged audit querying.
+- [ ] **Step 30: Implement Postgres import-job, audit, idempotency, and system-job-run repositories**
+      **Refs:** `architecture/software-architecture/05-repositories.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/repositories/postgres/import-job-repository.ts` (create), `src/lib/server/repositories/postgres/audit-event-repository.ts` (create), `src/lib/server/repositories/postgres/idempotency-key-repository.ts` (create), `src/lib/server/repositories/postgres/system-job-run-repository.ts` (create), `tests/integration/repositories/test_operational_repositories.ts` (create or unskip)
+      **What:** Implement operational repositories for async import, append-only audit, idempotent command records, and job-run dedupe records.
+      **Test first:** Enable the operational repository integration tests before implementation.
+      **Verify:** Integration tests pass for import lifecycle, immutable audit append, response replay persistence, and job dedupe.
 
-- [ ] **Step 29: Implement controller classes for every concern and map DTOs to services**
-      **Files:** `src/lib/server/controllers/auth-controller.ts` (create), `src/lib/server/controllers/profile-controller.ts` (create), `src/lib/server/controllers/aspect-controller.ts` (create), `src/lib/server/controllers/milestone-controller.ts` (create), `src/lib/server/controllers/task-controller.ts` (create), `src/lib/server/controllers/recurrence-controller.ts` (create), `src/lib/server/controllers/availability-controller.ts` (create), `src/lib/server/controllers/planning-controller.ts` (create), `src/lib/server/controllers/execution-controller.ts` (create), `src/lib/server/controllers/reminder-controller.ts` (create), `src/lib/server/controllers/data-portability-controller.ts` (create), `src/lib/server/controllers/audit-controller.ts` (create), `src/lib/server/controllers/index.ts` (modify)
-      **What:** Add thin controllers that map transport DTOs to service calls and preserve principal, idempotency, cursor, and version inputs. One method per documented interaction; no business logic.
-      **Verify:** Controller unit tests prove request DTOs map correctly and all controllers compile against the service contracts.
+- [ ] **Step 31: Implement idempotency request hashing and command policy wrapper**
+      **Refs:** `architecture/software-architecture/01-overview-and-cross-cutting.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/infra/idempotency/request-hash.ts` (modify if needed), `src/lib/server/infra/idempotency/command-policy.ts` (create), `tests/unit/services/test_command_idempotency_policy.ts` (create or unskip)
+      **What:** Implement command replay and hash-mismatch behavior for user-triggered create/mutate commands.
+      **Test first:** Enable the command idempotency policy tests before implementation.
+      **Verify:** Unit and repository-backed tests pass for first execution, replay, and mismatch.
 
-- [ ] **Step 30: Implement the `AppFactory` composition root and request-scoped resolution helpers**
-      **Files:** `src/lib/server/factory/app-factory.ts` (modify), `src/lib/server/factory/request-scope.ts` (create), `src/lib/server/factory/index.ts` (create)
-      **What:** Wire repositories, private services, public services, controllers, and shared infra in a single composition root. Support request-scoped principal injection and worker-scoped `ServicePrincipal` resolution. This is the only place where concrete adapters should be instantiated, including the identity provider and reminder delivery providers.
-      **Verify:** Factory tests or a boot smoke test resolve every controller/service without circular dependencies.
+- [ ] **Step 32: Implement job idempotency wrapper**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/infra/idempotency/job-policy.ts` (create), `tests/unit/services/test_job_idempotency_policy.ts` (create or unskip)
+      **What:** Implement job-run replay and dedupe behavior for mutation-capable jobs using `SystemJobRun` persistence.
+      **Test first:** Enable the job idempotency policy tests before implementation.
+      **Verify:** Job idempotency tests pass and the failure ledger marks `SYS-02` covered.
 
-- [ ] **Step 31: Implement auth and onboarding route groups**
-      **Files:** `src/routes/(auth)/login/+server.ts` (create), `src/routes/(auth)/login/+page.svelte` (create), `src/routes/(auth)/callback/+server.ts` (create), `src/routes/(auth)/callback/+page.svelte` (create), `src/routes/(onboarding)/+page.server.ts` (create), `src/routes/(onboarding)/+page.svelte` (create)
-      **What:** Add the auth entry and callback routes plus the exact four-step onboarding wizard: welcome, define aspects, set target percentages, set availability basics. Enforce the step contracts from the UI docs: no app shell, no global nav, progress bar at top, back button on steps 2-4, `sessionStorage` persistence on refresh, 1-8 aspect limit, live target-total indicator that must equal exactly 100, optional availability skip path, and a single glass step card over the gradient background. Use the controllers via the factory, gate the next buttons by validation, and redirect completion to `/(app)` only when the documented constraints are satisfied.
-      **Verify:** Component/server tests cover login initiation, callback redirect behavior, refresh persistence, max-aspect limit, invalid target-total blocking, availability skip path, back-button behavior, and completion redirect.
+- [ ] **Step 33: Implement audit diffing and immutable emission infrastructure**
+      **Refs:** `architecture/software-architecture/01-overview-and-cross-cutting.md`, `architecture/software-architecture/06-invariants-and-errors.md`
+      **Files:** `src/lib/server/infra/audit/audit-diff.ts` (create), `src/lib/server/infra/audit/audit-emitter.ts` (create), `src/lib/server/infra/audit/ownership-stamped-audit.ts` (create), `src/lib/server/infra/audit/index.ts` (create), `tests/unit/services/test_audit_emitter.ts` (create or unskip)
+      **What:** Implement exactly-once immutable audit emission with redaction and service-principal user stamping.
+      **Test first:** Enable the audit infrastructure tests before implementation.
+      **Verify:** Audit tests pass and the invariant ledger marks audit emission covered.
 
-- [ ] **Step 32: Implement the design token layer and global styles**
-      **Files:** `src/routes/layout.css` (replace), `src/lib/styles/tokens.css` (create), `src/lib/styles/base.css` (create), `src/lib/styles/motion.css` (create)
-      **What:** Replace the starter CSS import with the full design token system from `DESIGN_SYSTEM.md`: light/dark CSS variables, typography ladder, spacing, radii, elevation, motion, focus rings, reduced-motion support, and glass fallback behavior. Keep colors token-driven and respect the Swiss-first visual system.
-      **Verify:** Visual smoke test in the browser shows tokens applied, dark mode follows OS preference, and reduced-motion/glass fallback CSS is present.
+- [ ] **Step 34: Implement identity provider gateway and session cookie adapter**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/07-wiring-and-config.md`
+      **Files:** `src/lib/server/services/internal/identity-provider-gateway.ts` (create), `src/lib/server/infra/auth/session-cookie.ts` (create), `src/lib/server/infra/providers/oidc-provider.ts` (create), `src/lib/server/infra/providers/dev-provider.ts` (create), `tests/unit/services/test_identity_provider_gateway.ts` (create or unskip)
+      **What:** Implement sign-in request generation, callback verification, and session cookie issuing/clearing adapters.
+      **Test first:** Enable the identity provider and cookie tests before implementation.
+      **Verify:** Provider and cookie tests pass.
 
-- [ ] **Step 33: Implement primitive UI wrappers and overlay infrastructure**
-      **Files:** `src/lib/components/primitives/Button.svelte` (create), `src/lib/components/primitives/Card.svelte` (create), `src/lib/components/primitives/Input.svelte` (create), `src/lib/components/primitives/Badge.svelte` (create), `src/lib/components/primitives/Text.svelte` (create), `src/lib/components/primitives/Stack.svelte` (create), `src/lib/components/primitives/GlassCard.svelte` (create), `src/lib/components/primitives/Panel.svelte` (create), `src/lib/components/overlays/Modal.svelte` (create), `src/lib/components/overlays/Drawer.svelte` (create), `src/lib/components/overlays/ConfirmDialog.svelte` (create), `src/lib/components/overlays/ToastStack.svelte` (create), `src/lib/components/overlays/CommandPalette.svelte` (create)
-      **What:** Build the token-aware primitives and shared overlays required by every feature. Enforce the hard rules from `DESIGN_SYSTEM.md`: no raw buttons or inputs, no ad hoc spacing, forms always opaque, and glass only in allowed zones.
-      **Verify:** Component tests prove basic rendering, disabled/focus states, keyboard interaction for overlays, and token-class usage.
+- [ ] **Step 35: Implement reminder delivery provider adapters**
+      **Refs:** `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/infra/providers/reminder-provider.ts` (create), `src/lib/server/infra/providers/in-app-reminder-provider.ts` (create), `src/lib/server/infra/providers/email-reminder-provider.ts` (create), `tests/unit/services/test_reminder_providers.ts` (create or unskip)
+      **What:** Implement the reminder-provider boundary and concrete in-app/email adapters with stable result contracts.
+      **Test first:** Enable the reminder provider tests before implementation.
+      **Verify:** Provider tests pass for success/failure mapping.
 
-- [ ] **Step 34: Implement layout shells and route-group layouts**
-      **Files:** `src/lib/components/layout/AppShell.svelte` (create), `src/lib/components/layout/WizardLayout.svelte` (create), `src/lib/components/layout/TimelineLayout.svelte` (create), `src/lib/components/layout/MasterDetailLayout.svelte` (create), `src/lib/components/layout/DashboardGrid.svelte` (create), `src/lib/components/layout/PageHeader.svelte` (create), `src/lib/components/layout/EmptyState.svelte` (create), `src/lib/components/layout/Skeleton.svelte` (create), `src/routes/(app)/+layout.server.ts` (create), `src/routes/(app)/+layout.svelte` (create)
-      **What:** Build the responsive shell and structural components described in the UI docs: desktop sidebar, sticky top bar, mobile bottom nav, global week selector, contextual empty states, skeletons, and the required page-layout patterns. Integrate the command-palette trigger into the top bar and shell, wire `Cmd+K` / `Ctrl+K`, include a mobile fallback trigger, and support quick task search, aspect jump, and route navigation from the palette.
-      **Verify:** Component tests and browser verification confirm desktop/mobile layouts, bottom nav behavior, independent content scrolling, command-palette keyboard shortcut behavior, focus trapping, and mobile trigger availability.
+- [ ] **Step 36: Implement `AuthService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/auth-service.ts` (create), `tests/unit/services/test_auth_service.ts` (create or unskip)
+      **What:** Implement identity callback resolution, logout, and session expiry behavior. Do not include onboarding or profile mutation here except where the architecture explicitly wires them.
+      **Test first:** Enable the auth service tests before implementation.
+      **Verify:** Auth service tests pass for `AUTH-02`, `AUTH-03`, and `AUTH-04`.
 
-- [ ] **Step 35: Implement dashboard UI and data loading**
-      **Files:** `src/lib/components/domain/dashboard/KpiCard.svelte` (create), `src/lib/components/domain/dashboard/AspectBalanceChart.svelte` (create), `src/lib/components/domain/dashboard/TodaySchedule.svelte` (create), `src/lib/components/domain/dashboard/UpcomingTasks.svelte` (create), `src/routes/(app)/+page.server.ts` (create), `src/routes/(app)/+page.svelte` (create)
-      **What:** Implement the weekly dashboard route with KPI cards, aspect health visualization, today's schedule, upcoming tasks, skeletons, empty states, and deep links to tasks and plan. Keep the page above the fold and use glass only for the KPI zone.
-      **Verify:** Route/component tests cover empty/new-user state, loaded state, and links to detailed views.
+- [ ] **Step 37: Implement account erasure orchestration**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/internal/account-erasure-service.ts` (create), `src/lib/server/services/auth-service.ts` (modify), `tests/unit/services/test_account_erasure_service.ts` (create or unskip)
+      **What:** Implement the full hard-delete cascade for user-owned and operational records and wire `AUTH-06` through `AuthService`.
+      **Test first:** Enable the account erasure service tests before implementation.
+      **Verify:** Account erasure tests pass and enumerate every deleted aggregate class from the architecture.
 
-- [ ] **Step 36: Implement aspects overview, aspect detail tabs, and aspect create/edit overlay**
-      **Files:** `src/lib/components/domain/aspects/AspectCard.svelte` (create), `src/lib/components/domain/aspects/AspectEditor.svelte` (create), `src/lib/components/domain/aspects/AspectOverviewTab.svelte` (create), `src/lib/components/domain/aspects/MilestoneList.svelte` (create), `src/lib/components/domain/aspects/AspectTasksTab.svelte` (create), `src/routes/(app)/aspects/+page.server.ts` (create), `src/routes/(app)/aspects/+page.svelte` (create), `src/routes/(app)/aspects/[id]/+page.server.ts` (create), `src/routes/(app)/aspects/[id]/+page.svelte` (create)
-      **What:** Implement the aspects card grid, the URL-synced three-tab aspect detail screen, and the create/edit progressive-disclosure modal or drawer. Preserve scroll and unsaved state when switching tabs and expose target-total warnings without blocking non-planning edits.
-      **Verify:** Route/component tests cover aspect list pagination, tab deep-linking, create/edit validation, and restore/archive affordances.
+- [ ] **Step 38: Implement `ProfileService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/profile-service.ts` (create), `tests/unit/services/test_profile_service.ts` (create or unskip)
+      **What:** Implement onboarding completion derivation and planning-profile updates with optimistic concurrency. Onboarding must remain derived from active aspects, not persisted as a new flag.
+      **Test first:** Enable the profile service tests before implementation.
+      **Verify:** Profile service tests pass for `AUTH-05` and `PRF-01`.
 
-- [ ] **Step 37: Implement tasks master-detail UI, task detail sections, and task creation overlay**
-      **Files:** `src/lib/components/domain/tasks/TaskList.svelte` (create), `src/lib/components/domain/tasks/TaskListItem.svelte` (create), `src/lib/components/domain/tasks/TaskDetail.svelte` (create), `src/lib/components/domain/tasks/EffortBar.svelte` (create), `src/lib/components/domain/tasks/TaskEditor.svelte` (create), `src/lib/components/domain/tasks/BulkActionToolbar.svelte` (create), `src/routes/(app)/tasks/+page.server.ts` (create), `src/routes/(app)/tasks/+page.svelte` (create), `src/routes/(app)/tasks/[id]/+page.server.ts` (create), `src/routes/(app)/tasks/[id]/+page.svelte` (create)
-      **What:** Implement the searchable, filterable, cursor-paginated master-detail task experience with independent scrolling, URL-based selected task, mobile drill-down fallback, bulk actions, inline editing, and progressive-disclosure create flow. The mobile route must render a detail-only page with back navigation to the list, selected-task hydration from the server, and parity with the desktop detail content.
-      **Verify:** Route/component tests cover default filters, search, cursor pagination, selected-task deep linking, desktop master-detail rendering, mobile drill-down rendering, back navigation, and bulk action visibility.
+- [ ] **Step 39: Implement `AspectTargetValidator` and `AspectService` create/update paths**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/internal/aspect-target-validator.ts` (create), `src/lib/server/services/aspect-service.ts` (create), `tests/unit/services/test_aspect_service_create_update.ts` (create or unskip)
+      **What:** Implement aspect creation, activation, update, and target validation behavior without pulling planning-boundary checks earlier than the architecture allows.
+      **Test first:** Enable the aspect create/update tests before implementation.
+      **Verify:** Tests pass for `ASP-01`, `ASP-02`, and `ASP-03`.
 
-- [ ] **Step 38: Implement recurrence and reminder UI sections inside task detail**
-      **Files:** `src/lib/components/domain/tasks/RecurrenceSection.svelte` (create), `src/lib/components/domain/tasks/ReminderSection.svelte` (create)
-      **What:** Add the collapsible recurrence and reminder sections to task detail, including series state, exception management UI, channel uniqueness feedback, snooze controls, and delivery state display. Keep progressive disclosure without hiding primary task actions.
-      **Verify:** Component tests cover expand/collapse behavior, validation messages, and duplicate-channel prevention messaging.
+- [ ] **Step 40: Implement `AspectService` archive/restore/query paths**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/aspect-service.ts` (modify), `tests/unit/services/test_aspect_service_archive_restore.ts` (create or unskip)
+      **What:** Implement archive, restore, and query behavior, including cross-aggregate cascades and the exact restore-to-draft rule.
+      **Test first:** Enable the aspect archive/restore/query tests before implementation.
+      **Verify:** Tests pass for `ASP-04`, `ASP-05`, and `ASP-06`.
 
-- [ ] **Step 39: Implement weekly plan timeline UI, allocation popover, and revision history feed**
-      **Files:** `src/lib/components/domain/plan/PlanHeader.svelte` (create), `src/lib/components/domain/plan/TimelineGrid.svelte` (create), `src/lib/components/domain/plan/AvailabilityLane.svelte` (create), `src/lib/components/domain/plan/AllocationBlock.svelte` (create), `src/lib/components/domain/plan/AllocationPopover.svelte` (create), `src/lib/components/domain/plan/RevisionFeedItem.svelte` (create), `src/routes/(app)/plan/+page.server.ts` (create), `src/routes/(app)/plan/+page.svelte` (create), `src/routes/(app)/plan/history/+page.server.ts` (create), `src/routes/(app)/plan/history/+page.svelte` (create)
-      **What:** Implement the weekly timeline route with day/week views, horizontal scroll, hour gutter, availability background lanes, allocation blocks with minimum 44px height, now indicator, summary bar, generate/confirm/regenerate actions, and allocation popover actions. Also implement the plan revision feed with load-more pagination, collapsed-by-default diff summaries, expandable detail, and snapshot-based scroll restoration after navigation.
-      **Verify:** Route/component tests cover empty state, loaded timeline, lock indicators, outcome badges, generate/confirm buttons, collapsed/expanded revision diffs, and revision feed scroll restoration.
+- [ ] **Step 41: Implement `MilestoneService` create/update/query paths**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/milestone-service.ts` (create), `tests/unit/services/test_milestone_service_create_update.ts` (create or unskip)
+      **What:** Implement milestone creation, update, and query behavior with aspect ownership and state validation.
+      **Test first:** Enable milestone create/update/query tests before implementation.
+      **Verify:** Tests pass for `MLS-01`, `MLS-02`, and `MLS-07`.
 
-- [ ] **Step 40: Implement availability settings UI and block editor drawer**
-      **Files:** `src/lib/components/domain/availability/AvailabilityGrid.svelte` (create), `src/lib/components/domain/availability/AvailabilityBlockList.svelte` (create), `src/lib/components/domain/availability/AvailabilityEditor.svelte` (create), `src/routes/(app)/settings/availability/+page.server.ts` (create), `src/routes/(app)/settings/availability/+page.svelte` (create)
-      **What:** Implement the weekly availability manager with timeline + list layout, one-off/recurring block creation, exception editing, archive/restore actions, and the progressive-disclosure drawer.
-      **Verify:** Route/component tests cover one-off vs recurring forms, exception UI, and loaded grid/list display.
+- [ ] **Step 42: Implement `MilestoneService` complete/reopen/archive/restore paths**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/milestone-service.ts` (modify), `tests/unit/services/test_milestone_service_transitions.ts` (create or unskip)
+      **What:** Implement milestone completion gating, reopen behavior, archive, and restore flows with exact child-task checks and state transitions.
+      **Test first:** Enable milestone transition tests before implementation.
+      **Verify:** Tests pass for `MLS-03` through `MLS-06`.
 
-- [ ] **Step 41: Implement settings hub, planning profile, account, data portability, and audit routes**
-      **Files:** `src/lib/components/domain/settings/SettingsCardGrid.svelte` (create), `src/lib/components/domain/settings/ProfileSliders.svelte` (create), `src/lib/components/domain/settings/AccountForm.svelte` (create), `src/lib/components/domain/settings/DataPortabilityPanel.svelte` (create), `src/lib/components/domain/settings/AuditFeedItem.svelte` (create), `src/routes/(app)/settings/+page.svelte` (create), `src/routes/(app)/settings/profile/+page.server.ts` (create), `src/routes/(app)/settings/profile/+page.svelte` (create), `src/routes/(app)/settings/account/+page.server.ts` (create), `src/routes/(app)/settings/account/+page.svelte` (create), `src/routes/(app)/settings/data/+page.server.ts` (create), `src/routes/(app)/settings/data/+page.svelte` (create), `src/routes/(app)/settings/audit/+page.server.ts` (create), `src/routes/(app)/settings/audit/+page.svelte` (create)
-      **What:** Implement the hub-and-spoke settings flow, profile slider form with advanced fields, account form and logout/delete controls, synchronous export UI, import validation-preview UX followed by async import UI with running/succeeded/failed polling and resume-after-reload behavior, and the read-only audit feed with load-more pagination, collapsed-by-default redacted diffs, snapshot-based scroll restoration, and virtualization for large feeds. The import screen must let the user preview validation errors and forbidden entities before confirming execution.
-      **Verify:** Route/component tests cover settings navigation, profile dirty/save behavior, delete confirmation flow, export download behavior, import preview validation, import confirmation, import job polling and reload resume, audit feed pagination, diff expand/collapse, virtualization, and scroll restoration.
+- [ ] **Step 43: Implement `RecurrenceMaterializer` core generation logic**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/internal/recurrence-materializer.ts` (create), `tests/unit/services/test_recurrence_materializer.ts` (create or unskip)
+      **What:** Implement next-instance generation, overdue suppression, monthly clamp behavior, and close/pause awareness.
+      **Test first:** Enable the recurrence materializer tests before implementation.
+      **Verify:** Materializer tests pass and `REC-04` is marked covered.
 
-- [ ] **Step 42: Implement route handlers and server actions for every interaction**
-      **Files:** `src/routes/(app)/api/auth/*` (create as needed), `src/routes/(app)/api/aspects/*` (create as needed), `src/routes/(app)/api/milestones/*` (create as needed), `src/routes/(app)/api/tasks/*` (create as needed), `src/routes/(app)/api/recurrence/*` (create as needed), `src/routes/(app)/api/availability/*` (create as needed), `src/routes/(app)/api/planning/*` (create as needed), `src/routes/(app)/api/execution/*` (create as needed), `src/routes/(app)/api/reminders/*` (create as needed), `src/routes/(app)/api/data/*` (create as needed), `src/routes/(app)/api/audit/*` (create as needed)
-      **What:** Add the HTTP endpoints and form actions backing every documented interaction ID. Each endpoint should resolve the request-scoped controller from the factory, apply auth/idempotency/cursor/version requirements, and return stable DTOs to the UI. `DAT-01` must be a synchronous export response. `DAT-02` must expose explicit import-preview, import-start, and import-status/result endpoints so the UI can preview validation, confirm execution, poll progress, and recover state after reload.
-      **Verify:** Endpoint tests cover success and documented failure paths for at least one interaction in every concern area, including synchronous export download, import preview validation, and async import status polling.
+- [ ] **Step 44: Implement `RecurrenceService` upsert and pause/resume flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/recurrence-service.ts` (create), `tests/unit/services/test_recurrence_service_upsert.ts` (create or unskip)
+      **What:** Implement series upsert, first-instance materialization, and pause/resume behavior.
+      **Test first:** Enable the recurrence upsert/pause tests before implementation.
+      **Verify:** Tests pass for `REC-01` and `REC-02`.
 
-- [ ] **Step 43: Implement worker jobs and workflow registration**
-      **Files:** `src/lib/server/jobs/session-expiry-job.ts` (create), `src/lib/server/jobs/day-boundary-replan-job.ts` (create), `src/lib/server/jobs/health-job.ts` (create), `src/lib/server/jobs/reminder-dispatch-job.ts` (create), `src/lib/server/jobs/reminder-retry-job.ts` (create), `src/lib/server/jobs/task-completion-hook.ts` (create), `src/lib/server/jobs/import-user-data-job.ts` (create), `src/lib/server/jobs/worker.ts` (create)
-      **What:** Implement the asynchronous flows from the sequence diagrams: session expiry, day-boundary replan, health recomputation, reminder dispatch, reminder retry, task-completion-triggered recurrence generation, and async user-data import execution. Wrap mutation-capable jobs in the job idempotency policy and stamp `ServicePrincipal` audit metadata. The import job must update `ImportJob` through `Running`, `Succeeded`, and `Failed` states with a result report the UI can consume.
-      **Verify:** Job tests prove state transitions, idempotent replay behavior, import-job lifecycle behavior, and correct repository/service wiring.
+- [ ] **Step 45: Implement `RecurrenceService` exception and close flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/recurrence-service.ts` (modify), `tests/unit/services/test_recurrence_service_exceptions.ts` (create or unskip)
+      **What:** Implement skip/move-next-occurrence and close-series behavior with history preservation.
+      **Test first:** Enable the recurrence exception/close tests before implementation.
+      **Verify:** Tests pass for `REC-03` and `REC-05`.
 
-- [ ] **Step 44: Add server-side integration tests for repositories and services**
-      **Files:** `tests/server/repositories/*.test.ts` (create), `tests/server/services/*.test.ts` (create), `vitest.config.ts` (modify if needed)
-      **What:** Add broad integration coverage for repository constraints and service behavior. Cover optimistic concurrency, one-profile-per-user, one-cycle-per-week, one-active-lock, one-active-reminder-per-channel, target-total enforcement, recurrence generation, reminder retry policy, synchronous export rules, async import rules, audit emission, and idempotency. Include an explicit failure-matrix suite keyed to the documented alt paths and failure mapping: cursor mismatch, stale writes, ownership violations, lock conflicts, target-total rejection, reminder retry exhaustion, import remap failure, invalid transitions, recurrence suppression, and no-op day-boundary replan.
-      **Verify:** `pnpm test` passes with the new integration suites and a report or checklist shows every documented error code has at least one representative test at the documented layer.
+- [ ] **Step 46: Implement `TaskService` create/update/move flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/task-service.ts` (create), `src/lib/server/services/dto/task-dtos.ts` (create), `tests/unit/services/test_task_service_create_update.ts` (create or unskip)
+      **What:** Implement task creation, update, and same-aspect milestone movement rules.
+      **Test first:** Enable the task create/update/move tests before implementation.
+      **Verify:** Tests pass for `TSK-01`, `TSK-02`, and `TSK-03`.
 
-- [ ] **Step 45: Add component and route tests for the full UI surface**
-      **Files:** `src/routes/(auth)/**/*.spec.ts` (create), `src/routes/(onboarding)/**/*.spec.ts` (create), `src/routes/(app)/**/*.spec.ts` (create), `src/lib/components/**/*.spec.ts` (create), `src/routes/page.svelte.spec.ts` (remove or replace), `src/demo.spec.ts` (remove or replace)
-      **What:** Replace the placeholder tests with meaningful component and route tests for auth, onboarding, dashboard, aspects, tasks, plan, availability, settings, data portability, and audit. Include deep-linking, empty states, skeletons, validation gating, and keyboard interaction for overlays.
-      **Verify:** `pnpm test` passes and no placeholder scaffold tests remain.
+- [ ] **Step 47: Implement `TaskService` start/complete/reopen flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/task-service.ts` (modify), `tests/unit/services/test_task_service_transitions.ts` (create or unskip)
+      **What:** Implement start, complete, and reopen transitions, including recurrence-materializer invocation and side-effect rules.
+      **Test first:** Enable the task transition tests before implementation.
+      **Verify:** Tests pass for `TSK-04`, `TSK-05`, and `TSK-06`.
 
-- [ ] **Step 46: Add end-to-end tests for the critical product journeys**
-      **Files:** `tests/e2e/auth-onboarding.spec.ts` (create), `tests/e2e/aspects-tasks-planning.spec.ts` (create), `tests/e2e/availability-reminders.spec.ts` (create), `tests/e2e/data-audit.spec.ts` (create), `playwright.config.ts` (create or modify)
-      **What:** Add browser-level E2E coverage for sign in, callback, onboarding, aspect creation, target balancing, availability setup, task creation, plan generation and confirmation, allocation outcome marking, reminder setup/snooze, synchronous export download, async import start and progress recovery, audit viewing, and representative failure-path UX for stale writes, invalid totals, and reminder retry exhaustion visibility.
-      **Verify:** The E2E suite runs locally and passes against a seeded local environment, including import job polling/resume and mobile task drill-down coverage.
+- [ ] **Step 48: Implement `TaskService` archive/restore and bulk mutation flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/task-service.ts` (modify), `tests/unit/services/test_task_service_bulk_archive.ts` (create or unskip)
+      **What:** Implement archive, restore, and partial-success bulk mutation behavior with per-item results and future-artifact cancellation.
+      **Test first:** Enable the task archive/restore/bulk tests before implementation.
+      **Verify:** Tests pass for `TSK-07`, `TSK-08`, and `TSK-09`.
 
-- [ ] **Step 47: Seed local demo data and add developer diagnostics**
+- [ ] **Step 49: Implement `TaskService` query and detail flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/services/task-service.ts` (modify), `tests/unit/services/test_task_service_queries.ts` (create or unskip)
+      **What:** Implement cursor-validated task query and task-detail hydration using the query DTOs fixed earlier.
+      **Test first:** Enable the task query/detail tests before implementation.
+      **Verify:** Tests pass for `TSK-10` and `TSK-11`.
+
+- [ ] **Step 50: Implement `AvailabilityWindowResolver`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/internal/availability-window-resolver.ts` (create), `tests/unit/services/test_availability_window_resolver.ts` (create or unskip)
+      **What:** Implement recurring expansion, exception application, timezone handling, and overlap merging for effective availability.
+      **Test first:** Enable the resolver tests before implementation.
+      **Verify:** Resolver tests pass.
+
+- [ ] **Step 51: Implement `AvailabilityService` command paths**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/availability-service.ts` (create), `tests/unit/services/test_availability_service_commands.ts` (create or unskip)
+      **What:** Implement one-off creation, recurring creation, exception add, and update/archive/restore behavior.
+      **Test first:** Enable the availability command tests before implementation.
+      **Verify:** Tests pass for `AVL-01` through `AVL-04`.
+
+- [ ] **Step 52: Implement `AvailabilityService` read path**
+      **Refs:** `architecture/software-architecture/03-services.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/services/availability-service.ts` (modify), `tests/unit/services/test_availability_service_queries.ts` (create or unskip)
+      **What:** Implement effective availability querying through the resolver and projection DTOs.
+      **Test first:** Enable the availability query tests before implementation.
+      **Verify:** Tests pass for `AVL-05`.
+
+- [ ] **Step 53: Implement `SchedulerEngine` scoring and ranking**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `src/lib/server/services/internal/scoring.ts` (create), `src/lib/server/services/internal/scheduler-engine.ts` (create), `tests/unit/services/test_scheduler_engine_ranking.ts` (create or unskip)
+      **What:** Implement deterministic scoring, ranking, and tie-break behavior using planning-profile inputs.
+      **Test first:** Enable scheduler ranking tests before implementation.
+      **Verify:** Ranking tests pass and deterministic ordering is covered.
+
+- [ ] **Step 54: Implement `SchedulerEngine` placement and feasibility rules**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/internal/scheduler-engine.ts` (modify), `tests/unit/services/test_scheduler_engine_placement.ts` (create or unskip)
+      **What:** Implement availability-window placement, min-chunk, lock preservation, splittable behavior, and deferred outcomes.
+      **Test first:** Enable scheduler placement tests before implementation.
+      **Verify:** Placement tests pass.
+
+- [ ] **Step 55: Implement `PlanningService` draft generation and confirmation**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/planning-service.ts` (create), `tests/unit/services/test_planning_service_generation.ts` (create or unskip)
+      **What:** Implement generate-draft and confirm-draft flows with exact 100% aspect target gating and cycle creation semantics.
+      **Test first:** Enable planning generation/confirm tests before implementation.
+      **Verify:** Tests pass for `PLN-01` and `PLN-02`.
+
+- [ ] **Step 56: Implement `PlanningService` regenerate and edit flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/planning-service.ts` (modify), `tests/unit/services/test_planning_service_edits.ts` (create or unskip)
+      **What:** Implement regeneration and manual plan edits with immutable revision creation and lock conflict handling.
+      **Test first:** Enable planning regenerate/edit tests before implementation.
+      **Verify:** Tests pass for `PLN-03` and `PLN-04`.
+
+- [ ] **Step 57: Implement `PlanningService` day-boundary replan and history query**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/planning-service.ts` (modify), `tests/unit/services/test_planning_service_replan_history.ts` (create or unskip)
+      **What:** Implement day-boundary replan no-op/new-revision/conflict branches and cycle history query behavior.
+      **Test first:** Enable planning replan/history tests before implementation.
+      **Verify:** Tests pass for `PLN-05` and `PLN-06`.
+
+- [ ] **Step 58: Implement `ExecutionService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/execution-service.ts` (create), `tests/unit/services/test_execution_service.ts` (create or unskip)
+      **What:** Implement allocation outcome marking with exact one-outcome-per-allocation behavior.
+      **Test first:** Enable execution service tests before implementation.
+      **Verify:** Tests pass for `EXE-01`.
+
+- [ ] **Step 59: Implement `HealthComputationService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/04-controllers-and-jobs.md`
+      **Files:** `src/lib/server/services/internal/health-computation-service.ts` (create), `tests/unit/services/test_health_computation_service.ts` (create or unskip)
+      **What:** Implement cycle health computation from attended vs target minutes for job-driven updates.
+      **Test first:** Enable health computation tests before implementation.
+      **Verify:** Tests pass for `EXE-02`.
+
+- [ ] **Step 60: Implement `ReminderService` upsert and snooze flows**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/reminder-service.ts` (create), `tests/unit/services/test_reminder_service.ts` (create or unskip)
+      **What:** Implement create/replace reminder and snooze behavior with uniqueness and snooze-limit rules.
+      **Test first:** Enable reminder service tests before implementation.
+      **Verify:** Tests pass for `REM-01` and `REM-02`.
+
+- [ ] **Step 61: Implement `ReminderDispatchService` due dispatch flow**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/internal/reminder-dispatch-service.ts` (create), `tests/unit/services/test_reminder_dispatch_due.ts` (create or unskip)
+      **What:** Implement due-reminder dispatch with provider invocation and attempt recording.
+      **Test first:** Enable due-dispatch tests before implementation.
+      **Verify:** Tests pass for `REM-03` behavior.
+
+- [ ] **Step 62: Implement `ReminderDispatchService` retry flow**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/services/internal/reminder-dispatch-service.ts` (modify), `tests/unit/services/test_reminder_dispatch_retry.ts` (create or unskip)
+      **What:** Implement failed-reminder retry selection, exponential backoff windows, and terminal failure handling.
+      **Test first:** Enable retry tests before implementation.
+      **Verify:** Tests pass for `REM-04` behavior.
+
+- [ ] **Step 63: Implement `ImportRemapService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/services/internal/import-remap-service.ts` (create), `tests/unit/services/test_import_remap_service.ts` (create or unskip)
+      **What:** Implement ID remapping and forbidden-entity rejection logic for import payload execution.
+      **Test first:** Enable import remap tests before implementation.
+      **Verify:** Import remap tests pass.
+
+- [ ] **Step 64: Implement `DataPortabilityService` synchronous export and preview validation**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/13-infrastructure-considerations.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/services/data-portability-service.ts` (create), `tests/unit/services/test_data_portability_export_preview.ts` (create or unskip)
+      **What:** Implement inline JSON export and import-preview validation while preserving the v1 rule that export remains synchronous and excludes forbidden records.
+      **Test first:** Enable export/preview tests before implementation.
+      **Verify:** Tests pass for `DAT-01` and preview behavior.
+
+- [ ] **Step 65: Implement `DataPortabilityService` async import start/status behavior**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/13-infrastructure-considerations.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/services/data-portability-service.ts` (modify), `tests/unit/services/test_data_portability_import.ts` (create or unskip)
+      **What:** Implement async import start, `ImportJob` state transitions, and status/result reads. Keep Hatchet enqueue concerns behind the wiring layer chosen in Step 1.
+      **Test first:** Enable async import tests before implementation.
+      **Verify:** Tests pass for `DAT-02` start/status behavior and the transport ledger remains aligned.
+
+- [ ] **Step 66: Implement `AuditQueryService`**
+      **Refs:** `architecture/software-architecture/03-services.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `src/lib/server/services/audit-query-service.ts` (create), `tests/unit/services/test_audit_query_service.ts` (create or unskip)
+      **What:** Implement read-only audit feed queries using the fixed pagination and projection DTOs.
+      **Test first:** Enable the audit query tests before implementation.
+      **Verify:** Tests pass for `AUD-02`.
+
+- [ ] **Step 67: Implement auth/profile controllers**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/controllers/auth-controller.ts` (create), `src/lib/server/controllers/profile-controller.ts` (create), `tests/unit/controllers/test_auth_profile_controllers.ts` (create or unskip)
+      **What:** Implement transport adapters for auth and profile interactions exactly as mapped in the ledgers.
+      **Test first:** Enable auth/profile controller tests before implementation.
+      **Verify:** Tests pass and no controller invents extra methods.
+
+- [ ] **Step 68: Implement aspect, milestone, and task controllers**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/controllers/aspect-controller.ts` (create), `src/lib/server/controllers/milestone-controller.ts` (create), `src/lib/server/controllers/task-controller.ts` (create), `tests/unit/controllers/test_work_item_controllers.ts` (create or unskip)
+      **What:** Implement controllers for aspect, milestone, and task interactions with exact DTO mapping and no business branching.
+      **Test first:** Enable these controller tests before implementation.
+      **Verify:** Tests pass for all mapped methods.
+
+- [ ] **Step 69: Implement recurrence, availability, and planning controllers**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/controllers/recurrence-controller.ts` (create), `src/lib/server/controllers/availability-controller.ts` (create), `src/lib/server/controllers/planning-controller.ts` (create), `tests/unit/controllers/test_planning_family_controllers.ts` (create or unskip)
+      **What:** Implement the recurrence, availability, and planning controller layer.
+      **Test first:** Enable the planning-family controller tests before implementation.
+      **Verify:** Tests pass and all controller methods match the interaction matrix.
+
+- [ ] **Step 70: Implement execution, reminder, portability, and audit controllers**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/lib/server/controllers/execution-controller.ts` (create), `src/lib/server/controllers/reminder-controller.ts` (create), `src/lib/server/controllers/data-portability-controller.ts` (create), `src/lib/server/controllers/audit-controller.ts` (create), `src/lib/server/controllers/index.ts` (modify), `tests/unit/controllers/test_operational_controllers.ts` (create or unskip)
+      **What:** Implement the remaining controllers, including the three explicit `DAT-02` transport surfaces.
+      **Test first:** Enable the operational controller tests before implementation.
+      **Verify:** Tests pass and controller surface area matches the transport ledger exactly.
+
+- [ ] **Step 71: Implement `AppFactory` repository and infrastructure wiring**
+      **Refs:** `architecture/software-architecture/07-wiring-and-config.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/factory/app-factory.ts` (modify), `src/lib/server/factory/request-scope.ts` (create), `src/lib/server/factory/index.ts` (create), `tests/unit/services/test_factory_infra_wiring.ts` (create or unskip)
+      **What:** Wire the DB, repository adapters, providers, idempotency/audit infra, and request scope into the composition root.
+      **Test first:** Enable the factory wiring tests before implementation.
+      **Verify:** Factory tests pass for repository and infra resolution.
+
+- [ ] **Step 72: Implement `AppFactory` service and controller wiring**
+      **Refs:** `architecture/software-architecture/07-wiring-and-config.md`
+      **Files:** `src/lib/server/factory/app-factory.ts` (modify), `tests/unit/services/test_factory_service_controller_wiring.ts` (create or unskip)
+      **What:** Finish service/controller construction order, ensuring no service-to-service coupling violates the architecture.
+      **Test first:** Enable service/controller factory tests before implementation.
+      **Verify:** Factory tests pass and `pnpm check` shows no circular dependencies.
+
+- [ ] **Step 73: Implement the design token layer and global styles**
+      **Refs:** `DESIGN_SYSTEM.md`, `architecture/ui_ux/ui-wireframes.md`
+      **Files:** `src/routes/layout.css` (replace), `src/lib/styles/tokens.css` (create), `src/lib/styles/base.css` (create), `src/lib/styles/motion.css` (create), `src/lib/components/ui/` (generate if not present)
+      **What:** Replace the starter CSS with the full design-token layer and ensure the generated `ui` layer exists as the primitive foundation expected by the design system.
+      **Test first:** Turn on token/style smoke tests before implementation.
+      **Verify:** Visual smoke tests pass for tokens, dark mode, reduced motion, and glass fallback.
+
+- [ ] **Step 74: Implement primitive wrappers for buttons, inputs, cards, text, and stack**
+      **Refs:** `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/components/primitives/Button.svelte` (create), `src/lib/components/primitives/Input.svelte` (create), `src/lib/components/primitives/Card.svelte` (create), `src/lib/components/primitives/Text.svelte` (create), `src/lib/components/primitives/Stack.svelte` (create), `tests/unit/components/test_primitives_core.spec.ts` (create or unskip)
+      **What:** Build the core token-aware wrappers for the most commonly used primitives.
+      **Test first:** Enable the core primitive tests before implementation.
+      **Verify:** Primitive tests pass and no raw button/input usage remains in new code.
+
+- [ ] **Step 75: Implement primitive wrappers for badge, panel, and glass card**
+      **Refs:** `DESIGN_SYSTEM.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/lib/components/primitives/Badge.svelte` (create), `src/lib/components/primitives/Panel.svelte` (create), `src/lib/components/primitives/GlassCard.svelte` (create), `tests/unit/components/test_primitives_surface.spec.ts` (create or unskip)
+      **What:** Build the remaining surface primitives with the design system's typography and glass restrictions.
+      **Test first:** Enable the surface primitive tests before implementation.
+      **Verify:** Surface primitive tests pass.
+
+- [ ] **Step 76: Implement modal, drawer, confirm dialog, toast stack, and command palette**
+      **Refs:** `DESIGN_SYSTEM.md`, `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/lib/components/overlays/Modal.svelte` (create), `src/lib/components/overlays/Drawer.svelte` (create), `src/lib/components/overlays/ConfirmDialog.svelte` (create), `src/lib/components/overlays/ToastStack.svelte` (create), `src/lib/components/overlays/CommandPalette.svelte` (create), `tests/unit/components/test_overlays.spec.ts` (create or unskip)
+      **What:** Implement shared overlay infrastructure with keyboard focus management and the opaque destructive confirmation surface rule.
+      **Test first:** Enable overlay tests before implementation.
+      **Verify:** Overlay tests pass for focus trapping, keyboard access, and visual restrictions.
+
+- [ ] **Step 77: Implement shared layout shells and empty/loading states**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-wireframes.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/components/layout/AppShell.svelte` (create), `src/lib/components/layout/WizardLayout.svelte` (create), `src/lib/components/layout/TimelineLayout.svelte` (create), `src/lib/components/layout/MasterDetailLayout.svelte` (create), `src/lib/components/layout/DashboardGrid.svelte` (create), `src/lib/components/layout/PageHeader.svelte` (create), `src/lib/components/layout/EmptyState.svelte` (create), `src/lib/components/layout/Skeleton.svelte` (create), `src/routes/(app)/+layout.server.ts` (create), `src/routes/(app)/+layout.svelte` (create), `tests/unit/components/test_layouts.spec.ts` (create or unskip)
+      **What:** Implement all structural layout components before any screen-level route work. `AppShell` must wire the global `Cmd+K` / `Ctrl+K` command palette trigger and the top-bar week selector described in the UI inventory, not only render static layout chrome.
+      **Test first:** Enable layout tests before implementation.
+      **Verify:** Layout tests pass for responsive shell behavior.
+
+- [ ] **Step 78: Implement auth transport routes and login screen**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-wireframes.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(auth)/login/+server.ts` (create), `src/routes/(auth)/login/+page.svelte` (create), `tests/unit/routes/test_login_route.spec.ts` (create or unskip)
+      **What:** Implement the auth entry route and login screen using the exact transport contract and standalone layout.
+      **Test first:** Enable login route tests before implementation.
+      **Verify:** Login route tests pass and the UI ledger marks the login screen complete.
+
+- [ ] **Step 79: Implement auth callback transport route and callback screen**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(auth)/callback/+server.ts` (create), `src/routes/(auth)/callback/+page.svelte` (create), `tests/unit/routes/test_callback_route.spec.ts` (create or unskip)
+      **What:** Implement the callback handler and loading/redirect screen exactly as specified.
+      **Test first:** Enable callback route tests before implementation.
+      **Verify:** Callback tests pass.
+
+- [ ] **Step 80: Implement onboarding data loader and action plumbing**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(onboarding)/+page.server.ts` (create), `tests/unit/routes/test_onboarding_server.spec.ts` (create or unskip)
+      **What:** Implement the onboarding page server contract before the page component so the executor cannot invent loader/action shapes inside the UI.
+      **Test first:** Enable onboarding server tests before implementation.
+      **Verify:** Onboarding server tests pass.
+
+- [ ] **Step 81: Implement onboarding wizard UI**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/routes/(onboarding)/+page.svelte` (create), `tests/unit/routes/test_onboarding_page.spec.ts` (create or unskip)
+      **What:** Implement the exact four-step wizard with sessionStorage persistence, target-sum validation, back button behavior, and single glass step card.
+      **Test first:** Enable onboarding page tests before implementation.
+      **Verify:** Onboarding page tests pass and the UI acceptance map records each wizard constraint.
+
+- [ ] **Step 82: Implement dashboard data loader**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/+page.server.ts` (create), `tests/unit/routes/test_dashboard_server.spec.ts` (create or unskip)
+      **What:** Implement the dashboard loader contract and projection mapping before the dashboard page component.
+      **Test first:** Enable dashboard server tests before implementation.
+      **Verify:** Dashboard server tests pass.
+
+- [ ] **Step 83: Implement dashboard UI**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/components/domain/dashboard/KpiCard.svelte` (create), `src/lib/components/domain/dashboard/AspectBalanceChart.svelte` (create), `src/lib/components/domain/dashboard/TodaySchedule.svelte` (create), `src/lib/components/domain/dashboard/UpcomingTasks.svelte` (create), `src/routes/(app)/+page.svelte` (create), `tests/unit/routes/test_dashboard_page.spec.ts` (create or unskip)
+      **What:** Implement the above-the-fold dashboard screen with glass only in the KPI zone.
+      **Test first:** Enable dashboard page tests before implementation.
+      **Verify:** Dashboard UI tests pass.
+
+- [ ] **Step 84: Implement aspects list loader and list screen**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/aspects/+page.server.ts` (create), `src/lib/components/domain/aspects/AspectCard.svelte` (create), `src/routes/(app)/aspects/+page.svelte` (create), `tests/unit/routes/test_aspects_list.spec.ts` (create or unskip)
+      **What:** Implement the aspects overview route and card-grid screen.
+      **Test first:** Enable aspects list tests before implementation.
+      **Verify:** Aspects list tests pass.
+
+- [ ] **Step 85: Implement aspect detail loader and tab shell**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/aspects/[id]/+page.server.ts` (create), `src/routes/(app)/aspects/[id]/+page.svelte` (create), `tests/unit/routes/test_aspect_detail_tabs.spec.ts` (create or unskip)
+      **What:** Implement the aspect detail loader and the URL-synced three-tab shell with keep-alive tab state.
+      **Test first:** Enable aspect detail shell tests before implementation.
+      **Verify:** Aspect detail shell tests pass.
+
+- [ ] **Step 86: Implement aspect editor, overview tab, milestone list, and task tab**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/lib/components/domain/aspects/AspectEditor.svelte` (create), `src/lib/components/domain/aspects/AspectOverviewTab.svelte` (create), `src/lib/components/domain/aspects/MilestoneList.svelte` (create), `src/lib/components/domain/aspects/AspectTasksTab.svelte` (create), `tests/unit/components/test_aspect_components.spec.ts` (create or unskip)
+      **What:** Implement the feature components that populate the aspect detail views and editor overlay.
+      **Test first:** Enable aspect component tests before implementation.
+      **Verify:** Aspect component tests pass.
+
+- [ ] **Step 87: Implement tasks list loader and master pane**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/tasks/+page.server.ts` (create), `src/lib/components/domain/tasks/TaskList.svelte` (create), `src/lib/components/domain/tasks/TaskListItem.svelte` (create), `tests/unit/routes/test_tasks_list.spec.ts` (create or unskip)
+      **What:** Implement the task list loader and master pane with cursor pagination and canonical filters.
+      **Test first:** Enable tasks list tests before implementation.
+      **Verify:** Tasks list tests pass.
+
+- [ ] **Step 88: Implement task detail loader and desktop/mobile route shell**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-wireframes.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/tasks/[id]/+page.server.ts` (create), `src/routes/(app)/tasks/+page.svelte` (create), `src/routes/(app)/tasks/[id]/+page.svelte` (create), `tests/unit/routes/test_task_detail_shell.spec.ts` (create or unskip)
+      **What:** Implement the selected-task route shell for desktop master-detail and mobile drill-down parity.
+      **Test first:** Enable task detail shell tests before implementation.
+      **Verify:** Task detail shell tests pass.
+
+- [ ] **Step 89: Implement task detail components and editor**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/lib/components/domain/tasks/TaskDetail.svelte` (create), `src/lib/components/domain/tasks/EffortBar.svelte` (create), `src/lib/components/domain/tasks/TaskEditor.svelte` (create), `src/lib/components/domain/tasks/BulkActionToolbar.svelte` (create), `tests/unit/components/test_task_components.spec.ts` (create or unskip)
+      **What:** Implement the task detail surface, effort visualization, bulk toolbar, and editor overlay.
+      **Test first:** Enable task component tests before implementation.
+      **Verify:** Task component tests pass.
+
+- [ ] **Step 90: Implement recurrence and reminder UI sections inside task detail**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/components/domain/tasks/RecurrenceSection.svelte` (create), `src/lib/components/domain/tasks/ReminderSection.svelte` (create), `tests/unit/components/test_task_detail_recurring.spec.ts` (create or unskip)
+      **What:** Implement the recurrence and reminder sections with validation, duplicate-channel feedback, and snooze controls.
+      **Test first:** Enable recurrence/reminder UI tests before implementation.
+      **Verify:** These UI tests pass.
+
+- [ ] **Step 91: Implement plan page loader and page shell**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/plan/+page.server.ts` (create), `src/routes/(app)/plan/+page.svelte` (create), `tests/unit/routes/test_plan_page_shell.spec.ts` (create or unskip)
+      **What:** Implement the weekly plan page contract and screen shell before the specialized timeline components.
+      **Test first:** Enable plan shell tests before implementation.
+      **Verify:** Plan shell tests pass.
+
+- [ ] **Step 92: Implement plan timeline components**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/components/domain/plan/PlanHeader.svelte` (create), `src/lib/components/domain/plan/TimelineGrid.svelte` (create), `src/lib/components/domain/plan/AvailabilityLane.svelte` (create), `src/lib/components/domain/plan/AllocationBlock.svelte` (create), `src/lib/components/domain/plan/AllocationPopover.svelte` (create), `tests/unit/components/test_plan_timeline.spec.ts` (create or unskip)
+      **What:** Implement the weekly timeline UI, availability lanes, allocations, popovers, and summary interactions.
+      **Test first:** Enable plan timeline tests before implementation.
+      **Verify:** Timeline tests pass.
+
+- [ ] **Step 93: Implement plan history loader and revision feed UI**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/plan/history/+page.server.ts` (create), `src/routes/(app)/plan/history/+page.svelte` (create), `src/lib/components/domain/plan/RevisionFeedItem.svelte` (create), `tests/unit/routes/test_plan_history.spec.ts` (create or unskip)
+      **What:** Implement plan history loading, feed pagination, collapsed diffs, and scroll restoration behavior.
+      **Test first:** Enable plan history tests before implementation.
+      **Verify:** Plan history tests pass.
+
+- [ ] **Step 94: Implement availability settings loader and page shell**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/settings/availability/+page.server.ts` (create), `src/routes/(app)/settings/availability/+page.svelte` (create), `tests/unit/routes/test_availability_settings_shell.spec.ts` (create or unskip)
+      **What:** Implement the availability settings route contract and page shell.
+      **Test first:** Enable availability settings shell tests before implementation.
+      **Verify:** Availability shell tests pass.
+
+- [ ] **Step 95: Implement availability grid, block list, and editor drawer**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`
+      **Files:** `src/lib/components/domain/availability/AvailabilityGrid.svelte` (create), `src/lib/components/domain/availability/AvailabilityBlockList.svelte` (create), `src/lib/components/domain/availability/AvailabilityEditor.svelte` (create), `tests/unit/components/test_availability_components.spec.ts` (create or unskip)
+      **What:** Implement the availability manager feature components for one-off, recurring, and exception editing flows.
+      **Test first:** Enable availability component tests before implementation.
+      **Verify:** Availability component tests pass.
+
+- [ ] **Step 96: Implement settings hub route and card grid**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/routes/(app)/settings/+page.svelte` (create), `src/lib/components/domain/settings/SettingsCardGrid.svelte` (create), `tests/unit/routes/test_settings_hub.spec.ts` (create or unskip)
+      **What:** Implement the settings hub-and-spoke index route and card grid.
+      **Test first:** Enable settings hub tests before implementation.
+      **Verify:** Settings hub tests pass.
+
+- [ ] **Step 97: Implement planning-profile settings route and slider form**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/settings/profile/+page.server.ts` (create), `src/routes/(app)/settings/profile/+page.svelte` (create), `src/lib/components/domain/settings/ProfileSliders.svelte` (create), `tests/unit/routes/test_settings_profile.spec.ts` (create or unskip)
+      **What:** Implement the planning profile spoke with primary sliders and advanced disclosure behavior.
+      **Test first:** Enable profile settings tests before implementation.
+      **Verify:** Profile settings tests pass.
+
+- [ ] **Step 98: Implement account settings route and danger-zone form**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/settings/account/+page.server.ts` (create), `src/routes/(app)/settings/account/+page.svelte` (create), `src/lib/components/domain/settings/AccountForm.svelte` (create), `tests/unit/routes/test_settings_account.spec.ts` (create or unskip)
+      **What:** Implement the account spoke with logout and delete-account affordances.
+      **Test first:** Enable account settings tests before implementation.
+      **Verify:** Account settings tests pass.
+
+- [ ] **Step 99: Implement data settings route server contract**
+      **Refs:** `architecture/software-architecture/13-infrastructure-considerations.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/settings/data/+page.server.ts` (create), `tests/unit/routes/test_settings_data_server.spec.ts` (create or unskip)
+      **What:** Implement the data settings loader/action contract for sync export plus async import preview/start/status.
+      **Test first:** Enable data settings server tests before implementation.
+      **Verify:** Data server tests pass and still reflect sync export vs async import.
+
+- [ ] **Step 100: Implement data portability settings UI**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`
+      **Files:** `src/routes/(app)/settings/data/+page.svelte` (create), `src/lib/components/domain/settings/DataPortabilityPanel.svelte` (create), `tests/unit/routes/test_settings_data_page.spec.ts` (create or unskip)
+      **What:** Implement the data portability spoke UI for export, preview, start import, and poll status/result. Polling is endpoint-driven through the explicit `DAT-02` status/result transport surface and page-driven in the sense that the page owns the polling lifecycle and resume-after-reload behavior.
+      **Test first:** Enable data settings page tests before implementation.
+      **Verify:** Data settings page tests pass.
+
+- [ ] **Step 101: Implement audit settings route and feed UI**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/settings/audit/+page.server.ts` (create), `src/routes/(app)/settings/audit/+page.svelte` (create), `src/lib/components/domain/settings/AuditFeedItem.svelte` (create), `tests/unit/routes/test_settings_audit.spec.ts` (create or unskip)
+      **What:** Implement the audit spoke with read-only feed pagination, collapsed diffs, and restoration behavior.
+      **Test first:** Enable audit settings tests before implementation.
+      **Verify:** Audit settings tests pass.
+
+- [ ] **Step 102: Implement auth and onboarding server handlers/actions**
+      **Refs:** `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(auth)/**` server files (modify as needed), `src/routes/(onboarding)/**` server files (modify as needed), `tests/unit/routes/test_auth_onboarding_handlers.spec.ts` (create or unskip)
+      **What:** Implement the actual auth and onboarding request handling on top of the controller layer, using the already-fixed transport contracts.
+      **Test first:** Enable the auth/onboarding handler tests before implementation.
+      **Verify:** Handler tests pass.
+
+- [ ] **Step 103: Implement task/aspect/milestone/recurrence API handlers**
+      **Refs:** `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/api/aspects/**` (create), `src/routes/(app)/api/milestones/**` (create), `src/routes/(app)/api/tasks/**` (create), `src/routes/(app)/api/recurrence/**` (create), `tests/unit/routes/test_work_item_api.spec.ts` (create or unskip)
+      **What:** Implement the work-item HTTP surface exactly as mapped in the interaction ledger.
+      **Test first:** Enable work-item API tests before implementation.
+      **Verify:** API tests pass for success and documented failure paths.
+
+- [ ] **Step 104: Implement availability/planning/execution/reminder API handlers**
+      **Refs:** `architecture/software-architecture/09-interaction-traceability.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/api/availability/**` (create), `src/routes/(app)/api/planning/**` (create), `src/routes/(app)/api/execution/**` (create), `src/routes/(app)/api/reminders/**` (create), `tests/unit/routes/test_planning_family_api.spec.ts` (create or unskip)
+      **What:** Implement the planning-family HTTP surface and preserve idempotency, cursor, and version requirements.
+      **Test first:** Enable planning-family API tests before implementation.
+      **Verify:** API tests pass.
+
+- [ ] **Step 105: Implement data portability and audit API handlers**
+      **Refs:** `architecture/software-architecture/09-interaction-traceability.md`, `architecture/software-architecture/13-infrastructure-considerations.md`, `docs/execution/transport-contracts.md`
+      **Files:** `src/routes/(app)/api/data/**` (create), `src/routes/(app)/api/audit/**` (create), `tests/unit/routes/test_data_audit_api.spec.ts` (create or unskip)
+      **What:** Implement `DAT-01`, `DAT-02`, and audit APIs, including explicit preview/start/status/result surfaces for import.
+      **Test first:** Enable data/audit API tests before implementation.
+      **Verify:** Data/audit API tests pass.
+
+- [ ] **Step 106: Implement `SessionExpiryJob` and worker bootstrap**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/jobs/session-expiry-job.ts` (create), `src/lib/server/jobs/worker.ts` (create), `tests/unit/services/test_session_expiry_job.ts` (create or unskip)
+      **What:** Implement the session-expiry job and the initial worker registration skeleton.
+      **Test first:** Enable session-expiry job tests before implementation.
+      **Verify:** Job tests pass and worker bootstrap can register the job.
+
+- [ ] **Step 107: Implement planning and health jobs**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/jobs/day-boundary-replan-job.ts` (create), `src/lib/server/jobs/health-job.ts` (create), `tests/unit/services/test_planning_health_jobs.ts` (create or unskip)
+      **What:** Implement the day-boundary replan and health recomputation jobs.
+      **Test first:** Enable planning/health job tests before implementation.
+      **Verify:** Job tests pass.
+
+- [ ] **Step 108: Implement reminder jobs and task completion hook**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `src/lib/server/jobs/reminder-dispatch-job.ts` (create), `src/lib/server/jobs/reminder-retry-job.ts` (create), `src/lib/server/jobs/task-completion-hook.ts` (create), `tests/unit/services/test_reminder_and_completion_jobs.ts` (create or unskip)
+      **What:** Implement due dispatch, retry processing, and task-completion recurrence generation hook jobs.
+      **Test first:** Enable reminder/completion job tests before implementation.
+      **Verify:** Job tests pass.
+
+- [ ] **Step 109: Implement import workflow job and job-idempotent wrapping**
+      **Refs:** `architecture/software-architecture/04-controllers-and-jobs.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
+      **Files:** `src/lib/server/jobs/import-user-data-job.ts` (create), `src/lib/server/jobs/index.ts` (modify), `tests/unit/services/test_import_job.ts` (create or unskip)
+      **What:** Implement the async import workflow entry point and ensure it uses the job idempotency wrapper and updates `ImportJob` correctly.
+      **Test first:** Enable import job tests before implementation.
+      **Verify:** Import job tests pass.
+
+- [ ] **Step 110: Run a focused repository integration gap pass**
+      **Refs:** `.claude/skills/qa/references/validation.md`, `architecture/software-architecture/08-invariant-enforcement-matrix.md`
+      **Files:** `tests/integration/repositories/*.ts` (modify as needed), `docs/execution/invariant-coverage.md` (modify)
+      **What:** Close any still-missing repository integration coverage and update the invariant ledger accordingly.
+      **Test first:** Add the missing repository tests before production fixes.
+      **Verify:** No repository-level `Missing test` rows remain.
+
+- [ ] **Step 111: Run a focused service and controller failure-matrix gap pass**
+      **Refs:** `.claude/skills/qa/references/testing-patterns.md`, `architecture/software-architecture/10-sequence-failure-mapping.md`
+      **Files:** `tests/unit/services/*.ts` (modify as needed), `tests/unit/controllers/*.ts` (modify as needed), `docs/execution/invariant-coverage.md` (modify)
+      **What:** Close any remaining service/controller gaps for alt paths and non-raising branches.
+      **Test first:** Add the missing tests before production fixes.
+      **Verify:** No service/controller `Missing test` or `False confidence` rows remain.
+
+- [ ] **Step 112: Run the mechanical architecture-compliance audit**
+      **Refs:** `.claude/skills/qa/references/validation.md`, `architecture/software-architecture/01-overview-and-cross-cutting.md`
+      **Files:** `docs/execution/architecture-compliance.md` (modify)
+      **What:** Scan imports and layering for models, repositories, services, controllers, routes, stores, and factory code. Record every violation and fix until the dependency graph is clean.
+      **Verify:** `docs/execution/architecture-compliance.md` records a clean pass.
+
+- [ ] **Step 113: Run the UI acceptance gap pass**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`, `DESIGN_SYSTEM.md`
+      **Files:** `src/lib/__tests__/components/**` (modify as needed), `src/lib/__tests__/routes/**` (modify as needed), `docs/execution/ui-acceptance-map.md` (modify)
+      **What:** Close any remaining UI acceptance gaps, especially keyboard behavior, empty/loading states, responsive transitions, and scroll restoration.
+      **Test first:** Add the missing UI tests before production fixes.
+      **Verify:** No unchecked UI acceptance rows remain.
+
+- [ ] **Step 114: Add end-to-end test for auth and onboarding**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `tests/e2e/auth-onboarding.spec.ts` (create), `playwright.config.ts` (modify if needed)
+      **What:** Add E2E coverage for sign-in, callback, and onboarding completion.
+      **Test first:** Write the E2E spec before last-mile fixes.
+      **Verify:** Auth/onboarding E2E passes.
+
+- [ ] **Step 115: Add end-to-end test for aspects, tasks, and planning**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `tests/e2e/aspects-tasks-planning.spec.ts` (create)
+      **What:** Add E2E coverage for aspect creation, task lifecycle, and planning flows.
+      **Test first:** Write the E2E spec before last-mile fixes.
+      **Verify:** This E2E spec passes.
+
+- [ ] **Step 116: Add end-to-end test for availability and reminders**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/software-architecture/09-interaction-traceability.md`
+      **Files:** `tests/e2e/availability-reminders.spec.ts` (create)
+      **What:** Add E2E coverage for availability editing and reminder creation/snooze behavior.
+      **Test first:** Write the E2E spec before last-mile fixes.
+      **Verify:** This E2E spec passes.
+
+- [ ] **Step 117: Add end-to-end test for data portability and audit**
+      **Refs:** `architecture/software-architecture/13-infrastructure-considerations.md`, `architecture/ui_ux/ui-screen-inventory.md`
+      **Files:** `tests/e2e/data-audit.spec.ts` (create)
+      **What:** Add E2E coverage for synchronous export, async import polling/resume, and audit feed browsing.
+      **Test first:** Write the E2E spec before last-mile fixes.
+      **Verify:** This E2E spec passes.
+
+- [ ] **Step 117b: Add end-to-end mobile parity test for task drill-down**
+      **Refs:** `architecture/ui_ux/ui-ux-patterns.md`, `architecture/ui_ux/ui-wireframes.md`
+      **Files:** `tests/e2e/tasks-mobile-drilldown.spec.ts` (create)
+      **What:** Add a mobile-viewport E2E test proving `/(app)/tasks` and `/(app)/tasks/[id]` preserve the documented drill-down parity and back-navigation behavior.
+      **Test first:** Write the mobile E2E spec before any parity fixes.
+      **Verify:** This mobile drill-down E2E spec passes.
+
+- [ ] **Step 118: Add deterministic seed data and local diagnostics**
+      **Refs:** `architecture/ui_ux/ui-screen-inventory.md`, `architecture/software-architecture/13-infrastructure-considerations.md`
       **Files:** `scripts/seed.ts` (create), `src/lib/server/db/seeds/*` (create), `README.md` (modify)
-      **What:** Add a deterministic local seed script that creates a realistic user, aspects, milestones, tasks, recurring series, availability, planning cycles, reminders, and audit events so the full app can be exercised. Document how to run the seeded environment.
-      **Verify:** Running the seed script on a fresh local database produces data that renders across the major routes.
+      **What:** Add deterministic seed data that exercises every major screen and workflow.
+      **Test first:** Add seed smoke checks before implementation.
+      **Verify:** Seed script succeeds and all major routes render seeded data.
 
-- [ ] **Step 48: Final hardening, accessibility, and release verification**
-      **Files:** `README.md` (modify), `package.json` (modify if final scripts are needed), `src/routes/+layout.svelte` (modify if final providers are required), `src/routes/+error.svelte` (create)
-      **What:** Finish the release path: top-level app providers, global error boundary, final build/test scripts, accessibility polish, reduced-motion validation, glass fallback validation, and documentation for running app + worker + database locally and in production-like mode.
-      **Verify:** `pnpm check`, `pnpm test`, `pnpm build`, and the E2E suite all pass; manual verification confirms desktop/mobile layouts, keyboard navigation, focus rings, and critical route flows.
+- [ ] **Step 119: Finalize runtime docs, error boundary, and release scripts**
+      **Refs:** `architecture/software-architecture/13-infrastructure-considerations.md`, `DESIGN_SYSTEM.md`
+      **Files:** `README.md` (modify), `package.json` (modify if needed), `src/routes/+layout.svelte` (modify if needed), `src/routes/+error.svelte` (create)
+      **What:** Finalize runtime documentation, error boundaries, and any last required scripts for local/prod-like operation.
+      **Test first:** Add doc/script smoke checks before final tweaks where practical.
+      **Verify:** `pnpm check`, `pnpm build`, and runtime smoke checks pass.
+
+- [ ] **Step 120: Finalize ledgers and full release verification**
+      **Refs:** `.claude/skills/qa/references/validation.md`, `architecture/software-architecture/13-infrastructure-considerations.md`, `DESIGN_SYSTEM.md`
+      **Files:** `docs/execution/invariant-coverage.md` (finalize), `docs/execution/interaction-route-map.md` (finalize), `docs/execution/transport-contracts.md` (finalize), `docs/execution/ui-acceptance-map.md` (finalize), `docs/execution/architecture-compliance.md` (finalize)
+      **What:** Produce the final verification package so an independent reviewer can audit fidelity from docs to code to tests to runtime behavior.
+      **Verify:** `pnpm check`, `pnpm test`, `pnpm build`, and the E2E suite all pass; all execution ledgers show no unresolved gaps.
 
 ## Tests
 
-- Domain/value-object tests must cover all construction-time validation and enum/state constraints.
-- Repository integration tests must cover ownership scoping, unique constraints, optimistic concurrency, cursor pagination, and append-only/immutable records.
-- Service tests must cover every interaction family: `AUTH`, `PRF`, `ASP`, `MLS`, `TSK`, `REC`, `AVL`, `PLN`, `EXE`, `REM`, `DAT`, `AUD`, `SYS`.
-- Failure-matrix tests must cover the alt paths and non-raising branches from the sequence diagrams and `architecture/software-architecture/10-sequence-failure-mapping.md`, including recurrence suppression and no-op day-boundary replan.
-- UI component tests must cover empty, loading, loaded, validation-error, and responsive states for each route family.
-- E2E tests must cover sign in -> onboarding -> aspects -> tasks -> availability -> planning -> execution -> reminders -> synchronous export -> async import -> audit.
-- Required commands at steady state: `pnpm check`, `pnpm test`, `pnpm build`, and the E2E command configured in `package.json` or Playwright config.
+- Step 2 is mandatory and comes before runtime or feature implementation so the executor starts from failing spec tests instead of invented behavior.
+- Repository tests are integration tests against real Postgres. Service and controller tests are unit tests with shared hand-rolled fakes. Do not write service/controller integration tests unless the architecture explicitly requires it.
+- Every invariant in `architecture/software-architecture/08-invariant-enforcement-matrix.md` must map to implementation and at least one test entry in `docs/execution/invariant-coverage.md`.
+- Every documented failure path in `architecture/software-architecture/10-sequence-failure-mapping.md` must have at least one representative test at the layer that owns the failure.
+- Every route and screen in `architecture/ui_ux/ui-screen-inventory.md` must have acceptance rows in `docs/execution/ui-acceptance-map.md`, including loading, empty, loaded, error, keyboard, and responsive behavior.
+- Every test must follow the QA rules: no mocks, one assertion, behavior-focused naming, and shared fakes implementing the full contract.
 
 ## Verification
 
-- Local stack boots with Postgres, app server, and worker runtime using the documented env vars.
-- A fresh user can sign in, complete the four-step onboarding wizard, and land on the dashboard.
-- The user can create and edit aspects, milestones, tasks, recurring series, reminders, and availability blocks.
-- The planner can generate, confirm, regenerate, and edit weekly plans while preserving locks and revision history.
-- The user can mark allocation outcomes, see aspect health, export data, import data with remapped IDs, and browse the audit feed.
-- Session expiry, reminder dispatch/retry, day-boundary replan, recurrence completion hook, and health jobs run successfully through the worker.
-- All documented views in `architecture/ui_ux/ui-screen-inventory.md` render and all major invariants in `architecture/domain/invariants.md` are enforced by code and tests.
+- The ledgers in `docs/execution/` provide a complete trace from source docs -> implementation surface -> tests -> verification status.
+- A fresh user can sign in, complete onboarding, and land on the dashboard with the exact route and UI behavior defined by the docs.
+- The user can create and manage aspects, milestones, tasks, recurrence, reminders, availability, and planning cycles with the documented state transitions and failure paths.
+- The app can export data synchronously, start async import jobs with preview and polling, and browse the audit feed.
+- Worker jobs run through Hatchet-backed flows for session expiry, planning replan, health computation, reminder dispatch/retry, recurrence materialization, and import execution.
+- Final QA audits show no unresolved invariant coverage gaps, interaction mapping gaps, or UI acceptance gaps.
