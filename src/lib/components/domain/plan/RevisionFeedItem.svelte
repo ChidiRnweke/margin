@@ -14,10 +14,12 @@
 	let { timestamp, action, summary, author }: Props = $props();
 </script>
 
-<div class="revision-item">
+<div class="relative pl-4">
 	<Card padding="md">
 		<Stack direction="horizontal" gap="3" align="center">
-			<div class="revision-dot"></div>
+			<div
+				class="absolute top-1/2 left-0 h-2 w-2 -translate-y-1/2 rounded-full bg-[var(--color-accent)]"
+			></div>
 			<Stack direction="vertical" gap="1">
 				<Stack direction="horizontal" gap="2" align="center">
 					<Badge variant="default" size="sm">{action}</Badge>
@@ -31,20 +33,3 @@
 		</Stack>
 	</Card>
 </div>
-
-<style>
-	.revision-item {
-		position: relative;
-		padding-left: var(--space-4);
-	}
-	.revision-dot {
-		position: absolute;
-		left: 0;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: var(--radius-full);
-		background: var(--color-accent);
-	}
-</style>

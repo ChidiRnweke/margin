@@ -1,4 +1,4 @@
-import { eq, and, sql, ilike, count, desc, asc, inArray, isNull } from 'drizzle-orm';
+import { eq, and, sql, ilike, count, desc, asc, inArray } from 'drizzle-orm';
 import type { Database } from '$lib/server/db/index.js';
 import {
 	tasks,
@@ -177,7 +177,15 @@ export class PostgresTaskRepository implements ITaskRepository {
 			conditions.push(eq(tasks.milestoneId, query.milestoneId));
 		}
 		if (query.status) {
-			conditions.push(eq(tasks.status, query.status));
+			const statuses = query.status
+				.split(',')
+				.map((status) => status.trim())
+				.filter(Boolean);
+			if (statuses.length === 1) {
+				conditions.push(eq(tasks.status, statuses[0]));
+			} else if (statuses.length > 1) {
+				conditions.push(inArray(tasks.status, statuses));
+			}
 		}
 		if (query.search) {
 			conditions.push(ilike(tasks.title, `%${query.search}%`));
@@ -208,8 +216,7 @@ export class PostgresTaskRepository implements ITaskRepository {
 					dueDate: tasks.dueDate,
 					importanceScore: tasks.importanceScore,
 					overdue: tasks.overdue,
-					hasActiveLock:
-						sql<boolean>`EXISTS (SELECT 1 FROM task_locks WHERE task_locks.task_id = ${tasks.id} AND task_locks.active = true)`,
+					hasActiveLock: sql<boolean>`EXISTS (SELECT 1 FROM task_locks WHERE task_locks.task_id = ${tasks.id} AND task_locks.active = true)`,
 					createdAt: tasks.createdAt,
 					updatedAt: tasks.updatedAt
 				})
@@ -217,9 +224,7 @@ export class PostgresTaskRepository implements ITaskRepository {
 				.innerJoin(aspects, eq(tasks.aspectId, aspects.id))
 				.leftJoin(milestones, eq(tasks.milestoneId, milestones.id))
 				.where(whereClause)
-				.orderBy(
-					query.sortDirection === 'asc' ? asc(tasks.createdAt) : desc(tasks.createdAt)
-				)
+				.orderBy(query.sortDirection === 'asc' ? asc(tasks.createdAt) : desc(tasks.createdAt))
 				.limit(limit)
 				.offset(offset)
 		]);

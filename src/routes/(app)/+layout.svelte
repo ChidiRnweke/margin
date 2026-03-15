@@ -1,48 +1,135 @@
 <script lang="ts">
-	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { cn } from '$lib/utils.js';
 
 	interface Props {
 		children: Snippet;
 	}
 
 	let { children }: Props = $props();
+	let commandOpen = $state(false);
+
+	const navItems = [
+		{ href: '/', label: 'Dashboard' },
+		{ href: '/plan', label: 'Plan' },
+		{ href: '/aspects', label: 'Aspects' },
+		{ href: '/tasks', label: 'Tasks' },
+		{ href: '/settings', label: 'Settings' }
+	];
+
+	function isActive(href: string): boolean {
+		if (href === '/') return page.url.pathname === '/';
+		return page.url.pathname.startsWith(href);
+	}
+
+	function handleGlobalKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+			e.preventDefault();
+			commandOpen = !commandOpen;
+		}
+	}
 </script>
 
-<AppShell>
-	{#snippet sidebar()}
-		<nav class="app-nav">
-			<a class="nav-item" href="/">Dashboard</a>
-			<a class="nav-item" href="/aspects">Aspects</a>
-			<a class="nav-item" href="/tasks">Tasks</a>
-			<a class="nav-item" href="/plan">Plan</a>
-			<a class="nav-item" href="/availability">Availability</a>
-			<a class="nav-item" href="/settings">Settings</a>
-		</nav>
-	{/snippet}
-	{@render children()}
-</AppShell>
+<svelte:window onkeydown={handleGlobalKeydown} />
 
-<style>
-	.app-nav {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.nav-item {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		padding: var(--space-2) var(--space-3);
-		border-radius: var(--radius-md);
-		font-size: var(--text-sm);
-		font-weight: var(--weight-medium);
-		color: var(--color-text-muted);
-		text-decoration: none;
-		transition: all var(--duration-fast) var(--ease-default);
-	}
-	.nav-item:hover {
-		background: var(--color-surface-muted);
-		color: var(--color-text);
-	}
-</style>
+<div class="relative z-10 flex min-h-dvh flex-col">
+	<!-- Glass navigation bar -->
+	<header
+		class="glass-surface sticky top-0 z-50 border-b border-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] shadow-glass-sm backdrop-blur-md"
+	>
+		<div class="mx-auto flex max-w-[72rem] items-center justify-between px-8 py-3">
+			<span class="font-display text-xl font-bold tracking-tight text-[var(--color-accent)]"
+				>Margin</span
+			>
+
+			<nav class="hidden items-center gap-1 md:flex">
+				{#each navItems as item}
+					<Button
+						variant={isActive(item.href) ? 'default' : 'ghost'}
+						size="sm"
+						href={item.href}
+						class={cn(
+							'rounded-full px-4 py-1.5 text-sm font-medium',
+							isActive(item.href)
+								? 'bg-[var(--color-accent)] text-[var(--color-accent-foreground)]'
+								: 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+						)}
+					>
+						{item.label}
+					</Button>
+				{/each}
+			</nav>
+
+			<Button
+				variant="outline"
+				size="sm"
+				class="gap-2 rounded-full border-[var(--color-glass-border)] bg-[var(--color-glass)] backdrop-blur-sm"
+				onclick={() => (commandOpen = true)}
+			>
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 16 16"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<circle cx="7" cy="7" r="4.5" />
+					<path d="M10.5 10.5L14 14" />
+				</svg>
+				<span class="hidden sm:inline">Search</span>
+				<kbd
+					class="ml-2 rounded-sm border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-1 py-px font-mono text-xs text-[var(--color-text-faint)]"
+					>⌘K</kbd
+				>
+			</Button>
+		</div>
+	</header>
+
+	<!-- Main content area — no glass wrapper; pages compose their own glass surfaces -->
+	<main class="flex-1 px-8 py-8">
+		<div class="mx-auto w-full max-w-[72rem]">
+			{@render children()}
+		</div>
+	</main>
+</div>
+
+<!-- Command palette using shadcn Dialog -->
+<Dialog.Root bind:open={commandOpen}>
+	<Dialog.Content
+		class="glass-surface top-[20%] translate-y-0 gap-0 overflow-hidden rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-0 shadow-glass-lg backdrop-blur-lg sm:max-w-lg"
+	>
+		<Dialog.Header class="sr-only">
+			<Dialog.Title>Command Palette</Dialog.Title>
+			<Dialog.Description>Search commands and navigate</Dialog.Description>
+		</Dialog.Header>
+		<div class="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
+			<svg
+				class="shrink-0 text-[var(--color-text-muted)]"
+				width="18"
+				height="18"
+				viewBox="0 0 18 18"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
+				<circle cx="8" cy="8" r="5" />
+				<path d="M12 12l4 4" />
+			</svg>
+			<Input
+				class="flex-1 border-none bg-transparent text-[var(--color-text)] shadow-none placeholder:text-[var(--color-text-faint)] focus-visible:ring-0"
+				type="text"
+				placeholder="Search commands..."
+			/>
+		</div>
+		<div class="px-2 py-3">
+			<p class="px-3 py-6 text-center text-sm text-[var(--color-text-faint)]">
+				Start typing to search...
+			</p>
+		</div>
+	</Dialog.Content>
+</Dialog.Root>

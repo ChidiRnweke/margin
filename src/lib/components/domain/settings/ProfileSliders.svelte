@@ -37,13 +37,13 @@
 	<Panel title="Aspect Weights">
 		<Stack direction="vertical" gap="4">
 			{#each aspectWeights as aspect (aspect.id)}
-				<div class="slider-row">
+				<div class="border-b border-[var(--color-glass-border)] py-2 last:border-b-0">
 					<Stack direction="horizontal" gap="3" align="center" justify="between">
 						<Text size="sm" weight="medium">{aspect.name}</Text>
 						<Stack direction="horizontal" gap="2" align="center">
 							<input
 								type="range"
-								class="weight-slider"
+								class="w-32 accent-[var(--color-accent)]"
 								min="0"
 								max="100"
 								value={aspect.weight}
@@ -72,30 +72,18 @@
 				label="Overcommit threshold (%)"
 				type="number"
 				value={overcommitThreshold.toString()}
-				oninput={(e) => onthresholdchange?.('overcommit', Number((e.currentTarget as HTMLInputElement).value))}
+				oninput={(e) =>
+					onthresholdchange?.('overcommit', Number((e.currentTarget as HTMLInputElement).value))}
 			/>
 			<Input
 				label="Undercommit threshold (%)"
 				type="number"
 				value={undercommitThreshold.toString()}
-				oninput={(e) => onthresholdchange?.('undercommit', Number((e.currentTarget as HTMLInputElement).value))}
+				oninput={(e) =>
+					onthresholdchange?.('undercommit', Number((e.currentTarget as HTMLInputElement).value))}
 			/>
 		</Stack>
 	</Panel>
 
 	<Button variant="primary" onclick={onsave}>Save changes</Button>
 </Stack>
-
-<style>
-	.slider-row {
-		padding: var(--space-2) 0;
-		border-bottom: 1px solid var(--color-border-muted);
-	}
-	.slider-row:last-child {
-		border-bottom: none;
-	}
-	.weight-slider {
-		width: 8rem;
-		accent-color: var(--color-accent);
-	}
-</style>

@@ -1,56 +1,34 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { Badge as UiBadge } from '$lib/components/ui/badge/index.js';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    variant?: 'default' | 'accent' | 'success' | 'warning' | 'destructive';
-    size?: 'sm' | 'md';
-    children: Snippet;
-  }
+	interface Props {
+		variant?: 'default' | 'accent' | 'success' | 'warning' | 'destructive';
+		size?: 'sm' | 'md';
+		class?: string;
+		children: Snippet;
+	}
 
-  let { variant = 'default', size = 'sm', children }: Props = $props();
+	let { variant = 'default', size = 'sm', class: className = '', children }: Props = $props();
 </script>
 
-<span class="badge badge-{variant} badge-{size}">
-  {@render children()}
-</span>
-
-<style>
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-body);
-    font-weight: var(--weight-medium);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    border-radius: var(--radius-full);
-    white-space: nowrap;
-  }
-  .badge-sm {
-    padding: 2px var(--space-2);
-    font-size: var(--text-xs);
-  }
-  .badge-md {
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--text-sm);
-  }
-  .badge-default {
-    background: var(--color-surface-muted);
-    color: var(--color-text-muted);
-  }
-  .badge-accent {
-    background: var(--color-accent-muted);
-    color: var(--color-accent);
-  }
-  .badge-success {
-    background: var(--color-success-muted);
-    color: var(--color-success);
-  }
-  .badge-warning {
-    background: var(--color-warning-muted);
-    color: var(--color-warning);
-  }
-  .badge-destructive {
-    background: var(--color-destructive-muted);
-    color: var(--color-destructive);
-  }
-</style>
+<UiBadge
+	variant="outline"
+	class={cn(
+		'border-[var(--color-glass-border)] bg-[var(--color-glass)] font-body tracking-[0.16em] uppercase',
+		size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs',
+		variant === 'default' && 'text-[var(--color-text-muted)]',
+		variant === 'accent' &&
+			'border-[color:var(--color-accent-border)] bg-[color:var(--color-accent-soft)] text-[var(--color-accent)]',
+		variant === 'success' &&
+			'border-[color:var(--color-success-border)] bg-[color:var(--color-success-soft)] text-[var(--color-success)]',
+		variant === 'warning' &&
+			'border-[color:var(--color-warning-border)] bg-[color:var(--color-warning-soft)] text-[var(--color-warning)]',
+		variant === 'destructive' &&
+			'border-[color:var(--color-destructive-border)] bg-[color:var(--color-destructive-soft)] text-[var(--color-destructive)]',
+		className
+	)}
+>
+	{@render children()}
+</UiBadge>

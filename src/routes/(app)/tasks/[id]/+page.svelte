@@ -1,26 +1,61 @@
 <script lang="ts">
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import TaskDetail from '$lib/components/domain/tasks/TaskDetail.svelte';
 	import Button from '$lib/components/primitives/Button.svelte';
-	import Stack from '$lib/components/primitives/Stack.svelte';
 
-	let { data } = $props();
+	interface Props {
+		data: {
+			task: {
+				id: string;
+				title: string;
+				description: string | null;
+				status: 'Backlog' | 'InProgress' | 'Done' | 'Archived';
+				aspectName: string;
+				milestoneTitle: string | null;
+				effortMinutes: number;
+				remainingMinutes: number;
+				dueDate: string | null;
+				importanceScore: number;
+				overdue: boolean;
+				hasActiveLock: boolean;
+				activeLockReason: string | null;
+				recurringTaskSeriesId: string | null;
+				pendingReminders: Array<{ id: string; remindAtUtc: string; channel: string }>;
+				recentAllocations: Array<{
+					id: string;
+					scheduledStartUtc: string;
+					scheduledEndUtc: string;
+					allocatedMinutes: number;
+					status: string;
+				}>;
+				version: number;
+				createdAt: string;
+				updatedAt: string;
+			};
+			returnTo: string;
+		};
+	}
+
+	let { data }: Props = $props();
 </script>
 
-<Stack direction="vertical" gap="6">
-	<PageHeader title={data.task.title || 'Task Detail'}>
-		{#snippet actions()}
-			<Button variant="ghost" size="sm" onclick={() => history.back()}>← Back</Button>
-		{/snippet}
-	</PageHeader>
+<div class="space-y-5">
+	<section
+		class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] px-5 py-6 shadow-glass backdrop-blur-md sm:px-7"
+	>
+		<div class="flex flex-wrap items-center justify-between gap-4">
+			<div>
+				<p class="text-xs tracking-[0.22em] text-[var(--color-text-faint)] uppercase">
+					Mobile Drill Down
+				</p>
+				<h1
+					class="mt-2 font-display text-3xl font-bold tracking-[-0.05em] text-[var(--color-text)]"
+				>
+					{data.task.title}
+				</h1>
+			</div>
+			<Button href={data.returnTo} variant="secondary">Back to tasks</Button>
+		</div>
+	</section>
 
-	<TaskDetail
-		title={data.task.title}
-		description={data.task.description}
-		status={data.task.status}
-		effort={data.task.effort}
-		aspectName={data.task.aspectName}
-		dueDate={data.task.dueDate}
-		tags={data.task.tags}
-	/>
-</Stack>
+	<TaskDetail task={data.task} actionRoot="/tasks" returnTo={data.returnTo} />
+</div>

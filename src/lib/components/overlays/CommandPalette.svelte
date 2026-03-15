@@ -1,228 +1,150 @@
 <script lang="ts">
-  interface CommandItem {
-    id: string;
-    label: string;
-    description?: string;
-    action: () => void;
-    shortcut?: string;
-  }
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    open: boolean;
-    items?: CommandItem[];
-    onclose?: () => void;
-  }
+	interface CommandItem {
+		id: string;
+		label: string;
+		description?: string;
+		action: () => void;
+		shortcut?: string;
+	}
 
-  let { open = $bindable(), items = [], onclose }: Props = $props();
-  let query = $state('');
-  let selectedIndex = $state(0);
+	interface Props {
+		open: boolean;
+		items?: CommandItem[];
+		onclose?: () => void;
+	}
 
-  let filtered = $derived(
-    query.length === 0
-      ? items
-      : items.filter(
-          (item) =>
-            item.label.toLowerCase().includes(query.toLowerCase()) ||
-            item.description?.toLowerCase().includes(query.toLowerCase())
-        )
-  );
+	let { open = $bindable(), items = [], onclose }: Props = $props();
+	let query = $state('');
+	let selectedIndex = $state(0);
 
-  $effect(() => {
-    if (open) {
-      query = '';
-      selectedIndex = 0;
-    }
-  });
+	let filtered = $derived(
+		query.length === 0
+			? items
+			: items.filter(
+					(item) =>
+						item.label.toLowerCase().includes(query.toLowerCase()) ||
+						item.description?.toLowerCase().includes(query.toLowerCase())
+				)
+	);
 
-  function close() {
-    open = false;
-    onclose?.();
-  }
+	$effect(() => {
+		if (open) {
+			query = '';
+			selectedIndex = 0;
+		}
+	});
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      close();
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selectedIndex = Math.max(selectedIndex - 1, 0);
-    }
-    if (e.key === 'Enter' && filtered[selectedIndex]) {
-      e.preventDefault();
-      filtered[selectedIndex].action();
-      close();
-    }
-  }
+	function close() {
+		open = false;
+		onclose?.();
+	}
 
-  function handleBackdropClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) {
-      close();
-    }
-  }
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			close();
+			return;
+		}
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
+		}
+		if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = Math.max(selectedIndex - 1, 0);
+		}
+		if (e.key === 'Enter' && filtered[selectedIndex]) {
+			e.preventDefault();
+			filtered[selectedIndex].action();
+			close();
+		}
+	}
 
-  function handleGlobalKeydown(e: KeyboardEvent) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      open = !open;
-    }
-  }
+	function handleGlobalKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+			e.preventDefault();
+			open = !open;
+		}
+	}
 </script>
 
 <svelte:window onkeydown={handleGlobalKeydown} />
 
-{#if open}
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <!-- svelte-ignore a11y_interactive_supports_focus -->
-  <div class="palette-backdrop" role="dialog" aria-modal="true" aria-label="Command palette" onclick={handleBackdropClick} onkeydown={handleKeydown}>
-    <div class="palette-panel">
-      <div class="palette-input-wrapper">
-        <svg class="palette-search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="8" cy="8" r="5" />
-          <path d="M12 12l4 4" />
-        </svg>
-        <!-- svelte-ignore a11y_autofocus -->
-        <input
-          class="palette-input"
-          type="text"
-          placeholder="Search commands..."
-          bind:value={query}
-          autofocus
-        />
-      </div>
-      {#if filtered.length > 0}
-        <ul class="palette-list" role="listbox">
-          {#each filtered as item, i (item.id)}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <li
-              class="palette-item"
-              class:palette-item-active={i === selectedIndex}
-              role="option"
-              aria-selected={i === selectedIndex}
-              onmouseenter={() => (selectedIndex = i)}
-              onclick={() => { item.action(); close(); }}
-            >
-              <div class="palette-item-content">
-                <span class="palette-item-label">{item.label}</span>
-                {#if item.description}
-                  <span class="palette-item-desc">{item.description}</span>
-                {/if}
-              </div>
-              {#if item.shortcut}
-                <kbd class="palette-shortcut">{item.shortcut}</kbd>
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <div class="palette-empty">
-          <p>No results found</p>
-        </div>
-      {/if}
-    </div>
-  </div>
-{/if}
-
-<style>
-  .palette-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 20vh;
-    background: oklch(0 0 0 / 0.4);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    animation: fade-in var(--duration-fast) var(--ease-default);
-  }
-  .palette-panel {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-muted);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    max-width: 32rem;
-    overflow: hidden;
-    animation: scale-in var(--duration-fast) var(--ease-default);
-  }
-  .palette-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-border-muted);
-  }
-  .palette-search-icon {
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-  }
-  .palette-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    color: var(--color-text);
-    outline: none;
-  }
-  .palette-input::placeholder {
-    color: var(--color-text-faint);
-  }
-  .palette-list {
-    list-style: none;
-    padding: var(--space-2);
-    margin: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-  }
-  .palette-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-default);
-  }
-  .palette-item-active {
-    background: var(--color-surface-muted);
-  }
-  .palette-item-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .palette-item-label {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    color: var(--color-text);
-  }
-  .palette-item-desc {
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-  }
-  .palette-shortcut {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    padding: 2px var(--space-2);
-    background: var(--color-surface-muted);
-    border: 1px solid var(--color-border-muted);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-muted);
-  }
-  .palette-empty {
-    padding: var(--space-8);
-    text-align: center;
-    color: var(--color-text-faint);
-    font-size: var(--text-sm);
-  }
-
-  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes scale-in { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-</style>
+<Dialog.Root bind:open>
+	<Dialog.Content
+		class="top-[20%] translate-y-0 gap-0 overflow-hidden rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-0 shadow-glass-lg backdrop-blur-lg sm:max-w-lg"
+		onkeydown={handleKeydown}
+	>
+		<Dialog.Header class="sr-only">
+			<Dialog.Title>Command Palette</Dialog.Title>
+			<Dialog.Description>Search commands and navigate</Dialog.Description>
+		</Dialog.Header>
+		<div class="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
+			<svg
+				class="shrink-0 text-[var(--color-text-muted)]"
+				width="18"
+				height="18"
+				viewBox="0 0 18 18"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
+				<circle cx="8" cy="8" r="5" />
+				<path d="M12 12l4 4" />
+			</svg>
+			<!-- svelte-ignore a11y_autofocus -->
+			<Input
+				type="text"
+				placeholder="Search commands..."
+				bind:value={query}
+				autofocus
+				class="flex-1 border-none bg-transparent text-[var(--color-text)] shadow-none placeholder:text-[var(--color-text-faint)] focus-visible:ring-0"
+			/>
+		</div>
+		{#if filtered.length > 0}
+			<ScrollArea class="max-h-80">
+				<ul class="m-0 list-none p-2" role="listbox">
+					{#each filtered as item, i (item.id)}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<li
+							class={cn(
+								'flex cursor-pointer items-center justify-between rounded-[10px] px-3 py-2 transition-colors',
+								i === selectedIndex
+									? 'bg-[var(--color-glass-strong)]'
+									: 'hover:bg-[var(--color-glass)]'
+							)}
+							role="option"
+							aria-selected={i === selectedIndex}
+							onmouseenter={() => (selectedIndex = i)}
+							onclick={() => {
+								item.action();
+								close();
+							}}
+						>
+							<div class="flex flex-col gap-0.5">
+								<span class="text-sm font-medium text-[var(--color-text)]">{item.label}</span>
+								{#if item.description}
+									<span class="text-xs text-[var(--color-text-muted)]">{item.description}</span>
+								{/if}
+							</div>
+							{#if item.shortcut}
+								<kbd
+									class="rounded-sm border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-2 py-0.5 font-mono text-xs text-[var(--color-text-muted)]"
+									>{item.shortcut}</kbd
+								>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</ScrollArea>
+		{:else}
+			<div class="px-3 py-8 text-center text-sm text-[var(--color-text-faint)]">
+				<p>No results found</p>
+			</div>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

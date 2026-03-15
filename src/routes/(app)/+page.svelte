@@ -10,19 +10,20 @@
 </script>
 
 <Stack direction="vertical" gap="8">
-	<PageHeader
-		title="Dashboard"
-		description="Your weekly overview at a glance."
-	/>
+	<PageHeader title="Dashboard" description="Your weekly overview at a glance." />
 
-	<DashboardGrid columns={4} minWidth="200px" gap="6">
-		<KpiCard label="Active Aspects" value={data.stats.activeAspects} total={data.stats.totalAspects} />
+	<DashboardGrid columns={4} gap="4">
+		<KpiCard
+			label="Active Aspects"
+			value={data.stats.activeAspects}
+			total={data.stats.totalAspects}
+		/>
 		<KpiCard label="Tasks in Progress" value={data.stats.tasksInProgress} variant="accent" />
 		<KpiCard label="Tasks Done" value={data.stats.tasksDone} variant="success" />
 		<KpiCard label="Overdue" value={data.stats.overdueTasks} variant="destructive" />
 	</DashboardGrid>
 
-	<DashboardGrid columns={2} minWidth="360px" gap="6">
+	<DashboardGrid columns={2} gap="6">
 		<TodaySchedule />
 		<UpcomingTasks />
 	</DashboardGrid>

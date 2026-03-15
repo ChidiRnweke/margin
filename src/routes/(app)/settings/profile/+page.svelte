@@ -15,13 +15,13 @@
 <Stack direction="vertical" gap="6">
 	<PageHeader title="Profile" description="Configure your aspect weights and scoring thresholds.">
 		{#snippet actions()}
-			<Button variant="ghost" size="sm" onclick={() => window.location.href = '/settings'}>
+			<Button variant="ghost" size="sm" onclick={() => (window.location.href = '/settings')}>
 				Back to settings
 			</Button>
 		{/snippet}
 	</PageHeader>
 
-	<div class="settings-form-container">
+	<div class="max-w-2xl">
 		<ProfileSliders
 			aspectWeights={data.aspectWeights}
 			overcommitThreshold={data.thresholds.overcommit}
@@ -29,9 +29,3 @@
 		/>
 	</div>
 </Stack>
-
-<style>
-	.settings-form-container {
-		max-width: 40rem;
-	}
-</style>

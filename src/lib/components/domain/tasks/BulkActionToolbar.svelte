@@ -12,11 +12,13 @@
 	let { count, ondeselect, onarchive, onmove }: Props = $props();
 </script>
 
-<div class="bulk-toolbar">
+<div
+	class="flex items-center justify-between rounded border border-[var(--color-accent)] bg-[var(--color-accent-muted)] px-4 py-3"
+>
 	<Text as="span" size="sm" weight="medium">
 		{count} selected
 	</Text>
-	<div class="bulk-actions">
+	<div class="flex gap-2">
 		{#if onmove}
 			<Button variant="ghost" size="sm" onclick={onmove}>Move</Button>
 		{/if}
@@ -26,19 +28,3 @@
 		<Button variant="ghost" size="sm" onclick={ondeselect}>Deselect</Button>
 	</div>
 </div>
-
-<style>
-	.bulk-toolbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: var(--space-3) var(--space-4);
-		background: var(--color-accent-muted);
-		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
-	}
-	.bulk-actions {
-		display: flex;
-		gap: var(--space-2);
-	}
-</style>

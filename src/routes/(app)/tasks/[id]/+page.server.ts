@@ -1,19 +1,11 @@
 import type { PageServerLoad } from './$types';
+import { loadTaskDetail } from '../task-server.js';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async (event) => {
+	const task = await loadTaskDetail(event, event.params.id);
+
 	return {
-		task: {
-			id: params.id,
-			title: '',
-			description: '',
-			status: 'todo' as const,
-			effort: 0,
-			aspectId: '',
-			aspectName: '',
-			dueDate: null,
-			tags: [],
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString()
-		}
+		task,
+		returnTo: `/tasks?task=${task.id}`
 	};
 };

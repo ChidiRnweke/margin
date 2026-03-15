@@ -5,10 +5,17 @@
 	import AspectOverviewTab from '$lib/components/domain/aspects/AspectOverviewTab.svelte';
 	import MilestoneList from '$lib/components/domain/aspects/MilestoneList.svelte';
 	import AspectTasksTab from '$lib/components/domain/aspects/AspectTasksTab.svelte';
+	import { cn } from '$lib/utils.js';
 
 	let { data } = $props();
 
 	let activeTab = $state<'overview' | 'milestones' | 'tasks'>('overview');
+
+	const tabs = [
+		{ key: 'overview' as const, label: 'Overview' },
+		{ key: 'milestones' as const, label: 'Milestones' },
+		{ key: 'tasks' as const, label: 'Tasks' }
+	];
 </script>
 
 <Stack direction="vertical" gap="6">
@@ -18,28 +25,21 @@
 		{/snippet}
 	</PageHeader>
 
-	<div class="tab-bar" role="tablist">
-		<button
-			class="tab" class:tab-active={activeTab === 'overview'}
-			role="tab" aria-selected={activeTab === 'overview'}
-			onclick={() => (activeTab = 'overview')}
-		>
-			Overview
-		</button>
-		<button
-			class="tab" class:tab-active={activeTab === 'milestones'}
-			role="tab" aria-selected={activeTab === 'milestones'}
-			onclick={() => (activeTab = 'milestones')}
-		>
-			Milestones
-		</button>
-		<button
-			class="tab" class:tab-active={activeTab === 'tasks'}
-			role="tab" aria-selected={activeTab === 'tasks'}
-			onclick={() => (activeTab = 'tasks')}
-		>
-			Tasks
-		</button>
+	<div class="flex gap-1 border-b border-[var(--color-glass-border)]" role="tablist">
+		{#each tabs as tab}
+			<button
+				type="button"
+				role="tab"
+				aria-selected={activeTab === tab.key}
+				onclick={() => (activeTab = tab.key)}
+				class={cn(
+					'cursor-pointer border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]',
+					activeTab === tab.key && 'border-b-[var(--color-accent)] text-[var(--color-accent)]'
+				)}
+			>
+				{tab.label}
+			</button>
+		{/each}
 	</div>
 
 	<div role="tabpanel">
@@ -60,30 +60,3 @@
 		{/if}
 	</div>
 </Stack>
-
-<style>
-	.tab-bar {
-		display: flex;
-		gap: var(--space-1);
-		border-bottom: 1px solid var(--color-border-muted);
-	}
-	.tab {
-		padding: var(--space-2) var(--space-4);
-		font-family: var(--font-body);
-		font-size: var(--text-sm);
-		font-weight: var(--weight-medium);
-		color: var(--color-text-muted);
-		background: none;
-		border: none;
-		border-bottom: 2px solid transparent;
-		cursor: pointer;
-		transition: all var(--duration-fast) var(--easing);
-	}
-	.tab:hover {
-		color: var(--color-text);
-	}
-	.tab-active {
-		color: var(--color-accent);
-		border-bottom-color: var(--color-accent);
-	}
-</style>

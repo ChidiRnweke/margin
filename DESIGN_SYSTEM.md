@@ -6,196 +6,276 @@ This document is the single source of truth for Margin's visual identity, design
 
 ## Style Commit
 
-### Chosen Styles
+### Core Identity
 
-| Role | Style | Weight |
+Margin is a **glassmorphic** application first and foremost. Every surface, card, and panel uses frosted-glass layering over animated ambient backgrounds. The Swiss/minimalist influence governs **structure only** — grid alignment, typographic hierarchy, and spacing discipline — but the **visual character** is defined by deep glass layering, soft pastel blobs, and translucent depth.
+
+| Role | What it controls | Weight |
 |---|---|---|
-| **Primary** | Minimalism / Swiss | ~80% |
-| **Modifier** | Glassmorphism | ~20% (restricted zones only) |
+| **Visual language** | Glassmorphism | Primary — all surfaces |
+| **Structural discipline** | Swiss / Minimalism | Governs grid, type scale, spacing, alignment |
 
-### Style Application Plan
+### How Glass Works Everywhere
 
-**Primary — Swiss (≈80%)**
-Controls: page grid, typography ladder, spacing scale, section structure, forms, tables, navigation scaffolding, all text hierarchy. Swiss gives Margin its calm, precise, trustworthy character. Every screen defaults to Swiss rules.
+- **Every card, panel, and container** is a glass surface: translucent background + `backdrop-blur-*` + subtle luminous border.
+- **Depth is created by layering**: the page has an animated gradient/blob background; panels float above it as frosted layers; cards inside panels are a second glass layer with lighter blur.
+- **Opacity and blur vary by depth level** to maintain hierarchy (see Elevation section).
+- **There is no flat opaque card anywhere in the UI.** If a surface exists, it's glass.
 
-**Modifier — Glassmorphism (≈20%)**
-Restricted to:
-- Weekly plan allocation blocks (frosted cards over the timeline background)
-- Dashboard KPI stat cards (subtle glass over the soft gradient header)
-- Modal/dialog overlays (frosted backdrop)
-- The onboarding wizard step cards
+### What Swiss Controls (Structure Only)
 
-**Banned zones for Glass:**
-- Forms and input fields (always opaque surfaces for readability)
-- Data tables and task lists (always solid backgrounds)
-- Navigation sidebar/bottom bar (always solid, conventional)
-- Long-form text/descriptions
+Swiss principles govern the invisible scaffolding beneath the glass:
+- Strict grid alignment (12-column, consistent gutters)
+- Modular type scale with clear hierarchy
+- Consistent spacing tokens (no ad-hoc values)
+- Clean information hierarchy — one focus per section
+- No decorative fonts, no ornamental borders
 
-**Ornament budget:** Max 2 glass surfaces visible per screen at any time. Glass must never stack (no glass-on-glass).
+### The Ambient Background (Critical — This Makes Glass Work)
 
-### Dark Mode
+Every page MUST have an animated ambient background behind all content. Without this, glass surfaces will look like slightly transparent gray cards — which is the failure mode of bad implementations.
 
-`prefers-color-scheme` auto-detection with CSS custom properties switching. Light and dark token sets defined. No manual toggle in v1 — follows OS preference.
+The ambient background is a `fixed inset-0 z-0` container with 2–3 absolutely positioned blobs using `rounded-full blur-3xl` and `animate-float` (defined in Tailwind config). Each blob uses a different `--color-aspect-*` token at ~50% opacity. The blobs drift slowly via a custom `float` keyframe animation.
 
----
+Pages may add extra blob `<div>`s for more colour (e.g., the dashboard adds a third mint blob center-right). Each blob should use a different aspect color.
 
-## Color Palette
-
-**Mood:** Soft pastels — gentle, approachable, personal. Not corporate.
-
-### Light Mode
-
-```css
-:root {
-  /* Surfaces */
-  --color-bg:              oklch(0.985 0.005 280);    /* near-white with faint lavender warmth */
-  --color-surface:         oklch(0.995 0.003 280);    /* card/panel white */
-  --color-surface-muted:   oklch(0.965 0.008 280);    /* subtle section background */
-  --color-surface-raised:  oklch(0.975 0.006 280);    /* elevated cards */
-
-  /* Glass (modifier zones only) */
-  --color-glass:           oklch(0.98 0.005 280 / 0.60);
-  --color-glass-strong:    oklch(0.98 0.005 280 / 0.75);
-  --color-glass-border:    oklch(0.90 0.01 280 / 0.30);
-
-  /* Text */
-  --color-text:            oklch(0.22 0.02 280);      /* primary text — deep slate-purple */
-  --color-text-muted:      oklch(0.48 0.02 280);      /* secondary/helper text */
-  --color-text-faint:      oklch(0.62 0.015 280);     /* placeholder, disabled */
-
-  /* Borders */
-  --color-border:          oklch(0.88 0.012 280);     /* default border */
-  --color-border-muted:    oklch(0.92 0.008 280);     /* subtle dividers */
-
-  /* Accent — soft indigo-lavender (primary actions, links, focus) */
-  --color-accent:          oklch(0.55 0.15 280);
-  --color-accent-hover:    oklch(0.50 0.17 280);
-  --color-accent-muted:    oklch(0.55 0.15 280 / 0.12);
-  --color-accent-foreground: oklch(0.99 0.003 280);
-
-  /* Semantic: success */
-  --color-success:         oklch(0.60 0.14 155);
-  --color-success-muted:   oklch(0.60 0.14 155 / 0.12);
-
-  /* Semantic: warning */
-  --color-warning:         oklch(0.72 0.14 75);
-  --color-warning-muted:   oklch(0.72 0.14 75 / 0.12);
-
-  /* Semantic: destructive */
-  --color-destructive:     oklch(0.58 0.18 18);
-  --color-destructive-muted: oklch(0.58 0.18 18 / 0.12);
-
-  /* Aspect colors (used for aspect cards, allocation blocks, health rings) */
-  --color-aspect-1:        oklch(0.72 0.12 330);      /* blush/rose */
-  --color-aspect-2:        oklch(0.72 0.12 250);      /* periwinkle */
-  --color-aspect-3:        oklch(0.72 0.12 170);      /* mint */
-  --color-aspect-4:        oklch(0.72 0.12 55);       /* peach */
-  --color-aspect-5:        oklch(0.72 0.12 200);      /* sky */
-  --color-aspect-6:        oklch(0.72 0.12 300);      /* lilac */
-  --color-aspect-7:        oklch(0.72 0.12 120);      /* sage */
-  --color-aspect-8:        oklch(0.72 0.12 30);       /* coral */
-}
-```
+The `AmbientBackground` component is **required on every page**. Glass over a solid background is not glass — it's a transparent box.
 
 ### Dark Mode
 
-```css
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg:              oklch(0.16 0.015 280);
-    --color-surface:         oklch(0.20 0.018 280);
-    --color-surface-muted:   oklch(0.18 0.016 280);
-    --color-surface-raised:  oklch(0.23 0.02 280);
-
-    --color-glass:           oklch(0.22 0.02 280 / 0.50);
-    --color-glass-strong:    oklch(0.22 0.02 280 / 0.65);
-    --color-glass-border:    oklch(0.40 0.02 280 / 0.25);
-
-    --color-text:            oklch(0.92 0.01 280);
-    --color-text-muted:      oklch(0.68 0.015 280);
-    --color-text-faint:      oklch(0.50 0.012 280);
-
-    --color-border:          oklch(0.32 0.02 280);
-    --color-border-muted:    oklch(0.26 0.018 280);
-
-    --color-accent:          oklch(0.68 0.14 280);
-    --color-accent-hover:    oklch(0.72 0.15 280);
-    --color-accent-muted:    oklch(0.68 0.14 280 / 0.15);
-    --color-accent-foreground: oklch(0.15 0.02 280);
-
-    --color-success:         oklch(0.68 0.13 155);
-    --color-success-muted:   oklch(0.68 0.13 155 / 0.15);
-    --color-warning:         oklch(0.75 0.13 75);
-    --color-warning-muted:   oklch(0.75 0.13 75 / 0.15);
-    --color-destructive:     oklch(0.65 0.16 18);
-    --color-destructive-muted: oklch(0.65 0.16 18 / 0.15);
-
-    /* Aspect colors shift slightly brighter in dark mode */
-    --color-aspect-1:        oklch(0.75 0.11 330);
-    --color-aspect-2:        oklch(0.75 0.11 250);
-    --color-aspect-3:        oklch(0.75 0.11 170);
-    --color-aspect-4:        oklch(0.75 0.11 55);
-    --color-aspect-5:        oklch(0.75 0.11 200);
-    --color-aspect-6:        oklch(0.75 0.11 300);
-    --color-aspect-7:        oklch(0.75 0.11 120);
-    --color-aspect-8:        oklch(0.75 0.11 30);
-  }
-}
-```
+`prefers-color-scheme` auto-detection with Tailwind's `dark:` variant. Light and dark token sets defined in `tailwind.config`. No manual toggle in v1 — follows OS preference. In dark mode, blob opacity increases and blur intensifies for richer ambient colour.
 
 ---
 
-## Typography
+## Tailwind Config (Token Definitions)
 
-**Philosophy:** Swiss — hierarchy through size, weight, and tracking. No decorative fonts. Clean sans-serif system stack with an optional geometric sans for display.
+All tokens are defined in `tailwind.config.ts` under `theme.extend`. Components use ONLY these tokens — never Tailwind's default palette.
 
-```css
-:root {
-  /* Font families */
-  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+```ts
+// tailwind.config.ts — theme.extend
+{
+  colors: {
+    // Surfaces — FALLBACKS only; prefer glass utilities for actual surfaces
+    bg:              'oklch(0.985 0.005 280)',
+    surface:         'oklch(0.995 0.003 280)',        // opaque fallback (forms)
+    'surface-muted': 'oklch(0.965 0.008 280)',
+    'surface-raised':'oklch(0.975 0.006 280)',
 
-  /* Type scale (modular, 1.25 ratio) */
-  --text-xs:   0.75rem;    /* 12px — captions, badges */
-  --text-sm:   0.875rem;   /* 14px — helper text, metadata */
-  --text-base: 1rem;       /* 16px — body text */
-  --text-lg:   1.125rem;   /* 18px — section subtitles */
-  --text-xl:   1.25rem;    /* 20px — card titles */
-  --text-2xl:  1.5rem;     /* 24px — page section headings */
-  --text-3xl:  1.875rem;   /* 30px — page titles */
-  --text-4xl:  2.25rem;    /* 36px — hero/onboarding display */
+    // Glass fills
+    glass:           'oklch(0.98 0.005 280 / 0.55)',  // standard glass
+    'glass-strong':  'oklch(0.98 0.005 280 / 0.70)',  // nested / elevated glass
+    'glass-border':  'oklch(0.95 0.01 280 / 0.40)',   // luminous top-left border
+    'glass-border-subtle': 'oklch(0.90 0.01 280 / 0.20)', // dim bottom-right border
+    'glass-shadow':  'oklch(0.50 0.03 280 / 0.08)',   // shadow color for glass
 
-  /* Tracking */
-  --tracking-tight:   -0.025em;  /* display headings */
-  --tracking-normal:   0em;       /* body */
-  --tracking-wide:     0.025em;   /* uppercase labels, badges */
+    // Text
+    text:            'oklch(0.22 0.02 280)',
+    'text-muted':    'oklch(0.48 0.02 280)',
+    'text-faint':    'oklch(0.62 0.015 280)',
 
-  /* Line heights */
-  --leading-tight:  1.25;   /* headings */
-  --leading-normal: 1.5;    /* body */
-  --leading-relaxed: 1.625; /* long-form */
+    // Borders
+    border:          'oklch(0.88 0.012 280)',
+    'border-muted':  'oklch(0.92 0.008 280)',
 
-  /* Font weights */
-  --weight-normal:   400;
-  --weight-medium:   500;
-  --weight-semibold: 600;
-  --weight-bold:     700;
+    // Accent — soft indigo-lavender
+    accent:          'oklch(0.55 0.15 280)',
+    'accent-hover':  'oklch(0.50 0.17 280)',
+    'accent-muted':  'oklch(0.55 0.15 280 / 0.12)',
+    'accent-fg':     'oklch(0.99 0.003 280)',
+
+    // Semantic
+    success:         'oklch(0.60 0.14 155)',
+    'success-muted': 'oklch(0.60 0.14 155 / 0.12)',
+    warning:         'oklch(0.72 0.14 75)',
+    'warning-muted': 'oklch(0.72 0.14 75 / 0.12)',
+    destructive:     'oklch(0.58 0.18 18)',
+    'destructive-muted': 'oklch(0.58 0.18 18 / 0.12)',
+
+    // Aspect colors (cards, allocation blocks, health rings, blobs)
+    'aspect-1':      'oklch(0.72 0.12 330)',   // blush/rose
+    'aspect-2':      'oklch(0.72 0.12 250)',   // periwinkle
+    'aspect-3':      'oklch(0.72 0.12 170)',   // mint
+    'aspect-4':      'oklch(0.72 0.12 55)',    // peach
+    'aspect-5':      'oklch(0.72 0.12 200)',   // sky
+    'aspect-6':      'oklch(0.72 0.12 300)',   // lilac
+    'aspect-7':      'oklch(0.72 0.12 120)',   // sage
+    'aspect-8':      'oklch(0.72 0.12 30)',    // coral
+  },
+
+  // Dark mode overrides — see Dark Mode Tokens section below
+
+  borderRadius: {
+    sm:   '6px',
+    DEFAULT: '10px',
+    lg:   '14px',
+    xl:   '18px',
+    full: '9999px',
+  },
+
+  fontFamily: {
+    display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    body:    ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    mono:    ['JetBrains Mono', 'ui-monospace', 'monospace'],
+  },
+
+  fontSize: {
+    xs:   ['0.75rem',   { lineHeight: '1.5' }],
+    sm:   ['0.875rem',  { lineHeight: '1.5' }],
+    base: ['1rem',      { lineHeight: '1.5' }],
+    lg:   ['1.125rem',  { lineHeight: '1.5' }],
+    xl:   ['1.25rem',   { lineHeight: '1.25' }],
+    '2xl':['1.5rem',    { lineHeight: '1.25' }],
+    '3xl':['1.875rem',  { lineHeight: '1.25' }],
+    '4xl':['2.25rem',   { lineHeight: '1.25' }],
+  },
+
+  letterSpacing: {
+    tight:  '-0.025em',
+    normal: '0em',
+    wide:   '0.025em',
+  },
+
+  backdropBlur: {
+    sm:  '8px',      // nested glass cards
+    md:  '20px',     // primary panels
+    lg:  '40px',     // modals, overlays
+    xl:  '80px',     // ambient blobs (filter, not backdrop)
+  },
+
+  boxShadow: {
+    glass:      '0 8px 32px oklch(0.50 0.03 280 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.08)',
+    'glass-sm': '0 2px 8px oklch(0.50 0.03 280 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.06)',
+    'glass-lg': '0 24px 48px oklch(0.50 0.03 280 / 0.12)',
+  },
+
+  keyframes: {
+    float: {
+      '0%':   { transform: 'translate(0, 0) scale(1)' },
+      '100%': { transform: 'translate(30px, -20px) scale(1.05)' },
+    },
+  },
+  animation: {
+    float: 'float 20s ease-in-out infinite alternate',
+  },
+
+  spacing: {
+    'gutter':      '2rem',     // 32px
+    'section-gap': '3rem',     // 48px
+    'card-pad':    '1.5rem',   // 24px
+  },
+
+  maxWidth: {
+    content: '72rem',
+  },
+
+  width: {
+    sidebar: '16rem',
+  },
 }
 ```
 
-### Typography ladder
+### Dark Mode Tokens
 
-| Use | Size | Weight | Tracking | Example |
-|---|---|---|---|---|
-| Display / hero | `--text-4xl` | bold | tight | Onboarding headline |
-| Page title | `--text-3xl` | bold | tight | "This Week" |
-| Section heading | `--text-2xl` | semibold | tight | "Aspects", "Tasks" |
-| Card title | `--text-xl` | semibold | normal | Aspect card header |
-| Subtitle | `--text-lg` | medium | normal | Panel subtitle |
-| Body | `--text-base` | normal | normal | Descriptions, paragraphs |
-| Small / meta | `--text-sm` | normal–medium | normal | Timestamps, helper text |
-| Caption / badge | `--text-xs` | medium | wide | Status badges, labels |
+Dark mode colors override via Tailwind's `dark:` variant. Define as CSS variables toggled by `prefers-color-scheme: dark` so glass composites reference the right values.
+
+| Token | Light | Dark |
+|---|---|---|
+| `bg` | `oklch(0.985 0.005 280)` | `oklch(0.13 0.02 280)` — deep blue-purple, **NOT gray** |
+| `surface` | `oklch(0.995 0.003 280)` | `oklch(0.20 0.018 280)` |
+| `glass` | `oklch(0.98 0.005 280 / 0.55)` | `oklch(0.20 0.025 280 / 0.45)` — richer tint |
+| `glass-strong` | `oklch(0.98 0.005 280 / 0.70)` | `oklch(0.22 0.025 280 / 0.60)` |
+| `glass-border` | `oklch(0.95 0.01 280 / 0.40)` | `oklch(0.50 0.03 280 / 0.30)` — brighter edge |
+| `glass-border-subtle` | `oklch(0.90 0.01 280 / 0.20)` | `oklch(0.30 0.02 280 / 0.15)` |
+| `glass-shadow` | `oklch(0.50 0.03 280 / 0.08)` | `oklch(0.10 0.03 280 / 0.30)` |
+| `text` | `oklch(0.22 0.02 280)` | `oklch(0.92 0.01 280)` |
+| `text-muted` | `oklch(0.48 0.02 280)` | `oklch(0.68 0.015 280)` |
+| `text-faint` | `oklch(0.62 0.015 280)` | `oklch(0.50 0.012 280)` |
+| `border` | `oklch(0.88 0.012 280)` | `oklch(0.32 0.02 280)` |
+| `accent` | `oklch(0.55 0.15 280)` | `oklch(0.68 0.14 280)` |
+| Aspect colors | `oklch(0.72 ...)` | `oklch(0.75 ...)` — slightly brighter |
+
+---
+
+## Typography Ladder
+
+| Use | Classes | Example |
+|---|---|---|
+| Display / hero | `text-4xl font-bold tracking-tight` | Onboarding headline |
+| Page title | `text-3xl font-bold tracking-tight` | "This Week" |
+| Section heading | `text-2xl font-semibold tracking-tight` | "Aspects", "Tasks" |
+| Card title | `text-xl font-semibold` | Aspect card header |
+| Subtitle | `text-lg font-medium` | Panel subtitle |
+| Body | `text-base font-normal` | Descriptions, paragraphs |
+| Small / meta | `text-sm font-normal` or `text-sm font-medium` | Timestamps, helper text |
+| Caption / badge | `text-xs font-medium tracking-wide uppercase` | Status badges, labels |
+
+---
+
+## Glass Surface Utility Patterns
+
+These are the **exact Tailwind class combinations** to use for glass surfaces. Do not improvise — use these patterns.
+
+### Glass Panel (Level 1 — primary containers)
+
+Use for: dashboard sections, main content cards, sidebar panels.
+
+```
+bg-glass backdrop-blur-md border border-glass-border border-b-glass-border-subtle border-r-glass-border-subtle rounded-lg shadow-glass
+```
+
+### Glass Card (Level 2 — nested inside panels or directly over ambient bg)
+
+Use for: KPI stat cards, aspect cards inside a grid, task cards inside a list panel.
+
+```
+bg-glass-strong backdrop-blur-sm border border-glass-border border-b-glass-border-subtle border-r-glass-border-subtle rounded shadow-glass-sm
+```
+
+### Glass Nav
+
+```
+bg-glass-strong backdrop-blur-md border-b border-glass-border-subtle
+```
+
+### Glass Modal
+
+```
+<!-- Backdrop -->
+bg-black/30 backdrop-blur-lg
+
+<!-- Dialog -->
+bg-glass-strong backdrop-blur-lg border border-glass-border rounded-xl shadow-glass-lg
+```
+
+### Luminous Border (Critical Detail)
+
+The directional border is what makes glass look like a physical surface with light catching its top-left edge. Every glass surface MUST have this:
+- `border-glass-border` on top and left (brighter)
+- `border-b-glass-border-subtle border-r-glass-border-subtle` on bottom and right (dimmer)
+
+Without this, glass surfaces look like transparent boxes instead of frosted panels.
+
+---
+
+## Ambient Background Blob Patterns
+
+Each blob is an absolutely positioned `<div>` inside the `AmbientBackground` component:
+
+```
+<!-- Standard blob base classes -->
+absolute rounded-full blur-3xl opacity-50 motion-safe:animate-float motion-reduce:animate-none
+
+<!-- Blob 1: lilac, top-left -->
+w-[40vw] h-[40vw] -top-[10%] -left-[10%] bg-aspect-6
+
+<!-- Blob 2: periwinkle, bottom-right -->
+w-[35vw] h-[35vw] -bottom-[10%] -right-[10%] bg-aspect-2 [animation-delay:-10s]
+
+<!-- Optional blob 3 (dashboard): mint, center-right -->
+w-[30vw] h-[30vw] top-[20%] right-[5%] bg-aspect-3 [animation-delay:-5s]
+```
+
+The `AmbientBackground` container itself uses `fixed inset-0 z-0 overflow-hidden bg-bg`.
 
 ---
 
@@ -203,86 +283,79 @@ Restricted to:
 
 **Density:** Airy — generous whitespace, one focus per viewport section.
 
-```css
-:root {
-  /* 4px base spacing scale */
-  --space-0:   0;
-  --space-0.5: 0.125rem;   /* 2px */
-  --space-1:   0.25rem;    /* 4px */
-  --space-2:   0.5rem;     /* 8px */
-  --space-3:   0.75rem;    /* 12px */
-  --space-4:   1rem;       /* 16px */
-  --space-5:   1.25rem;    /* 20px */
-  --space-6:   1.5rem;     /* 24px */
-  --space-8:   2rem;       /* 32px */
-  --space-10:  2.5rem;     /* 40px */
-  --space-12:  3rem;       /* 48px */
-  --space-16:  4rem;       /* 64px */
-
-  /* Layout */
-  --gutter:      var(--space-8);     /* 32px page gutter */
-  --section-gap: var(--space-12);    /* 48px between major sections */
-  --card-padding: var(--space-6);    /* 24px inside cards */
-  --max-width:   72rem;              /* 1152px content max */
-  --sidebar-width: 16rem;            /* 256px sidebar */
-}
-```
+Standard Tailwind spacing scale (4px base) plus semantic aliases:
+- `p-gutter` / `px-gutter` — 32px page gutter
+- `gap-section-gap` — 48px between major sections
+- `p-card-pad` — 24px inside cards
 
 ### Grid System
 
-- **Page layout:** CSS Grid with `sidebar | main` on desktop, single-column on mobile
-- **Dashboard widgets:** 12-column grid, widgets snap to 3/4/6/12 column spans
-- **Card grids:** Auto-fill with `min(280px, 1fr)` for responsive aspect cards
-- **Timeline:** Fixed-width day columns with horizontal scroll
+- **Page layout:** Full-width progressive disclosure and hub-and-spoke models (no traditional sidebars). Use a top-bar or stacked central cards.
+- **Dashboard widgets:** `grid grid-cols-12 gap-gutter` — widgets snap to `col-span-3` / `col-span-4` / `col-span-6` / `col-span-12`
+- **Card grids:** `grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6` for responsive aspect cards
+- **Timeline:** Fixed-width day columns with `overflow-x-auto`
 
 ---
 
-## Shape & Elevation
+## Elevation Hierarchy (All Levels Use Glass)
 
-```css
-:root {
-  /* Border radius — single family per Swiss rules */
-  --radius-sm:   6px;
-  --radius:      10px;     /* default for cards, inputs */
-  --radius-lg:   14px;     /* larger panels, modals */
-  --radius-xl:   18px;     /* glass cards, onboarding */
-  --radius-full: 9999px;   /* pills, avatars */
+Every elevation level is a glass surface. Hierarchy is expressed through **blur intensity**, **opacity**, and **shadow depth** — not by switching between glass and opaque.
 
-  /* Borders */
-  --border-width: 1px;
+| Level | Use | Pattern to Apply |
+|---|---|---|
+| 1 — Panel | Dashboard panels, content cards | Glass Panel classes |
+| 2 — Card | Nested cards, KPIs | Glass Card classes |
+| 3 — Overlay | Dropdowns, tooltips, toasts | Glass Panel classes + higher `z-*` |
+| 4 — Modal | Dialogs, drawers | Glass Modal classes |
 
-  /* Shadows — minimal per Swiss, used only for elevation */
-  --shadow-sm:   0 1px 2px oklch(0 0 0 / 0.04);
-  --shadow:      0 2px 8px oklch(0 0 0 / 0.06);
-  --shadow-lg:   0 8px 24px oklch(0 0 0 / 0.08);
-  --shadow-glass: 0 8px 32px oklch(0 0 0 / 0.10);
+**Key principle:** Deeper blur + higher opacity + larger shadow = more elevated. Never use flat/opaque surfaces to indicate elevation.
 
-  /* Blur (glass modifier only) */
-  --blur-glass:  20px;
+---
 
-  /* Motion */
-  --duration-fast:   120ms;
-  --duration-normal: 200ms;
-  --duration-slow:   300ms;
-  --easing:          cubic-bezier(0.25, 0.1, 0.25, 1);
-}
+## Dashboard Composition Example
+
+This is how the dashboard should be composed. Every implementation must follow this layering:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  AmbientBackground (fixed inset-0 z-0)              │
+│  ┌─ blob: aspect-6 lilac, top-left ────────────┐    │
+│  └─────────────────────────────────────────────┘    │
+│  ┌─ blob: aspect-2 periwinkle, bottom-right ───┐    │
+│  └─────────────────────────────────────────────┘    │
+│  ┌─ blob: aspect-3 mint, center-right ─────────┐    │
+│  └─────────────────────────────────────────────┘    │
+│                                                     │
+│  ┌─ Glass Nav (z-50) ──────────────────────────┐    │
+│  │  Margin    Dashboard  Plan  Aspects  Tasks   │    │
+│  └──────────────────────────────────────────────┘    │
+│                                                     │
+│  ┌─ Content (z-10 relative) ───────────────────┐    │
+│  │                                              │    │
+│  │  Page Title: "Dashboard"                     │    │
+│  │  Subtitle: "Your weekly overview"            │    │
+│  │                                              │    │
+│  │  ┌─ KPI Row (4x Glass Card) ────────────┐   │    │
+│  │  │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐  │   │    │
+│  │  │ │Active│ │In    │ │Done  │ │Over- │  │   │    │
+│  │  │ │Aspc. │ │Prog. │ │      │ │due   │  │   │    │
+│  │  │ └──────┘ └──────┘ └──────┘ └──────┘  │   │    │
+│  │  └───────────────────────────────────────┘   │    │
+│  │                                              │    │
+│  │  ┌─ Glass Panel ────┐ ┌─ Glass Panel ────┐   │    │
+│  │  │ Today's Schedule  │ │ Upcoming Tasks  │   │    │
+│  │  │                   │ │                 │   │    │
+│  │  │ (content/empty)   │ │ (content/empty) │   │    │
+│  │  └───────────────────┘ └─────────────────┘   │    │
+│  └──────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────┘
 ```
 
-### Elevation hierarchy
-
-| Level | Use | Shadow | Blur |
-|---|---|---|---|
-| 0 — Flat | Body sections, table rows | none | none |
-| 1 — Raised | Cards, inputs | `--shadow-sm` | none |
-| 2 — Overlay | Dropdowns, tooltips, toasts | `--shadow` | none |
-| 3 — Modal | Dialogs, drawers | `--shadow-lg` | none |
-| Glass | Allocation blocks, KPI cards (modifier zones) | `--shadow-glass` | `--blur-glass` |
+KPI cards use **Glass Card** pattern. Schedule/Upcoming panels use **Glass Panel** pattern. Everything floats over the ambient blobs.
 
 ---
 
 ## UX Pattern Assignments
-
-Each major feature maps to a proven UX pattern. See [architecture/ui-ux-patterns.md](./ui-ux-patterns.md) for detailed specifications per pattern.
 
 | Feature | Primary Pattern | Notes |
 |---|---|---|
@@ -308,25 +381,26 @@ Each major feature maps to a proven UX pattern. See [architecture/ui-ux-patterns
 ```
 src/lib/components/
 ├── ui/            # shadcn-svelte generated — never hand-edit
-├── primitives/    # token-aware wrappers
-│   ├── Button.svelte        # Swiss: crisp, outline-default, accent-primary
-│   ├── Card.svelte          # Swiss: flat border + Glass variant prop
-│   ├── Input.svelte         # Always opaque, never on glass
-│   ├── Badge.svelte         # Uppercase caption, wide tracking
+├── primitives/
+│   ├── Button.svelte        # Accent-filled or ghost; always glass-compatible
+│   ├── GlassPanel.svelte    # Level 1 glass — use for ALL primary containers
+│   ├── GlassCard.svelte     # Level 2 glass — use for ALL nested cards
+│   ├── Input.svelte         # Opaque bg-surface (readability), glass-compatible border
+│   ├── Badge.svelte         # text-xs font-medium tracking-wide uppercase, glass-tinted bg
 │   ├── Text.svelte          # Typography ladder enforcement
 │   ├── Stack.svelte         # Vertical rhythm via spacing tokens
-│   ├── GlassCard.svelte     # Modifier: frosted surface, restricted zones
-│   └── Panel.svelte         # Dashboard widget container
+│   └── Panel.svelte         # DEPRECATED — use GlassPanel
 ├── layout/
-│   ├── AppShell.svelte      # Sidebar + topbar + content area
-│   ├── WizardLayout.svelte  # Full-viewport wizard frame
+│   ├── AppShell.svelte      # Glass navbar + content area
+│   ├── AmbientBackground.svelte  # Animated blob background (REQUIRED on every page)
+│   ├── WizardLayout.svelte
 │   ├── TimelineLayout.svelte
 │   ├── MasterDetailLayout.svelte
 │   ├── DashboardGrid.svelte
 │   ├── PageHeader.svelte
-│   ├── EmptyState.svelte    # Contextual, pastel illustration placeholder
-│   └── Skeleton.svelte
-└── domain/                  # Feature-specific components
+│   ├── EmptyState.svelte
+│   └── Skeleton.svelte      # Glass-tinted loading placeholder
+└── domain/
     ├── aspects/
     ├── tasks/
     ├── plan/
@@ -336,41 +410,46 @@ src/lib/components/
 
 ### Hard Rules
 
-1. **Never use raw `<button>`** → always `primitives/Button`
-2. **Never use raw `<input>`** → always `primitives/Input` (wraps shadcn)
-3. **Never ad-hoc spacing** → use `Stack` or spacing tokens
-4. **Never Tailwind default palette** → tokens only for final colors
-5. **Never hand-roll structural layouts** → use pattern layout components
-6. **Glass only in approved zones** → flag if glass leaks elsewhere
-7. **Max 2 glass surfaces per screen** → ornament budget enforced
-8. **Forms always on opaque surfaces** — even inside glass-zone screens
+1. **Every page MUST render `AmbientBackground`** — glass is invisible without it.
+2. **Never use flat/opaque cards** → always `GlassPanel` or `GlassCard`. The only opaque surfaces are form inputs (`bg-surface`) and the `<body>` itself.
+3. **Never use raw `<button>`** → always `primitives/Button`.
+4. **Never use raw `<input>`** → always `primitives/Input` (wraps shadcn).
+5. **Never ad-hoc spacing** → use `Stack` or spacing tokens from config.
+6. **Never use Tailwind's default color palette** (`gray-*`, `slate-*`, `zinc-*`, `neutral-*`, etc.) → design system tokens only.
+7. **Never hand-roll structural layouts** → use pattern layout components.
+8. **All glass surfaces MUST include `backdrop-blur-*`** — translucent `bg-` without blur is NOT glass.
+9. **All glass surfaces MUST have the luminous directional border** — brighter top/left, dimmer bottom/right.
+10. **Form inputs use opaque `bg-surface`** for readability — even inside glass containers.
 
 ---
 
 ## Anti-Patterns (Banned)
 
-- Default gray-on-white soup with no personality
-- Random `text-sm`, `text-lg` without following the typography ladder
-- Bare shadcn components without token integration
-- Gradients in the primary style (Swiss is flat; glass blur is the only depth effect)
-- Multiple accent hues competing (one accent: lavender-indigo)
-- Nested tabs (use drill-down or master-detail instead)
-- Paginated feeds (use load-more or virtualized scroll)
-- Glass-on-glass stacking
-- Full-page blank states (always provide setup guidance)
-- Hiding primary actions behind progressive disclosure
+- **Flat gray/opaque surfaces** — if it looks like a dark gray card with no transparency, it's wrong.
+- **Glass without `AmbientBackground`** — glass over a solid color is just a slightly transparent box.
+- **Missing `backdrop-blur-*`** — translucent background without blur is NOT glass.
+- **Missing luminous directional borders** — glass without bright-top-left / dim-bottom-right edges looks like a hole, not a surface.
+- **Using Tailwind default grays** (`bg-gray-800`, `bg-slate-900`, etc.) — the dark bg is deep blue-purple, NOT neutral gray.
+- **Using `bg-white` or `bg-black`** — use token colors only.
+- Random `text-sm`, `text-lg` without following the typography ladder.
+- Bare shadcn components without token integration.
+- Multiple accent hues competing (one accent: lavender-indigo).
+- Nested tabs (use drill-down or master-detail instead).
+- Paginated feeds (use load-more or virtualized scroll).
+- Full-page blank states (always provide setup guidance).
+- Hiding primary actions behind progressive disclosure.
 
 ---
 
 ## Accessibility Guardrails
 
-- **Focus rings:** 2px accent ring, always visible on keyboard navigation
-- **Contrast:** WCAG AA minimum for all text (especially on glass surfaces — test!)
-- **Tap targets:** ≥ 44×44px for all interactive elements
-- **States:** Every interactive element has hover, active, disabled, focus, error states
-- **Keyboard:** Full keyboard navigation for menus, dialogs, forms, timeline blocks
-- **Reduced motion:** Respect `prefers-reduced-motion` — disable transitions, keep glass static
-- **Glass fallback:** `@supports not (backdrop-filter: blur(1px))` → solid surface fallback
+- **Focus rings:** `ring-2 ring-accent ring-offset-2` — always visible on keyboard navigation.
+- **Contrast:** WCAG AA minimum for all text. **Test text contrast on glass surfaces with blobs behind them.** Use `bg-glass-strong` if contrast fails on thinner glass.
+- **Tap targets:** `min-w-[44px] min-h-[44px]` for all interactive elements.
+- **States:** Every interactive element has hover, active, disabled, focus, error states.
+- **Keyboard:** Full keyboard navigation for menus, dialogs, forms, timeline blocks.
+- **Reduced motion:** Use `motion-safe:` prefix on animations. Blobs use `motion-reduce:animate-none`.
+- **Glass fallback:** Provide a `@supports not (backdrop-filter: blur(1px))` rule in global CSS that sets glass surfaces to `bg-surface` with `border-border`. This is the ONE place raw CSS is acceptable.
 
 ---
 

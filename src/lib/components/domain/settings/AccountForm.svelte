@@ -36,7 +36,7 @@
 		</Stack>
 	</Panel>
 
-	<div class="danger-zone">
+	<div class="overflow-hidden rounded-lg border border-[var(--color-destructive-border)]">
 		<Panel title="Danger Zone">
 			<Stack direction="vertical" gap="3">
 				<Text size="sm" color="destructive">
@@ -45,7 +45,7 @@
 
 				{#if !confirmDelete}
 					<div>
-						<Button variant="destructive" onclick={() => confirmDelete = true}>
+						<Button variant="destructive" onclick={() => (confirmDelete = true)}>
 							Delete account
 						</Button>
 					</div>
@@ -53,18 +53,10 @@
 					<Stack direction="horizontal" gap="2" align="center">
 						<Text size="sm" weight="medium">Are you sure?</Text>
 						<Button variant="destructive" onclick={ondelete}>Yes, delete my account</Button>
-						<Button variant="ghost" onclick={() => confirmDelete = false}>Cancel</Button>
+						<Button variant="ghost" onclick={() => (confirmDelete = false)}>Cancel</Button>
 					</Stack>
 				{/if}
 			</Stack>
 		</Panel>
 	</div>
 </Stack>
-
-<style>
-	.danger-zone {
-		border: 1px solid var(--color-destructive-muted);
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-	}
-</style>

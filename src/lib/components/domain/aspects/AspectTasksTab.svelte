@@ -33,10 +33,10 @@
 		</EmptyState>
 	{:else}
 		{#each tasks as task}
-			<a href="/tasks/{task.id}" class="task-link">
+			<a href="/tasks/{task.id}" class="block text-inherit no-underline">
 				<Card padding="sm">
-					<div class="task-row">
-						<div class="task-info">
+					<div class="flex items-center justify-between gap-4">
+						<div class="flex flex-col gap-1">
 							<Text as="span" size="base" weight="medium">{task.title}</Text>
 							{#if task.dueDate}
 								<Text as="span" size="xs" color="faint">
@@ -44,10 +44,14 @@
 								</Text>
 							{/if}
 						</div>
-						<div class="task-meta">
+						<div class="flex shrink-0 items-center gap-3">
 							<Text as="span" size="xs" color="faint">{task.effort}h effort</Text>
 							<Badge
-								variant={task.status === 'done' ? 'success' : task.status === 'in_progress' ? 'accent' : 'default'}
+								variant={task.status === 'done'
+									? 'success'
+									: task.status === 'in_progress'
+										? 'accent'
+										: 'default'}
 							>
 								{task.status.replace('_', ' ')}
 							</Badge>
@@ -58,28 +62,3 @@
 		{/each}
 	{/if}
 </Stack>
-
-<style>
-	.task-link {
-		text-decoration: none;
-		color: inherit;
-		display: block;
-	}
-	.task-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-4);
-	}
-	.task-info {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.task-meta {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		flex-shrink: 0;
-	}
-</style>

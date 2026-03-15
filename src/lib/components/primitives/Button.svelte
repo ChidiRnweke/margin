@@ -1,49 +1,84 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { Button as UiButton } from '$lib/components/ui/button/index.js';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    variant?: 'primary' | 'secondary' | 'ghost' | 'destructive';
-    size?: 'sm' | 'md' | 'lg';
-    disabled?: boolean;
-    type?: 'button' | 'submit';
-    onclick?: (e: MouseEvent) => void;
-    children: Snippet;
-  }
+	type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'link';
+	type Size = 'sm' | 'md' | 'lg' | 'icon';
 
-  let { variant = 'primary', size = 'md', disabled = false, type = 'button', onclick, children }: Props = $props();
+	interface Props {
+		variant?: Variant;
+		size?: Size;
+		disabled?: boolean;
+		type?: 'button' | 'submit' | 'reset';
+		href?: string;
+		class?: string;
+		name?: string;
+		value?: string;
+		form?: string;
+		formaction?: string;
+		ariaLabel?: string;
+		onclick?: (event: MouseEvent) => void;
+		children: Snippet;
+	}
+
+	let {
+		variant = 'primary',
+		size = 'md',
+		disabled = false,
+		type = 'button',
+		href,
+		class: className = '',
+		name,
+		value,
+		form,
+		formaction,
+		ariaLabel,
+		onclick,
+		children
+	}: Props = $props();
+
+	const mappedVariant = $derived(
+		variant === 'primary'
+			? 'default'
+			: variant === 'secondary'
+				? 'secondary'
+				: variant === 'outline'
+					? 'outline'
+					: variant
+	);
+	const mappedSize = $derived(size === 'md' ? 'default' : size);
+	const classes = $derived(
+		cn(
+			'font-body rounded-[var(--radius-lg)] border-[var(--color-glass-border)] transition-all duration-200',
+			variant === 'primary' &&
+				'bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-strong))] text-[var(--color-accent-foreground)] shadow-[0_18px_48px_-24px_var(--color-accent-shadow)] hover:brightness-[1.03]',
+			variant === 'secondary' &&
+				'border-[var(--color-glass-border)] bg-[var(--color-glass)] text-[var(--color-text)] backdrop-blur-md hover:bg-[var(--color-glass-strong)]',
+			variant === 'outline' &&
+				'border-[color:var(--color-border-strong)] bg-[color:var(--color-panel)] text-[var(--color-text)] hover:bg-[color:var(--color-panel-strong)]',
+			variant === 'ghost' && 'text-[var(--color-text)] hover:bg-[var(--color-glass)]',
+			variant === 'link' && 'px-0 text-[var(--color-accent)] underline-offset-4 hover:underline',
+			variant === 'destructive' &&
+				'bg-[color:var(--color-destructive)] text-[var(--color-text)] shadow-[0_18px_48px_-28px_var(--color-destructive-shadow)] hover:brightness-[1.03]',
+			className
+		)
+	);
 </script>
 
-<button class="btn btn-{variant} btn-{size}" {disabled} {type} {onclick}>
-  {@render children()}
-</button>
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-md);
-    font-family: var(--font-body);
-    font-weight: var(--weight-medium);
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all var(--duration-fast) var(--ease-default);
-  }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-  .btn-sm { padding: var(--space-1) var(--space-3); font-size: var(--text-sm); }
-  .btn-md { padding: var(--space-2) var(--space-4); font-size: var(--text-base); }
-  .btn-lg { padding: var(--space-3) var(--space-6); font-size: var(--text-lg); }
-  .btn-primary { background: var(--color-accent); color: var(--color-accent-foreground); }
-  .btn-primary:hover:not(:disabled) { background: var(--color-accent-hover); }
-  .btn-secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
-  .btn-secondary:hover:not(:disabled) { background: var(--color-surface-muted); }
-  .btn-ghost { background: transparent; color: var(--color-text); }
-  .btn-ghost:hover:not(:disabled) { background: var(--color-surface-muted); }
-  .btn-destructive { background: var(--color-destructive); color: var(--color-accent-foreground); }
-  .btn-destructive:hover:not(:disabled) { background: var(--color-destructive); opacity: 0.9; }
-</style>
+<UiButton
+	variant={mappedVariant}
+	size={mappedSize}
+	{disabled}
+	{type}
+	{href}
+	class={classes}
+	{name}
+	{value}
+	{form}
+	{formaction}
+	aria-label={ariaLabel}
+	{onclick}
+>
+	{@render children()}
+</UiButton>

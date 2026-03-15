@@ -17,19 +17,25 @@
 	let { id, name, purpose, targetPercentage, color, status, taskCount }: Props = $props();
 
 	let statusVariant = $derived(
-		(status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default') as 'success' | 'warning' | 'default'
+		(status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default') as
+			| 'success'
+			| 'warning'
+			| 'default'
 	);
 </script>
 
-<a href="/aspects/{id}" class="aspect-card-link">
+<a
+	href="/aspects/{id}"
+	class="block text-inherit no-underline transition-transform duration-150 hover:-translate-y-0.5"
+>
 	<Card padding="md" shadow="sm">
 		<Stack gap="3">
-			<div class="aspect-header">
-				<div class="aspect-color-dot" style="background: {color}"></div>
+			<div class="flex items-center gap-3">
+				<div class="h-3 w-3 shrink-0 rounded-full" style="background: {color}"></div>
 				<Text as="h3" size="xl" weight="semibold">{name}</Text>
 			</div>
 			<Text as="p" size="sm" color="muted">{purpose}</Text>
-			<div class="aspect-meta">
+			<div class="flex flex-wrap items-center gap-3">
 				<Badge variant={statusVariant}>{status}</Badge>
 				<Text as="span" size="xs" color="faint">{targetPercentage}% target</Text>
 				<Text as="span" size="xs" color="faint">{taskCount} tasks</Text>
@@ -37,32 +43,3 @@
 		</Stack>
 	</Card>
 </a>
-
-<style>
-	.aspect-card-link {
-		text-decoration: none;
-		color: inherit;
-		display: block;
-		transition: transform var(--duration-fast) var(--easing);
-	}
-	.aspect-card-link:hover {
-		transform: translateY(-2px);
-	}
-	.aspect-header {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-	}
-	.aspect-color-dot {
-		width: 12px;
-		height: 12px;
-		border-radius: var(--radius-full);
-		flex-shrink: 0;
-	}
-	.aspect-meta {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-</style>

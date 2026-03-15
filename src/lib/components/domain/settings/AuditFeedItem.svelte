@@ -16,9 +16,11 @@
 	let { timestamp, action, entity, entityId, diff, actor }: Props = $props();
 
 	let actionVariant = $derived(
-		action === 'create' ? 'success' as const
-		: action === 'delete' ? 'destructive' as const
-		: 'default' as const
+		action === 'create'
+			? ('success' as const)
+			: action === 'delete'
+				? ('destructive' as const)
+				: ('default' as const)
 	);
 </script>
 
@@ -38,21 +40,39 @@
 		{/if}
 
 		{#if diff && diff.length > 0}
-			<div class="diff-table">
-				<table>
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse text-xs">
 					<thead>
 						<tr>
-							<th>Field</th>
-							<th>Before</th>
-							<th>After</th>
+							<th
+								class="border-b border-[var(--color-border-muted)] px-2 py-1 text-left font-medium text-[var(--color-text-muted)]"
+								>Field</th
+							>
+							<th
+								class="border-b border-[var(--color-border-muted)] px-2 py-1 text-left font-medium text-[var(--color-text-muted)]"
+								>Before</th
+							>
+							<th
+								class="border-b border-[var(--color-border-muted)] px-2 py-1 text-left font-medium text-[var(--color-text-muted)]"
+								>After</th
+							>
 						</tr>
 					</thead>
 					<tbody>
 						{#each diff as d}
 							<tr>
-								<td class="diff-field">{d.field}</td>
-								<td class="diff-before">{d.before}</td>
-								<td class="diff-after">{d.after}</td>
+								<td
+									class="border-b border-[var(--color-border-muted)] px-2 py-1 font-medium text-[var(--color-text)]"
+									>{d.field}</td
+								>
+								<td
+									class="border-b border-[var(--color-border-muted)] px-2 py-1 font-mono text-[var(--color-destructive)]"
+									>{d.before}</td
+								>
+								<td
+									class="border-b border-[var(--color-border-muted)] px-2 py-1 font-mono text-[var(--color-success)]"
+									>{d.after}</td
+								>
 							</tr>
 						{/each}
 					</tbody>
@@ -61,37 +81,3 @@
 		{/if}
 	</Stack>
 </Card>
-
-<style>
-	.diff-table {
-		overflow-x: auto;
-	}
-	.diff-table table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: var(--text-xs);
-	}
-	.diff-table th {
-		text-align: left;
-		padding: var(--space-1) var(--space-2);
-		border-bottom: 1px solid var(--color-border-muted);
-		color: var(--color-text-muted);
-		font-weight: var(--weight-medium);
-	}
-	.diff-table td {
-		padding: var(--space-1) var(--space-2);
-		border-bottom: 1px solid var(--color-border-muted);
-	}
-	.diff-field {
-		font-weight: var(--weight-medium);
-		color: var(--color-text);
-	}
-	.diff-before {
-		color: var(--color-destructive);
-		font-family: var(--font-mono);
-	}
-	.diff-after {
-		color: var(--color-success);
-		font-family: var(--font-mono);
-	}
-</style>

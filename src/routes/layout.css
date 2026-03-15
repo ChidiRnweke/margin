@@ -1,3 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
 @import 'tailwindcss';
-@plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	--radius: var(--radius-md);
+	--background: var(--color-bg);
+	--foreground: var(--color-text);
+
+	--card: var(--color-panel);
+	--card-foreground: var(--color-text);
+	--popover: var(--color-panel-strong);
+	--popover-foreground: var(--color-text);
+
+	--primary: var(--color-accent);
+	--primary-foreground: var(--color-accent-foreground);
+	--secondary: var(--color-panel-glass);
+	--secondary-foreground: var(--color-text);
+	--muted: var(--color-surface-muted);
+	--muted-foreground: var(--color-text-muted);
+	--accent: var(--color-panel-strong);
+	--accent-foreground: var(--color-text);
+	--destructive: var(--color-destructive);
+	--border: var(--color-border);
+	--input: color-mix(in oklab, var(--color-panel) 86%, transparent);
+	--ring: var(--color-accent-border);
+
+	--chart-1: var(--color-aspect-1);
+	--chart-2: var(--color-aspect-2);
+	--chart-3: var(--color-aspect-3);
+	--chart-4: var(--color-aspect-4);
+	--chart-5: var(--color-aspect-5);
+
+	--sidebar: var(--color-panel-glass);
+	--sidebar-foreground: var(--color-text);
+	--sidebar-primary: var(--color-accent);
+	--sidebar-primary-foreground: var(--color-accent-foreground);
+	--sidebar-accent: var(--color-panel-strong);
+	--sidebar-accent-foreground: var(--color-text);
+	--sidebar-border: var(--color-border);
+	--sidebar-ring: var(--color-accent-border);
+}
+
+@theme inline {
+	--font-display: var(--font-display);
+	--font-body: var(--font-body);
+	--font-mono: var(--font-mono);
+
+	--radius-sm: var(--radius-sm);
+	--radius-md: var(--radius-md);
+	--radius-lg: var(--radius-lg);
+	--radius-xl: var(--radius-xl);
+
+	--shadow-glass: var(--shadow-glass);
+	--shadow-glass-sm: var(--shadow-glass-sm);
+	--shadow-glass-lg: var(--shadow-glass-lg);
+
+	--animate-float: float 20s ease-in-out infinite alternate;
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/60;
+	}
+
+	html {
+		color-scheme: dark;
+	}
+
+	@media (prefers-color-scheme: light) {
+		html {
+			color-scheme: light;
+		}
+	}
+
+	body {
+		@apply bg-background font-body text-foreground;
+		background: linear-gradient(180deg, oklch(0.15 0.02 300) 0%, oklch(0.13 0.015 260) 100%);
+		background-attachment: fixed;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: var(--font-display);
+	}
+}
+
+@keyframes float {
+	0% {
+		transform: translate(0, 0) scale(1);
+	}
+	100% {
+		transform: translate(30px, -20px) scale(1.05);
+	}
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+	.glass-surface {
+		background: var(--color-surface) !important;
+		border-color: var(--color-border) !important;
+	}
+}

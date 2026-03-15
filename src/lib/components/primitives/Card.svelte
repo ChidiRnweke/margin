@@ -1,31 +1,31 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    padding?: 'none' | 'sm' | 'md' | 'lg';
-    shadow?: 'none' | 'sm' | 'md' | 'lg';
-    children: Snippet;
-  }
+	interface Props {
+		padding?: 'none' | 'sm' | 'md' | 'lg';
+		shadow?: 'none' | 'sm' | 'md' | 'lg';
+		class?: string;
+		children: Snippet;
+	}
 
-  let { padding = 'md', shadow = 'sm', children }: Props = $props();
+	let { padding = 'md', shadow = 'sm', class: className = '', children }: Props = $props();
 </script>
 
-<div class="card card-padding-{padding} card-shadow-{shadow}">
-  {@render children()}
+<div
+	class={cn(
+		'glass-surface rounded-lg border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] backdrop-blur-md',
+		'supports-[not_(backdrop-filter:blur(1px))]:bg-[var(--color-surface)]',
+		padding === 'none' && 'py-0',
+		padding === 'sm' && 'gap-4 px-4 py-4',
+		padding === 'md' && 'gap-5 px-6 py-6',
+		padding === 'lg' && 'gap-6 px-8 py-8',
+		shadow === 'none' && 'shadow-none',
+		shadow === 'sm' && 'shadow-glass-sm',
+		shadow === 'md' && 'shadow-glass',
+		shadow === 'lg' && 'shadow-glass-lg',
+		className
+	)}
+>
+	{@render children()}
 </div>
-
-<style>
-  .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-muted);
-    border-radius: var(--radius-lg);
-  }
-  .card-padding-none { padding: 0; }
-  .card-padding-sm { padding: var(--space-3); }
-  .card-padding-md { padding: var(--space-6); }
-  .card-padding-lg { padding: var(--space-8); }
-  .card-shadow-none { box-shadow: none; }
-  .card-shadow-sm { box-shadow: var(--shadow-sm); }
-  .card-shadow-md { box-shadow: var(--shadow-md); }
-  .card-shadow-lg { box-shadow: var(--shadow-lg); }
-</style>

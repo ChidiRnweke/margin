@@ -1,44 +1,57 @@
 <script lang="ts">
 	import TaskListItem from './TaskListItem.svelte';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import EmptyState from '$lib/components/layout/EmptyState.svelte';
 
 	interface Task {
 		id: string;
 		title: string;
-		status: 'todo' | 'in_progress' | 'done' | 'archived';
-		effort: number;
+		status: 'Backlog' | 'InProgress' | 'Done' | 'Archived';
+		effortMinutes: number;
+		remainingMinutes: number;
 		aspectName?: string;
-		aspectColor?: string;
+		milestoneTitle?: string | null;
 		dueDate?: string | null;
+		overdue?: boolean;
+		hasActiveLock?: boolean;
 	}
 
 	interface Props {
 		tasks: Task[];
 		selectedTaskId: string | null;
-		onselect: (id: string) => void;
+		getTaskHref: (id: string) => string;
+		getMobileTaskHref: (id: string) => string;
 	}
 
-	let { tasks, selectedTaskId, onselect }: Props = $props();
+	let { tasks, selectedTaskId, getTaskHref, getMobileTaskHref }: Props = $props();
 </script>
 
-<div class="task-list" role="listbox">
-	{#each tasks as task}
-		<TaskListItem
-			id={task.id}
-			title={task.title}
-			status={task.status}
-			effort={task.effort}
-			aspectName={task.aspectName}
-			aspectColor={task.aspectColor}
-			dueDate={task.dueDate}
-			selected={task.id === selectedTaskId}
-			onclick={() => onselect(task.id)}
-		/>
-	{/each}
-</div>
-
-<style>
-	.task-list {
-		display: flex;
-		flex-direction: column;
-	}
-</style>
+<ScrollArea class="h-full">
+	<div class="space-y-3 p-4 md:p-5">
+		{#if tasks.length === 0}
+			<div class="rounded-xl border border-dashed border-[var(--color-glass-border)] bg-[var(--color-glass-subtle)] p-2">
+				<EmptyState
+					title="No tasks match this view"
+					description="Try a different filter or create a fresh task to get momentum back."
+				/>
+			</div>
+		{:else}
+			{#each tasks as task (task.id)}
+				<TaskListItem
+					title={task.title}
+					status={task.status}
+					effortMinutes={task.effortMinutes}
+					remainingMinutes={task.remainingMinutes}
+					aspectName={task.aspectName}
+					milestoneTitle={task.milestoneTitle}
+					dueDate={task.dueDate}
+					overdue={task.overdue}
+					hasActiveLock={task.hasActiveLock}
+					selected={task.id === selectedTaskId}
+					href={getTaskHref(task.id)}
+					mobileHref={getMobileTaskHref(task.id)}
+				/>
+			{/each}
+		{/if}
+	</div>
+</ScrollArea>

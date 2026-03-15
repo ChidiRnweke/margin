@@ -1,29 +1,29 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    columns?: number;
-    minWidth?: string;
-    gap?: '4' | '6' | '8';
-    children: Snippet;
-  }
+	interface Props {
+		columns?: 1 | 2 | 3 | 4;
+		gap?: '4' | '6' | '8';
+		children: Snippet;
+	}
 
-  let { columns = 4, minWidth = '280px', gap = '6', children }: Props = $props();
+	const gapMap: Record<string, string> = {
+		'4': 'gap-4',
+		'6': 'gap-6',
+		'8': 'gap-8'
+	};
+
+	const colsMap: Record<number, string> = {
+		1: 'grid-cols-1',
+		2: 'grid-cols-1 md:grid-cols-2',
+		3: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+		4: 'grid-cols-2 md:grid-cols-4'
+	};
+
+	let { columns = 4, gap = '6', children }: Props = $props();
 </script>
 
-<div
-  class="dashboard-grid grid-gap-{gap}"
-  style="--grid-columns: {columns}; --grid-min-width: {minWidth}"
->
-  {@render children()}
+<div class={cn('grid w-full', colsMap[columns], gapMap[gap])}>
+	{@render children()}
 </div>
-
-<style>
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width), 1fr));
-  }
-  .grid-gap-4 { gap: var(--space-4); }
-  .grid-gap-6 { gap: var(--space-6); }
-  .grid-gap-8 { gap: var(--space-8); }
-</style>

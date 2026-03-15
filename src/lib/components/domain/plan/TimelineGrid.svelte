@@ -14,82 +14,44 @@
 	}: Props = $props();
 </script>
 
-<div class="timeline-grid" style:--col-count={days.length}>
-	<div class="timeline-corner"></div>
-	{#each days as day}
-		<div class="timeline-day-header">{day}</div>
+<div
+	class="relative grid overflow-hidden rounded-lg border border-[var(--color-glass-border)] bg-[var(--color-glass)]"
+	style="grid-template-columns: 4rem repeat({days.length}, 1fr)"
+>
+	<div
+		class="border-r border-b border-[var(--color-glass-border)] bg-[var(--color-glass-strong)]"
+	></div>
+	{#each days as day, i}
+		<div
+			class="border-b border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] px-3 py-2 text-center text-xs font-semibold text-[var(--color-text-muted)] {i <
+			days.length - 1
+				? 'border-r'
+				: ''}"
+		>
+			{day}
+		</div>
 	{/each}
 
 	{#each hours as hour}
-		<div class="timeline-hour-label">
+		<div
+			class="flex items-start justify-end border-r border-b border-[var(--color-glass-border)] px-2 py-1 text-xs text-[var(--color-text-faint)] tabular-nums"
+		>
 			{hour.toString().padStart(2, '0')}:00
 		</div>
 		{#each days as _, di}
-			<div class="timeline-cell" data-hour={hour} data-day={di}></div>
+			<div
+				class="min-h-10 border-b border-[var(--color-glass-border)] {di < days.length - 1
+					? 'border-r'
+					: ''}"
+				data-hour={hour}
+				data-day={di}
+			></div>
 		{/each}
 	{/each}
 
-	<div class="timeline-overlay">
+	<div
+		class="pointer-events-none absolute top-0 right-0 bottom-0 left-16 [&>*]:pointer-events-auto"
+	>
 		{@render children()}
 	</div>
 </div>
-
-<style>
-	.timeline-grid {
-		display: grid;
-		grid-template-columns: 4rem repeat(var(--col-count), 1fr);
-		position: relative;
-		border: 1px solid var(--color-border-muted);
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-		background: var(--color-surface);
-	}
-	.timeline-corner {
-		background: var(--color-surface-muted);
-		border-bottom: 1px solid var(--color-border-muted);
-		border-right: 1px solid var(--color-border-muted);
-	}
-	.timeline-day-header {
-		padding: var(--space-2) var(--space-3);
-		text-align: center;
-		font-size: var(--text-xs);
-		font-weight: var(--weight-semibold);
-		color: var(--color-text-muted);
-		background: var(--color-surface-muted);
-		border-bottom: 1px solid var(--color-border-muted);
-		border-right: 1px solid var(--color-border-muted);
-	}
-	.timeline-day-header:last-of-type {
-		border-right: none;
-	}
-	.timeline-hour-label {
-		padding: var(--space-1) var(--space-2);
-		font-size: var(--text-xs);
-		color: var(--color-text-faint);
-		border-right: 1px solid var(--color-border-muted);
-		border-bottom: 1px solid var(--color-border-muted);
-		display: flex;
-		align-items: flex-start;
-		justify-content: flex-end;
-		font-variant-numeric: tabular-nums;
-	}
-	.timeline-cell {
-		min-height: 2.5rem;
-		border-right: 1px solid var(--color-border-muted);
-		border-bottom: 1px solid var(--color-border-muted);
-	}
-	.timeline-cell:nth-child(8n) {
-		border-right: none;
-	}
-	.timeline-overlay {
-		position: absolute;
-		top: 0;
-		left: 4rem;
-		right: 0;
-		bottom: 0;
-		pointer-events: none;
-	}
-	.timeline-overlay :global(*) {
-		pointer-events: auto;
-	}
-</style>

@@ -45,18 +45,18 @@
 </script>
 
 <Stack direction="vertical" gap="6">
-	<PageHeader title="Weekly Plan" description="Plan and track your time allocations across the week.">
+	<PageHeader
+		title="Weekly Plan"
+		description="Plan and track your time allocations across the week."
+	>
 		{#snippet actions()}
-			<Button variant="ghost" size="sm" onclick={() => window.location.href = '/plan/history'}>
+			<Button variant="ghost" size="sm" onclick={() => (window.location.href = '/plan/history')}>
 				History
 			</Button>
 		{/snippet}
 	</PageHeader>
 
-	<PlanHeader
-		weekLabel={weekLabel()}
-		status={data.status}
-	/>
+	<PlanHeader weekLabel={weekLabel()} status={data.status} />
 
 	{#if data.allocations.length === 0}
 		<EmptyState
@@ -68,7 +68,7 @@
 			{/snippet}
 		</EmptyState>
 	{:else}
-		<div class="plan-timeline-wrapper">
+		<div class="relative overflow-x-auto">
 			<TimelineGrid>
 				<AvailabilityLane windows={data.availability} />
 				{#each data.allocations as alloc, i}
@@ -79,7 +79,7 @@
 						duration={alloc.duration}
 						dayIndex={alloc.dayIndex}
 						outcome={alloc.outcome}
-						onclick={() => selectedAllocation = i}
+						onclick={() => (selectedAllocation = i)}
 					/>
 				{/each}
 			</TimelineGrid>
@@ -94,18 +94,11 @@
 					time={alloc.time}
 					outcome={alloc.outcome}
 					open={true}
-					onmarkdone={() => selectedAllocation = null}
-					onmarkskipped={() => selectedAllocation = null}
-					onclose={() => selectedAllocation = null}
+					onmarkdone={() => (selectedAllocation = null)}
+					onmarkskipped={() => (selectedAllocation = null)}
+					onclose={() => (selectedAllocation = null)}
 				/>
 			{/if}
 		</div>
 	{/if}
 </Stack>
-
-<style>
-	.plan-timeline-wrapper {
-		position: relative;
-		overflow-x: auto;
-	}
-</style>

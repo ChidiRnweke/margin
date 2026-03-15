@@ -31,7 +31,13 @@
 	}
 </script>
 
-<form class="aspect-editor" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+	class="w-full"
+	onsubmit={(e) => {
+		e.preventDefault();
+		handleSubmit();
+	}}
+>
 	<Stack gap="4">
 		<Input label="Name" bind:value={name} placeholder="e.g. Health" required />
 		<Input label="Purpose" bind:value={purpose} placeholder="Why this aspect matters" />
@@ -39,9 +45,11 @@
 			label="Target %"
 			type="number"
 			value={String(targetPercentage)}
-			oninput={(e) => { targetPercentage = Number((e.target as HTMLInputElement).value); }}
+			oninput={(e) => {
+				targetPercentage = Number((e.target as HTMLInputElement).value);
+			}}
 		/>
-		<div class="editor-actions">
+		<div class="flex justify-end gap-3 pt-2">
 			{#if oncancel}
 				<Button variant="ghost" onclick={oncancel}>Cancel</Button>
 			{/if}
@@ -49,15 +57,3 @@
 		</div>
 	</Stack>
 </form>
-
-<style>
-	.aspect-editor {
-		width: 100%;
-	}
-	.editor-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-3);
-		padding-top: var(--space-2);
-	}
-</style>

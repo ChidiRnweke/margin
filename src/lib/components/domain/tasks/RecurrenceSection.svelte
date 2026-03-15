@@ -43,7 +43,10 @@
 		{#if rule.daysOfWeek && rule.daysOfWeek.length > 0}
 			<Stack direction="horizontal" gap="2" wrap={true}>
 				{#each rule.daysOfWeek as day}
-					<span class="day-chip">{day}</span>
+					<span
+						class="inline-flex min-w-[2.25rem] items-center justify-center rounded-full bg-[var(--color-glass-strong)] px-2 py-1 text-xs font-medium text-[var(--color-text-muted)]"
+						>{day}</span
+					>
 				{/each}
 			</Stack>
 		{/if}
@@ -63,18 +66,3 @@
 		</Stack>
 	</Stack>
 </Panel>
-
-<style>
-	.day-chip {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 2.25rem;
-		padding: var(--space-1) var(--space-2);
-		border-radius: var(--radius-full);
-		background: var(--color-surface-muted);
-		font-size: var(--text-xs);
-		font-weight: var(--weight-medium);
-		color: var(--color-text-muted);
-	}
-</style>

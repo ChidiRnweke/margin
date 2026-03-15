@@ -1,63 +1,31 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 
-  interface Props {
-    title: string;
-    description?: string;
-    actions?: Snippet;
-  }
+	interface Props {
+		title: string;
+		description?: string;
+		actions?: Snippet;
+	}
 
-  let { title, description, actions }: Props = $props();
+	let { title, description, actions }: Props = $props();
 </script>
 
-<div class="page-header">
-  <div class="page-header-text">
-    <h1 class="page-title">{title}</h1>
-    {#if description}
-      <p class="page-description">{description}</p>
-    {/if}
-  </div>
-  {#if actions}
-    <div class="page-actions">
-      {@render actions()}
-    </div>
-  {/if}
+<div class="mb-4 flex items-start justify-between gap-4 max-sm:flex-col">
+	<div class="flex flex-col gap-1">
+		<h1
+			class="font-display text-3xl leading-tight font-bold tracking-tight text-[var(--color-text)]"
+		>
+			{title}
+		</h1>
+		{#if description}
+			<p class="text-base text-[var(--color-text-muted)]">{description}</p>
+		{/if}
+	</div>
+	{#if actions}
+		<div class="flex shrink-0 items-center gap-3">
+			{@render actions()}
+		</div>
+	{/if}
 </div>
-
-<style>
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-bottom: var(--space-8);
-  }
-  .page-header-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-  .page-title {
-    font-size: var(--text-3xl);
-    font-weight: var(--weight-bold);
-    letter-spacing: var(--tracking-tight);
-    line-height: var(--leading-tight);
-    color: var(--color-text);
-  }
-  .page-description {
-    font-size: var(--text-base);
-    color: var(--color-text-muted);
-  }
-  .page-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 640px) {
-    .page-header {
-      flex-direction: column;
-    }
-  }
-</style>
+<Separator class="mb-6 bg-[var(--color-glass-border)]" />

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Button from '$lib/components/primitives/Button.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import PrimButton from '$lib/components/primitives/Button.svelte';
 	import Text from '$lib/components/primitives/Text.svelte';
 	import Stack from '$lib/components/primitives/Stack.svelte';
 	import Panel from '$lib/components/primitives/Panel.svelte';
@@ -29,14 +30,12 @@
 <Stack direction="vertical" gap="6">
 	<Panel title="Export Data">
 		<Stack direction="vertical" gap="3">
-			<Text size="sm" color="muted">
-				Download a complete copy of your data as a JSON file.
-			</Text>
+			<Text size="sm" color="muted">Download a complete copy of your data as a JSON file.</Text>
 			{#if lastExport}
 				<Text size="xs" color="faint">Last export: {lastExport}</Text>
 			{/if}
 			<div>
-				<Button variant="primary" onclick={onexport}>Export data</Button>
+				<PrimButton variant="primary" onclick={onexport}>Export data</PrimButton>
 			</div>
 		</Stack>
 	</Panel>
@@ -50,15 +49,13 @@
 				<Text size="xs" color="faint">Last import: {lastImport}</Text>
 			{/if}
 
-			<div class="file-picker">
-				<label class="file-label">
-					<input
-						type="file"
-						accept=".json"
-						class="file-input"
-						onchange={handleFileChange}
-					/>
-					<span class="file-button">Choose file</span>
+			<div class="inline-flex">
+				<label class="cursor-pointer">
+					<input type="file" accept=".json" class="sr-only" onchange={handleFileChange} />
+					<span
+						class="inline-flex cursor-pointer items-center rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-muted)]"
+						>Choose file</span
+					>
 				</label>
 			</div>
 
@@ -72,36 +69,3 @@
 		</Stack>
 	</Panel>
 </Stack>
-
-<style>
-	.file-picker {
-		display: inline-flex;
-	}
-	.file-label {
-		cursor: pointer;
-	}
-	.file-input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-	.file-button {
-		display: inline-flex;
-		align-items: center;
-		padding: var(--space-2) var(--space-4);
-		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		font-size: var(--text-sm);
-		font-weight: var(--weight-medium);
-		color: var(--color-text);
-		transition: background var(--duration-fast) var(--ease-default);
-	}
-	.file-button:hover {
-		background: var(--color-surface-muted);
-	}
-</style>

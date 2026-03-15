@@ -33,8 +33,8 @@
 	{:else}
 		{#each milestones as milestone}
 			<Card padding="sm">
-				<div class="milestone-row">
-					<div class="milestone-info">
+				<div class="flex items-center justify-between gap-4">
+					<div class="flex flex-col gap-1">
 						<Text as="span" size="base" weight="medium">{milestone.title}</Text>
 						{#if milestone.targetDate}
 							<Text as="span" size="xs" color="faint">
@@ -43,7 +43,11 @@
 						{/if}
 					</div>
 					<Badge
-						variant={milestone.status === 'completed' ? 'success' : milestone.status === 'open' ? 'accent' : 'default'}
+						variant={milestone.status === 'completed'
+							? 'success'
+							: milestone.status === 'open'
+								? 'accent'
+								: 'default'}
 					>
 						{milestone.status}
 					</Badge>
@@ -52,17 +56,3 @@
 		{/each}
 	{/if}
 </Stack>
-
-<style>
-	.milestone-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-4);
-	}
-	.milestone-info {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-</style>

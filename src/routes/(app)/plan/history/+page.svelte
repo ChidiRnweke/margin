@@ -21,9 +21,12 @@
 </script>
 
 <Stack direction="vertical" gap="6">
-	<PageHeader title="Plan History" description="Track how your weekly plans have changed over time.">
+	<PageHeader
+		title="Plan History"
+		description="Track how your weekly plans have changed over time."
+	>
 		{#snippet actions()}
-			<Button variant="ghost" size="sm" onclick={() => window.location.href = '/plan'}>
+			<Button variant="ghost" size="sm" onclick={() => (window.location.href = '/plan')}>
 				Back to plan
 			</Button>
 		{/snippet}
@@ -35,7 +38,7 @@
 			description="Revisions will appear here as you create and modify your weekly plans."
 		/>
 	{:else}
-		<div class="revision-feed">
+		<div class="border-l-2 border-[var(--color-glass-border)] pl-4">
 			<Stack direction="vertical" gap="3">
 				{#each data.revisions as revision (revision.id)}
 					<RevisionFeedItem
@@ -49,10 +52,3 @@
 		</div>
 	{/if}
 </Stack>
-
-<style>
-	.revision-feed {
-		border-left: 2px solid var(--color-border-muted);
-		padding-left: var(--space-4);
-	}
-</style>

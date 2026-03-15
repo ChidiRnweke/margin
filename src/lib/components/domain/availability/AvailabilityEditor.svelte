@@ -1,9 +1,10 @@
 <script lang="ts">
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import Button from '$lib/components/primitives/Button.svelte';
 	import Input from '$lib/components/primitives/Input.svelte';
 	import Text from '$lib/components/primitives/Text.svelte';
 	import Stack from '$lib/components/primitives/Stack.svelte';
-	import Panel from '$lib/components/primitives/Panel.svelte';
 
 	const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -13,7 +14,12 @@
 		startHour?: string;
 		endHour?: string;
 		label?: string;
-		onsave?: (data: { dayIndex: number; startHour: string; endHour: string; label: string }) => void;
+		onsave?: (data: {
+			dayIndex: number;
+			startHour: string;
+			endHour: string;
+			label: string;
+		}) => void;
 		oncancel?: () => void;
 	}
 
@@ -49,64 +55,46 @@
 	}
 </script>
 
-{#if open}
-	<div class="editor-backdrop" role="presentation" onclick={oncancel}></div>
-	<div class="editor-drawer" role="dialog" aria-label="Edit availability block">
-		<Panel title="Edit Availability Block">
-			<Stack direction="vertical" gap="4">
-				<div class="field">
-					<Text as="label" size="sm" weight="medium">Day</Text>
-					<select class="day-select" bind:value={editDay}>
+<Sheet.Root bind:open onOpenChange={(v) => !v && oncancel?.()}>
+	<Sheet.Content
+		side="right"
+		class="w-[min(24rem,90vw)] border-l border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] backdrop-blur-lg"
+	>
+		<Sheet.Header>
+			<Sheet.Title>Edit Availability Block</Sheet.Title>
+			<Sheet.Description
+				>Configure the day and time window for this availability block.</Sheet.Description
+			>
+		</Sheet.Header>
+		<Stack direction="vertical" gap="4" class="mt-6">
+			<div class="flex flex-col gap-1">
+				<Text as="label" size="sm" weight="medium">Day</Text>
+				<Select.Root
+					type="single"
+					value={String(editDay)}
+					onValueChange={(v) => (editDay = Number(v))}
+				>
+					<Select.Trigger class="border-[var(--color-border)] bg-[var(--color-surface)]">
+						{DAYS[editDay]}
+					</Select.Trigger>
+					<Select.Content
+						class="border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] backdrop-blur-lg"
+					>
 						{#each DAYS as day, i}
-							<option value={i}>{day}</option>
+							<Select.Item value={String(i)}>{day}</Select.Item>
 						{/each}
-					</select>
-				</div>
+					</Select.Content>
+				</Select.Root>
+			</div>
 
-				<Input label="Start time" type="text" bind:value={editStart} placeholder="09:00" />
-				<Input label="End time" type="text" bind:value={editEnd} placeholder="17:00" />
-				<Input label="Label (optional)" type="text" bind:value={editLabel} placeholder="Work hours" />
+			<Input label="Start time" type="text" bind:value={editStart} placeholder="09:00" />
+			<Input label="End time" type="text" bind:value={editEnd} placeholder="17:00" />
+			<Input label="Label (optional)" type="text" bind:value={editLabel} placeholder="Work hours" />
 
-				<Stack direction="horizontal" gap="2">
-					<Button variant="primary" size="sm" onclick={handleSave}>Save</Button>
-					<Button variant="ghost" size="sm" onclick={oncancel}>Cancel</Button>
-				</Stack>
+			<Stack direction="horizontal" gap="2">
+				<Button variant="primary" size="sm" onclick={handleSave}>Save</Button>
+				<Button variant="ghost" size="sm" onclick={oncancel}>Cancel</Button>
 			</Stack>
-		</Panel>
-	</div>
-{/if}
-
-<style>
-	.editor-backdrop {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.3);
-		z-index: 40;
-	}
-	.editor-drawer {
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		width: min(24rem, 90vw);
-		background: var(--color-surface);
-		border-left: 1px solid var(--color-border-muted);
-		box-shadow: var(--shadow-lg);
-		z-index: 50;
-		overflow-y: auto;
-		padding: var(--space-6);
-	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.day-select {
-		padding: var(--space-2) var(--space-3);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font-size: var(--text-sm);
-	}
-</style>
+		</Stack>
+	</Sheet.Content>
+</Sheet.Root>

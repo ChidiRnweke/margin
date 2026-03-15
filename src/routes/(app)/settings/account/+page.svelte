@@ -15,19 +15,13 @@
 <Stack direction="vertical" gap="6">
 	<PageHeader title="Account" description="Manage your account and security settings.">
 		{#snippet actions()}
-			<Button variant="ghost" size="sm" onclick={() => window.location.href = '/settings'}>
+			<Button variant="ghost" size="sm" onclick={() => (window.location.href = '/settings')}>
 				Back to settings
 			</Button>
 		{/snippet}
 	</PageHeader>
 
-	<div class="settings-form-container">
+	<div class="max-w-2xl">
 		<AccountForm email={data.email} createdAt={data.createdAt} />
 	</div>
 </Stack>
-
-<style>
-	.settings-form-container {
-		max-width: 40rem;
-	}
-</style>

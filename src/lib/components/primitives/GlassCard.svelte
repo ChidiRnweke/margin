@@ -1,45 +1,37 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { cn } from '$lib/utils.js';
 
-  interface Props {
-    padding?: 'sm' | 'md' | 'lg';
-    intensity?: 'default' | 'strong';
-    children: Snippet;
-  }
+	/**
+	 * GlassCard — Level 2 glass surface.
+	 * Use for: KPI stat cards, aspect cards inside a grid, task cards inside a list panel.
+	 *
+	 * Pattern: bg-glass-strong + backdrop-blur-sm + luminous directional border + shadow-glass-sm
+	 */
+	interface Props {
+		padding?: 'sm' | 'md' | 'lg';
+		intensity?: 'default' | 'strong';
+		class?: string;
+		children: Snippet;
+	}
 
-  let { padding = 'md', intensity = 'default', children }: Props = $props();
+	let { padding = 'md', intensity = 'default', class: className = '', children }: Props = $props();
+
+	const paddingMap: Record<string, string> = {
+		sm: 'p-3',
+		md: 'p-6',
+		lg: 'p-8'
+	};
 </script>
 
-<div class="glass glass-{intensity} glass-padding-{padding}">
-  {@render children()}
+<div
+	class={cn(
+		'glass-surface rounded-[var(--radius-md)] border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] shadow-glass-sm backdrop-blur-sm',
+		intensity === 'default' ? 'bg-[var(--color-glass-strong)]' : 'bg-[var(--color-glass)]',
+		paddingMap[padding],
+		'supports-[not_(backdrop-filter:blur(1px))]:bg-[var(--color-surface-raised)]',
+		className
+	)}
+>
+	{@render children()}
 </div>
-
-<style>
-  .glass {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-glass-border);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-  .glass-default {
-    background: var(--color-glass);
-    box-shadow: var(--shadow-md);
-  }
-  .glass-strong {
-    background: var(--color-glass-strong);
-    box-shadow: var(--shadow-lg);
-  }
-  .glass-padding-sm { padding: var(--space-3); }
-  .glass-padding-md { padding: var(--space-6); }
-  .glass-padding-lg { padding: var(--space-8); }
-
-  /* Fallback for browsers without backdrop-filter */
-  @supports not (backdrop-filter: blur(1px)) {
-    .glass-default {
-      background: var(--color-surface-raised);
-    }
-    .glass-strong {
-      background: var(--color-surface);
-    }
-  }
-</style>

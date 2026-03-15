@@ -1,68 +1,47 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import * as Resizable from '$lib/components/ui/resizable/index.js';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 
-  interface Props {
-    master: Snippet;
-    detail?: Snippet;
-    masterWidth?: string;
-  }
+	interface Props {
+		master: Snippet;
+		detail?: Snippet;
+		masterWidth?: number;
+	}
 
-  let { master, detail, masterWidth = '24rem' }: Props = $props();
-  let showDetail = $derived(!!detail);
+	let { master, detail, masterWidth = 32 }: Props = $props();
 </script>
 
-<div class="master-detail" style="--master-width: {masterWidth}">
-  <div class="master-pane" class:master-hidden={showDetail}>
-    {@render master()}
-  </div>
-  {#if detail}
-    <div class="detail-pane">
-      {@render detail()}
-    </div>
-  {:else}
-    <div class="detail-empty">
-      <p class="detail-empty-text">Select an item to view details</p>
-    </div>
-  {/if}
+<div
+	class="hidden min-h-[42rem] overflow-hidden rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] shadow-glass backdrop-blur-md md:block"
+>
+	<Resizable.PaneGroup direction="horizontal" class="h-full min-h-[42rem]">
+		<Resizable.Pane defaultSize={masterWidth} minSize={24} maxSize={40} class="min-h-[42rem]">
+			<ScrollArea class="h-full bg-[var(--color-glass-subtle)]">
+				<div class="min-h-full">{@render master()}</div>
+			</ScrollArea>
+		</Resizable.Pane>
+
+		<Resizable.Handle withHandle class="bg-[var(--color-glass-border)]" />
+
+		<Resizable.Pane defaultSize={100 - masterWidth}>
+			<ScrollArea
+				class="h-full bg-[var(--color-glass)]"
+			>
+				{#if detail}
+					<div class="min-h-full">{@render detail()}</div>
+				{:else}
+					<div
+						class="flex min-h-[42rem] items-center justify-center px-8 text-sm text-[var(--color-text-muted)]"
+					>
+						Select an item to view details.
+					</div>
+				{/if}
+			</ScrollArea>
+		</Resizable.Pane>
+	</Resizable.PaneGroup>
 </div>
 
-<style>
-  .master-detail {
-    display: grid;
-    grid-template-columns: var(--master-width) 1fr;
-    height: 100%;
-    min-height: 0;
-  }
-  .master-pane {
-    border-right: 1px solid var(--color-border-muted);
-    overflow-y: auto;
-    background: var(--color-surface);
-  }
-  .detail-pane {
-    overflow-y: auto;
-    padding: var(--space-6);
-    background: var(--color-bg);
-  }
-  .detail-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-bg);
-  }
-  .detail-empty-text {
-    color: var(--color-text-faint);
-    font-size: var(--text-sm);
-  }
-
-  @media (max-width: 768px) {
-    .master-detail {
-      grid-template-columns: 1fr;
-    }
-    .master-hidden {
-      display: none;
-    }
-    .detail-pane {
-      padding: var(--space-4);
-    }
-  }
-</style>
+<div class="md:hidden">
+	{@render master()}
+</div>

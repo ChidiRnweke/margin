@@ -1,109 +1,106 @@
 <script lang="ts">
+	import { Progress } from '$lib/components/ui/progress/index.js';
+	import { cn } from '$lib/utils.js';
+	import Button from '$lib/components/primitives/Button.svelte';
 	import Text from '$lib/components/primitives/Text.svelte';
 	import Badge from '$lib/components/primitives/Badge.svelte';
-	import EffortBar from './EffortBar.svelte';
 
 	interface Props {
-		id: string;
 		title: string;
-		status: 'todo' | 'in_progress' | 'done' | 'archived';
-		effort: number;
+		status: 'Backlog' | 'InProgress' | 'Done' | 'Archived';
+		effortMinutes: number;
+		remainingMinutes: number;
 		aspectName?: string;
-		aspectColor?: string;
+		milestoneTitle?: string | null;
 		dueDate?: string | null;
+		overdue?: boolean;
+		hasActiveLock?: boolean;
 		selected?: boolean;
-		onclick?: () => void;
+		href: string;
+		mobileHref?: string;
 	}
 
 	let {
-		id,
 		title,
 		status,
-		effort,
+		effortMinutes,
+		remainingMinutes,
 		aspectName,
-		aspectColor,
+		milestoneTitle,
 		dueDate,
+		overdue = false,
+		hasActiveLock = false,
 		selected = false,
-		onclick
+		href,
+		mobileHref = href
 	}: Props = $props();
 
 	let statusVariant = $derived(
-		(status === 'done' ? 'success' : status === 'in_progress' ? 'accent' : 'default') as 'success' | 'accent' | 'default'
+		(status === 'Done'
+			? 'success'
+			: status === 'InProgress'
+				? 'accent'
+				: status === 'Archived'
+					? 'destructive'
+					: 'default') as 'success' | 'accent' | 'default' | 'destructive'
 	);
+
+	const completionValue = $derived(
+		effortMinutes <= 0
+			? 0
+			: Math.max(0, Math.min(100, ((effortMinutes - remainingMinutes) / effortMinutes) * 100))
+	);
+
+	async function handleNavigate() {
+		const prefersMobile = window.matchMedia('(max-width: 767px)').matches;
+		window.location.assign(prefersMobile ? mobileHref : href);
+	}
 </script>
 
-<button
-	class="task-item"
-	class:task-item-selected={selected}
-	role="option"
-	aria-selected={selected}
-	{onclick}
+<Button
+	type="button"
+	variant="ghost"
+	size="md"
+	class={cn(
+		'group h-auto w-full rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] p-4 text-left shadow-glass-sm backdrop-blur-sm transition-all duration-200 hover:bg-[var(--color-glass-strong)] hover:shadow-glass [&>span]:w-full [&>span]:justify-start',
+		selected &&
+			'border-[color:var(--color-accent-border)] bg-[color:var(--color-accent-soft)] shadow-[0_20px_60px_-34px_var(--color-accent-shadow)]'
+	)}
+	onclick={handleNavigate}
 >
-	<div class="task-item-header">
-		<Text as="span" size="sm" weight="medium">{title}</Text>
+	<div class="flex items-start justify-between gap-3">
+		<Text as="span" size="sm" weight="semibold">{title}</Text>
 		<Badge variant={statusVariant} size="sm">{status.replace('_', ' ')}</Badge>
 	</div>
-	<div class="task-item-meta">
+
+	<div class="mt-3 flex flex-wrap items-center gap-2">
 		{#if aspectName}
-			<span class="task-aspect">
-				{#if aspectColor}
-					<span class="aspect-dot" style="background: {aspectColor}"></span>
-				{/if}
-				<Text as="span" size="xs" color="faint">{aspectName}</Text>
-			</span>
+			<Badge variant="default" class="text-[var(--color-text)]">{aspectName}</Badge>
 		{/if}
-		{#if effort > 0}
-			<EffortBar value={effort} max={8} />
+		{#if milestoneTitle}
+			<Badge variant="default">{milestoneTitle}</Badge>
+		{/if}
+		{#if overdue}
+			<Badge variant="warning">Overdue</Badge>
+		{/if}
+		{#if hasActiveLock}
+			<Badge variant="accent">Locked</Badge>
 		{/if}
 		{#if dueDate}
-			<Text as="span" size="xs" color="faint">
-				{new Date(dueDate).toLocaleDateString()}
+			<Text as="span" size="xs" color={overdue ? 'destructive' : 'faint'}>
+				Due {new Date(dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
 			</Text>
 		{/if}
 	</div>
-</button>
 
-<style>
-	.task-item {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-		padding: var(--space-3) var(--space-4);
-		border: none;
-		border-bottom: 1px solid var(--color-border-muted);
-		background: var(--color-surface);
-		cursor: pointer;
-		text-align: left;
-		font-family: var(--font-body);
-		width: 100%;
-		transition: background var(--duration-fast) var(--easing);
-	}
-	.task-item:hover {
-		background: var(--color-surface-muted);
-	}
-	.task-item-selected {
-		background: var(--color-accent-muted);
-		border-left: 3px solid var(--color-accent);
-	}
-	.task-item-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-2);
-	}
-	.task-item-meta {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-	}
-	.task-aspect {
-		display: flex;
-		align-items: center;
-		gap: var(--space-1);
-	}
-	.aspect-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: var(--radius-full);
-	}
-</style>
+	<div class="mt-4 space-y-2">
+		<div class="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+			<span>{remainingMinutes}m left</span>
+			<span>{effortMinutes}m total</span>
+		</div>
+		<Progress
+			value={completionValue}
+			class="h-1.5 bg-[var(--color-glass-border)] [&_[data-slot=progress-indicator]]:bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-strong))]"
+		/>
+	</div>
+</Button>

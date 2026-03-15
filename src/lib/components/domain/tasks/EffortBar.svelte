@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Progress } from '$lib/components/ui/progress/index.js';
+
 	interface Props {
 		value: number;
 		max?: number;
@@ -9,22 +11,9 @@
 	let percentage = $derived(Math.min(100, Math.round((value / max) * 100)));
 </script>
 
-<div class="effort-bar" title="{value}/{max}h effort">
-	<div class="effort-fill" style="width: {percentage}%"></div>
+<div class="w-16" title="{value}/{max}h effort">
+	<Progress
+		value={percentage}
+		class="h-1.5 bg-[var(--color-glass-border)] [&_[data-slot=progress-indicator]]:bg-[var(--color-accent)]"
+	/>
 </div>
-
-<style>
-	.effort-bar {
-		width: 4rem;
-		height: 6px;
-		background: var(--color-surface-muted);
-		border-radius: var(--radius-full);
-		overflow: hidden;
-	}
-	.effort-fill {
-		height: 100%;
-		background: var(--color-accent);
-		border-radius: var(--radius-full);
-		transition: width var(--duration-normal) var(--easing);
-	}
-</style>

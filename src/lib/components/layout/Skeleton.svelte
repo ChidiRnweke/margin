@@ -1,36 +1,24 @@
 <script lang="ts">
-  interface Props {
-    variant?: 'line' | 'rect' | 'circle';
-    width?: string;
-    height?: string;
-  }
+	import { cn } from '$lib/utils.js';
+	import { Skeleton as UiSkeleton } from '$lib/components/ui/skeleton/index.js';
 
-  let { variant = 'rect', width = '100%', height = '1rem' }: Props = $props();
+	interface Props {
+		variant?: 'line' | 'rect' | 'circle';
+		width?: string;
+		height?: string;
+		class?: string;
+	}
+
+	const variantMap: Record<string, string> = {
+		line: 'rounded-sm',
+		rect: 'rounded-[10px]',
+		circle: 'rounded-full'
+	};
+
+	let { variant = 'rect', width = '100%', height = '1rem', class: className }: Props = $props();
 </script>
 
-<div
-  class="skeleton skeleton-{variant}"
-  style="width: {width}; height: {height}"
-  aria-hidden="true"
-></div>
-
-<style>
-  .skeleton {
-    background: var(--color-surface-muted);
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-  }
-  .skeleton-line {
-    border-radius: var(--radius-sm);
-  }
-  .skeleton-rect {
-    border-radius: var(--radius-md);
-  }
-  .skeleton-circle {
-    border-radius: var(--radius-full);
-  }
-
-  @keyframes skeleton-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-</style>
+<UiSkeleton
+	class={cn('bg-[var(--color-glass)] backdrop-blur-sm', variantMap[variant], className)}
+	style="width: {width}; height: {height}"
+/>

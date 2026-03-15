@@ -45,7 +45,13 @@
 	}
 </script>
 
-<form class="task-editor" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+	class="w-full"
+	onsubmit={(e) => {
+		e.preventDefault();
+		handleSubmit();
+	}}
+>
 	<Stack gap="4">
 		<Input label="Title" bind:value={title} placeholder="What needs to be done?" required />
 		<Input label="Description" bind:value={description} placeholder="Optional details" />
@@ -53,10 +59,12 @@
 			label="Effort (hours)"
 			type="number"
 			value={String(effort)}
-			oninput={(e) => { effort = Number((e.target as HTMLInputElement).value); }}
+			oninput={(e) => {
+				effort = Number((e.target as HTMLInputElement).value);
+			}}
 		/>
 		<Input label="Due date" type="text" bind:value={dueDate} placeholder="YYYY-MM-DD" />
-		<div class="editor-actions">
+		<div class="flex justify-end gap-3 pt-2">
 			{#if oncancel}
 				<Button variant="ghost" onclick={oncancel}>Cancel</Button>
 			{/if}
@@ -64,15 +72,3 @@
 		</div>
 	</Stack>
 </form>
-
-<style>
-	.task-editor {
-		width: 100%;
-	}
-	.editor-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-3);
-		padding-top: var(--space-2);
-	}
-</style>

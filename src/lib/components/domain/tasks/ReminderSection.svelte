@@ -29,7 +29,7 @@
 			<Text size="sm" color="muted">No reminders set.</Text>
 		{:else}
 			{#each reminders as reminder (reminder.id)}
-				<div class="reminder-row">
+				<div class="rounded-lg bg-[var(--color-glass-strong)] px-3 py-2">
 					<Stack direction="horizontal" gap="3" align="center" justify="between">
 						<Stack direction="horizontal" gap="2" align="center">
 							<Text size="sm">{reminder.label}</Text>
@@ -54,11 +54,3 @@
 		<Button variant="secondary" size="sm" onclick={onadd}>Add reminder</Button>
 	</Stack>
 </Panel>
-
-<style>
-	.reminder-row {
-		padding: var(--space-2) var(--space-3);
-		border-radius: var(--radius-md);
-		background: var(--color-surface-muted);
-	}
-</style>

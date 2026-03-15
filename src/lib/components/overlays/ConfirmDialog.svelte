@@ -1,126 +1,59 @@
 <script lang="ts">
-  interface Props {
-    open: boolean;
-    onconfirm?: () => void;
-    oncancel?: () => void;
-    title?: string;
-    message?: string;
-    confirmLabel?: string;
-    cancelLabel?: string;
-  }
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import Button from '$lib/components/primitives/Button.svelte';
+	import Text from '$lib/components/primitives/Text.svelte';
 
-  let {
-    open = $bindable(),
-    onconfirm,
-    oncancel,
-    title = 'Are you sure?',
-    message = 'This action cannot be undone.',
-    confirmLabel = 'Confirm',
-    cancelLabel = 'Cancel'
-  }: Props = $props();
+	interface Props {
+		open: boolean;
+		onconfirm?: () => void;
+		oncancel?: () => void;
+		title?: string;
+		message?: string;
+		confirmLabel?: string;
+		cancelLabel?: string;
+	}
 
-  function handleBackdropClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) {
-      cancel();
-    }
-  }
+	let {
+		open = $bindable(),
+		onconfirm,
+		oncancel,
+		title = 'Are you sure?',
+		message = 'This action cannot be undone.',
+		confirmLabel = 'Confirm',
+		cancelLabel = 'Cancel'
+	}: Props = $props();
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      cancel();
-    }
-  }
+	function confirm() {
+		open = false;
+		onconfirm?.();
+	}
 
-  function confirm() {
-    open = false;
-    onconfirm?.();
-  }
+	function cancel() {
+		open = false;
+		oncancel?.();
+	}
 
-  function cancel() {
-    open = false;
-    oncancel?.();
-  }
+	function handleOpenChange(isOpen: boolean) {
+		if (!isOpen) cancel();
+	}
 </script>
 
-{#if open}
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <!-- svelte-ignore a11y_interactive_supports_focus -->
-  <div class="confirm-backdrop" role="alertdialog" aria-modal="true" aria-label={title} onclick={handleBackdropClick} onkeydown={handleKeydown}>
-    <div class="confirm-panel">
-      <h2 class="confirm-title">{title}</h2>
-      <p class="confirm-message">{message}</p>
-      <div class="confirm-actions">
-        <button class="confirm-btn confirm-btn-cancel" onclick={cancel}>{cancelLabel}</button>
-        <button class="confirm-btn confirm-btn-confirm" onclick={confirm}>{confirmLabel}</button>
-      </div>
-    </div>
-  </div>
-{/if}
-
-<style>
-  .confirm-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-4);
-    background: oklch(0 0 0 / 0.4);
-    animation: fade-in var(--duration-fast) var(--ease-default);
-  }
-  .confirm-panel {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-muted);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-6);
-    width: 100%;
-    max-width: 24rem;
-    animation: scale-in var(--duration-normal) var(--ease-default);
-  }
-  .confirm-title {
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-2);
-  }
-  .confirm-message {
-    font-size: var(--text-base);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-6);
-  }
-  .confirm-actions {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: flex-end;
-  }
-  .confirm-btn {
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all var(--duration-fast) var(--ease-default);
-  }
-  .confirm-btn:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-  .confirm-btn-cancel {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border-color: var(--color-border);
-  }
-  .confirm-btn-cancel:hover { background: var(--color-surface-muted); }
-  .confirm-btn-confirm {
-    background: var(--color-destructive);
-    color: var(--color-accent-foreground);
-  }
-  .confirm-btn-confirm:hover { opacity: 0.9; }
-
-  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes scale-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-</style>
+<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+	<Dialog.Portal>
+		<Dialog.Overlay
+			class="motion-safe:animate-in motion-safe:fade-in fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+		/>
+		<Dialog.Content
+			class="shadow-glass motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-6 backdrop-blur-lg"
+		>
+			<Dialog.Title class="mb-2 text-xl font-semibold text-[var(--color-text)]"
+				>{title}</Dialog.Title
+			>
+			<Text as="p" size="base" color="muted" class="mb-6">{message}</Text>
+			<div class="flex justify-end gap-3">
+				<Button variant="secondary" onclick={cancel}>{cancelLabel}</Button>
+				<Button variant="destructive" onclick={confirm}>{confirmLabel}</Button>
+			</div>
+		</Dialog.Content>
+	</Dialog.Portal>
+</Dialog.Root>
