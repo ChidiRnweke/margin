@@ -18,7 +18,7 @@
 		{/snippet}
 	</PageHeader>
 
-	<nav class="tab-bar" role="tablist">
+	<div class="tab-bar" role="tablist">
 		<button
 			class="tab" class:tab-active={activeTab === 'overview'}
 			role="tab" aria-selected={activeTab === 'overview'}
@@ -40,7 +40,7 @@
 		>
 			Tasks
 		</button>
-	</nav>
+	</div>
 
 	<div role="tabpanel">
 		{#if activeTab === 'overview'}

@@ -13,7 +13,7 @@
 	let selectedIds = $state<string[]>([]);
 
 	let selectedTask = $derived(
-		data.tasks.find((t: { id: string }) => t.id === selectedTaskId) ?? null
+		data.tasks.find((t: { id: string; title: string; description: string }) => t.id === selectedTaskId) ?? null
 	);
 </script>
 

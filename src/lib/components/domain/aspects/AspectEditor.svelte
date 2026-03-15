@@ -12,23 +12,26 @@
 	}
 
 	let {
-		name: initialName = '',
-		purpose: initialPurpose = '',
-		targetPercentage: initialTarget = 0,
+		name: nameProp = '',
+		purpose: purposeProp = '',
+		targetPercentage: targetProp = 0,
 		onsubmit,
 		oncancel
 	}: Props = $props();
 
-	let name = $state(initialName);
-	let purpose = $state(initialPurpose);
-	let targetPercentage = $state(initialTarget);
+	/* svelte-ignore state_referenced_locally */
+	let name = $state(nameProp);
+	/* svelte-ignore state_referenced_locally */
+	let purpose = $state(purposeProp);
+	/* svelte-ignore state_referenced_locally */
+	let targetPercentage = $state(targetProp);
 
 	function handleSubmit() {
 		onsubmit?.({ name, purpose, targetPercentage });
 	}
 </script>
 
-<form class="aspect-editor" onsubmit|preventDefault={handleSubmit}>
+<form class="aspect-editor" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 	<Stack gap="4">
 		<Input label="Name" bind:value={name} placeholder="e.g. Health" required />
 		<Input label="Purpose" bind:value={purpose} placeholder="Why this aspect matters" />

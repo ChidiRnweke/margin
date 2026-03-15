@@ -17,7 +17,7 @@
 	let { id, name, purpose, targetPercentage, color, status, taskCount }: Props = $props();
 
 	let statusVariant = $derived(
-		status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default'
+		(status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default') as 'success' | 'warning' | 'default'
 	);
 </script>
 
