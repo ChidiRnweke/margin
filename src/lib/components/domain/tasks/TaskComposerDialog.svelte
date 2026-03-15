@@ -100,10 +100,10 @@
 								<button
 									type="button"
 									class={cn(
-									'rounded-xl border px-4 py-4 text-left transition-all duration-200',
-									selectedAspectId === aspect.id
-										? 'border-[color:var(--color-accent-border)] bg-[color:var(--color-accent-soft)] shadow-[0_18px_52px_-30px_var(--color-accent-shadow)]'
-										: 'border-[var(--color-glass-border)] bg-[var(--color-glass)] hover:bg-[var(--color-glass-strong)]'
+										'rounded-xl border px-4 py-4 text-left transition-all duration-200',
+										selectedAspectId === aspect.id
+											? 'border-[color:var(--color-accent-border)] bg-[color:var(--color-accent-soft)] shadow-[0_18px_52px_-30px_var(--color-accent-shadow)]'
+											: 'border-[var(--color-glass-border)] bg-[var(--color-glass)] hover:bg-[var(--color-glass-strong)]'
 									)}
 									onclick={() => (selectedAspectId = aspect.id)}
 								>
@@ -175,7 +175,7 @@
 								/>
 
 								<label
-								class="flex items-center gap-3 rounded-xl border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] px-4 py-3 text-sm text-[var(--color-text)]"
+									class="flex items-center gap-3 rounded-xl border border-[var(--color-glass-border)] bg-[var(--color-glass-strong)] px-4 py-3 text-sm text-[var(--color-text)]"
 								>
 									<Checkbox name="splittableOverride" />
 									<span>Allow the planner to split this task across multiple sessions.</span>

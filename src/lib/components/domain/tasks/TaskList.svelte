@@ -29,7 +29,9 @@
 <ScrollArea class="h-full">
 	<div class="space-y-3 p-4 md:p-5">
 		{#if tasks.length === 0}
-			<div class="rounded-xl border border-dashed border-[var(--color-glass-border)] bg-[var(--color-glass-subtle)] p-2">
+			<div
+				class="rounded-xl border border-dashed border-[var(--color-glass-border)] bg-[var(--color-glass-subtle)] p-2"
+			>
 				<EmptyState
 					title="No tasks match this view"
 					description="Try a different filter or create a fresh task to get momentum back."

@@ -33,9 +33,7 @@
 	)}
 >
 	{#if title}
-		<h3
-			class="mb-4 font-display text-lg font-semibold tracking-tight text-[var(--color-text)]"
-		>
+		<h3 class="mb-4 font-display text-lg font-semibold tracking-tight text-[var(--color-text)]">
 			{title}
 		</h3>
 	{/if}

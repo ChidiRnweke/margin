@@ -74,10 +74,7 @@
 </script>
 
 <div class="space-y-6 p-5 md:p-8">
-	<Card
-		padding="lg"
-		class="overflow-hidden"
-	>
+	<Card padding="lg" class="overflow-hidden">
 		<div class="space-y-6">
 			<div class="flex flex-wrap items-start justify-between gap-4">
 				<div class="space-y-3">
@@ -147,7 +144,9 @@
 			</div>
 
 			<div class="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-				<div class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-5 backdrop-blur-sm">
+				<div
+					class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-5 backdrop-blur-sm"
+				>
 					<div class="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
 						<span>Progress</span>
 						<span>{task.remainingMinutes}m left of {task.effortMinutes}m</span>
@@ -179,7 +178,9 @@
 					</div>
 				</div>
 
-				<div class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] p-5 backdrop-blur-sm">
+				<div
+					class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass)] p-5 backdrop-blur-sm"
+				>
 					<Text as="span" size="xs" color="faint" tracking="wide">Workspace notes</Text>
 					<div class="mt-4 space-y-3 text-sm text-[var(--color-text-muted)]">
 						<p>
@@ -221,7 +222,9 @@
 						{:else}
 							<div class="space-y-3">
 								{#each task.pendingReminders as reminder (reminder.id)}
-									<div class="glass-surface rounded-lg border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-4 backdrop-blur-sm">
+									<div
+										class="glass-surface rounded-lg border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-4 backdrop-blur-sm"
+									>
 										<div class="flex items-center justify-between gap-3">
 											<Text as="p" size="sm" weight="semibold"
 												>{new Date(reminder.remindAtUtc).toLocaleString()}</Text
@@ -259,7 +262,9 @@
 						{:else}
 							<div class="space-y-3">
 								{#each task.recentAllocations as allocation (allocation.id)}
-									<div class="glass-surface rounded-lg border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-4 backdrop-blur-sm">
+									<div
+										class="glass-surface rounded-lg border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-4 backdrop-blur-sm"
+									>
 										<div class="flex items-center justify-between gap-3">
 											<div>
 												<Text as="p" size="sm" weight="semibold"

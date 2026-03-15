@@ -128,9 +128,7 @@
 					<p class="text-xs tracking-[0.18em] text-[var(--color-text-faint)] uppercase">
 						Visible tasks
 					</p>
-					<p
-						class="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--color-text)]"
-					>
+					<p class="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--color-text)]">
 						{data.tasks.length}
 					</p>
 				</div>
@@ -140,9 +138,7 @@
 					<p class="text-xs tracking-[0.18em] text-[var(--color-text-faint)] uppercase">
 						Active aspects
 					</p>
-					<p
-						class="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--color-text)]"
-					>
+					<p class="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--color-text)]">
 						{data.aspects.length}
 					</p>
 				</div>
@@ -150,9 +146,7 @@
 					class="glass-surface rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] px-4 py-4 shadow-glass-sm backdrop-blur-sm"
 				>
 					<p class="text-xs tracking-[0.18em] text-[var(--color-text-faint)] uppercase">Mode</p>
-					<p
-						class="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--color-text)]"
-					>
+					<p class="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--color-text)]">
 						{data.filters.show === 'all' ? 'All' : 'Focused'}
 					</p>
 				</div>

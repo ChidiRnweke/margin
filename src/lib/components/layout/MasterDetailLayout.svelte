@@ -25,9 +25,7 @@
 		<Resizable.Handle withHandle class="bg-[var(--color-glass-border)]" />
 
 		<Resizable.Pane defaultSize={100 - masterWidth}>
-			<ScrollArea
-				class="h-full bg-[var(--color-glass)]"
-			>
+			<ScrollArea class="h-full bg-[var(--color-glass)]">
 				{#if detail}
 					<div class="min-h-full">{@render detail()}</div>
 				{:else}
