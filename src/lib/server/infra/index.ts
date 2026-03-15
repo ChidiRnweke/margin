@@ -1,0 +1,2 @@
+// Infrastructure barrel
+export type {};
