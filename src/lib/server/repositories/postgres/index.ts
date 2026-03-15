@@ -4,3 +4,11 @@ export { PostgresPlanningProfileRepository } from './planning-profile-repository
 export { PostgresAspectRepository } from './aspect-repository.js';
 export { PostgresMilestoneRepository } from './milestone-repository.js';
 export { PostgresTaskRepository } from './task-repository.js';
+export { PostgresRecurringSeriesRepository } from './recurring-series-repository.js';
+export { PostgresReminderRepository } from './reminder-repository.js';
+export { PostgresAvailabilityRepository } from './availability-repository.js';
+export { PostgresPlanningCycleRepository } from './planning-cycle-repository.js';
+export { PostgresImportJobRepository } from './import-job-repository.js';
+export { PostgresAuditEventRepository } from './audit-event-repository.js';
+export { PostgresIdempotencyKeyRepository } from './idempotency-key-repository.js';
+export { PostgresSystemJobRunRepository } from './system-job-run-repository.js';

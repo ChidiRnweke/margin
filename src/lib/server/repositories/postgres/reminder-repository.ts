@@ -6,11 +6,11 @@ import type { ReminderAttempt } from '$lib/server/domain/models/reminder-attempt
 import type {
 	IReminderRepository,
 	ReminderAggregate
-} from '../contracts/reminder-repository.js';
+} from '$lib/server/repositories/contracts/reminder-repository.js';
 import { OptimisticConcurrencyError } from '$lib/server/errors/domain-errors.js';
 
-export class PgReminderRepository implements IReminderRepository {
-	constructor(private readonly db: Database) {}
+export class PostgresReminderRepository implements IReminderRepository {
+	constructor(private db: Database) {}
 
 	async findById(reminderId: string): Promise<ReminderAggregate | null> {
 		const rows = await this.db

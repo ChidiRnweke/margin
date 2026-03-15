@@ -12,11 +12,11 @@ import type { RecurrenceException } from '$lib/server/domain/models/recurrence-e
 import type {
 	IRecurringSeriesRepository,
 	RecurringTaskSeriesAggregate
-} from '../contracts/recurring-series-repository.js';
-import { NotFoundError, OptimisticConcurrencyError } from '$lib/server/errors/domain-errors.js';
+} from '$lib/server/repositories/contracts/recurring-series-repository.js';
+import { OptimisticConcurrencyError } from '$lib/server/errors/domain-errors.js';
 
-export class PgRecurringSeriesRepository implements IRecurringSeriesRepository {
-	constructor(private readonly db: Database) {}
+export class PostgresRecurringSeriesRepository implements IRecurringSeriesRepository {
+	constructor(private db: Database) {}
 
 	async findById(seriesId: string): Promise<RecurringTaskSeriesAggregate | null> {
 		const rows = await this.db

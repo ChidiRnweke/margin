@@ -7,14 +7,13 @@ import type {
 	IAvailabilityRepository,
 	AvailabilityAggregate,
 	DateRange
-} from '../contracts/availability-repository.js';
+} from '$lib/server/repositories/contracts/availability-repository.js';
 import {
-	NotFoundError,
 	OptimisticConcurrencyError
 } from '$lib/server/errors/domain-errors.js';
 
-export class PgAvailabilityRepository implements IAvailabilityRepository {
-	constructor(private readonly db: Database) {}
+export class PostgresAvailabilityRepository implements IAvailabilityRepository {
+	constructor(private db: Database) {}
 
 	async findById(blockId: string): Promise<AvailabilityAggregate | null> {
 		const rows = await this.db
