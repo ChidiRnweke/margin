@@ -1,6 +1,7 @@
 import type { ITaskRepository } from '$lib/server/repositories/contracts/task-repository.js';
 import type { IAspectRepository } from '$lib/server/repositories/contracts/aspect-repository.js';
 import type { IMilestoneRepository } from '$lib/server/repositories/contracts/milestone-repository.js';
+import type { IPlanningProfileRepository } from '$lib/server/repositories/contracts/planning-profile-repository.js';
 import type {
 	ITaskService,
 	CreateTaskInput,
@@ -18,15 +19,18 @@ import {
 	updateTask,
 	startTask,
 	completeTask,
-	reopenTask
+	reopenTask,
+	restoreTask
 } from '$lib/server/domain/models/task.js';
 import { NotFoundError } from '$lib/server/errors/domain-errors.js';
+import { PrincipalType, AspectStatus } from '$lib/server/domain/enums.js';
 
 export class TaskService implements ITaskService {
 	constructor(
 		private taskRepo: ITaskRepository,
 		private aspectRepo: IAspectRepository,
 		private milestoneRepo: IMilestoneRepository,
+		private profileRepo: IPlanningProfileRepository,
 		private recurrenceMaterializer: IRecurrenceMaterializer,
 		private auditEmitter: AuditEmitter
 	) {}
@@ -34,6 +38,9 @@ export class TaskService implements ITaskService {
 	async createTask(userId: string, input: CreateTaskInput): Promise<Task> {
 		const aspect = await this.aspectRepo.findById(input.aspectId);
 		if (!aspect || aspect.userId !== userId) {
+			throw new NotFoundError('Aspect', input.aspectId);
+		}
+		if (aspect.status === AspectStatus.Archived) {
 			throw new NotFoundError('Aspect', input.aspectId);
 		}
 
@@ -44,19 +51,30 @@ export class TaskService implements ITaskService {
 			}
 		}
 
+		const profile = await this.profileRepo.getByUserId(userId);
+
 		const task = createTask({
 			id: crypto.randomUUID(),
 			aspectId: input.aspectId,
 			title: input.title,
 			description: input.description,
-			effortMinutes: input.effortMinutes ?? 30,
+			effortMinutes: input.effortMinutes ?? profile.defaultEffortMinutes,
 			dueDate: input.dueDate,
 			importanceScore: input.importanceScore,
 			milestoneId: input.milestoneId,
 			splittableOverride: input.splittableOverride
 		});
 
-		return this.taskRepo.save(task, null);
+		const saved = await this.taskRepo.save(task, null);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.created',
+			entityType: 'Task',
+			entityId: saved.id,
+			after: saved as unknown as Record<string, unknown>
+		});
+		return saved;
 	}
 
 	async updateTask(
@@ -67,7 +85,17 @@ export class TaskService implements ITaskService {
 	): Promise<Task> {
 		const task = await this.loadOwnedTask(userId, taskId);
 		const updated = updateTask(task, input);
-		return this.taskRepo.save(updated, expectedVersion);
+		const saved = await this.taskRepo.save(updated, expectedVersion);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.updated',
+			entityType: 'Task',
+			entityId: saved.id,
+			before: task as unknown as Record<string, unknown>,
+			after: saved as unknown as Record<string, unknown>
+		});
+		return saved;
 	}
 
 	async moveTaskMilestone(
@@ -86,13 +114,31 @@ export class TaskService implements ITaskService {
 		}
 
 		const updated: Task = { ...task, milestoneId: milestoneIdOrNone, updatedAt: new Date() };
-		return this.taskRepo.save(updated, expectedVersion);
+		const saved = await this.taskRepo.save(updated, expectedVersion);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.moved',
+			entityType: 'Task',
+			entityId: saved.id,
+			before: task as unknown as Record<string, unknown>,
+			after: saved as unknown as Record<string, unknown>
+		});
+		return saved;
 	}
 
 	async startTask(userId: string, taskId: string, expectedVersion: number): Promise<Task> {
 		const task = await this.loadOwnedTask(userId, taskId);
 		const started = startTask(task);
-		return this.taskRepo.save(started, expectedVersion);
+		const saved = await this.taskRepo.save(started, expectedVersion);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.started',
+			entityType: 'Task',
+			entityId: saved.id
+		});
+		return saved;
 	}
 
 	async completeTask(
@@ -115,25 +161,58 @@ export class TaskService implements ITaskService {
 			}
 		}
 
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.completed',
+			entityType: 'Task',
+			entityId: saved.id
+		});
+
 		return { task: saved, nextRecurringTask };
 	}
 
 	async reopenTask(userId: string, taskId: string, expectedVersion: number): Promise<Task> {
 		const task = await this.loadOwnedTask(userId, taskId);
 		const reopened = reopenTask(task);
-		return this.taskRepo.save(reopened, expectedVersion);
+		const saved = await this.taskRepo.save(reopened, expectedVersion);
+		await this.taskRepo.cancelFutureAllocations(taskId);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.reopened',
+			entityType: 'Task',
+			entityId: saved.id
+		});
+		return saved;
 	}
 
 	async archiveTask(userId: string, taskId: string, expectedVersion: number): Promise<void> {
-		await this.loadOwnedTask(userId, taskId);
+		const task = await this.loadOwnedTask(userId, taskId);
 		await this.taskRepo.archive(taskId, expectedVersion);
 		await this.taskRepo.cancelPendingReminders(taskId);
 		await this.taskRepo.cancelFutureAllocations(taskId);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.archived',
+			entityType: 'Task',
+			entityId: task.id
+		});
 	}
 
 	async restoreTask(userId: string, taskId: string, expectedVersion: number): Promise<Task> {
-		await this.loadOwnedTask(userId, taskId);
-		return this.taskRepo.restoreToBacklog(taskId, expectedVersion);
+		const task = await this.loadOwnedTask(userId, taskId);
+		restoreTask(task);
+		const restored = await this.taskRepo.restoreToBacklog(taskId, expectedVersion);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.restored',
+			entityType: 'Task',
+			entityId: restored.id
+		});
+		return restored;
 	}
 
 	async bulkMutateTasks(
@@ -163,6 +242,13 @@ export class TaskService implements ITaskService {
 				});
 			}
 		}
+
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'task.bulk_mutated',
+			entityType: 'Task'
+		});
 
 		return { results };
 	}

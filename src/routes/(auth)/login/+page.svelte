@@ -2,12 +2,9 @@
 	import Stack from '$lib/components/primitives/Stack.svelte';
 	import Text from '$lib/components/primitives/Text.svelte';
 	import Button from '$lib/components/primitives/Button.svelte';
-	import AmbientBackground from '$lib/components/layout/AmbientBackground.svelte';
 </script>
 
 <div class="relative flex min-h-dvh items-center justify-center overflow-hidden p-4">
-	<AmbientBackground />
-
 	<div
 		class="glass-surface relative z-10 w-full max-w-md rounded-xl border border-[var(--color-glass-border)] border-r-[var(--color-glass-border-subtle)] border-b-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] p-10 shadow-glass-lg backdrop-blur-lg"
 	>

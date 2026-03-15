@@ -56,6 +56,12 @@
 	--shadow-glass-sm: var(--shadow-glass-sm);
 	--shadow-glass-lg: var(--shadow-glass-lg);
 
+	/* Backdrop blur — low values so the grid pattern survives through glass */
+	--backdrop-blur-sm: 2px;
+	--backdrop-blur-md: 4px;
+	--backdrop-blur-lg: 12px;
+	--backdrop-blur-xl: 24px;
+
 	--animate-float: float 20s ease-in-out infinite alternate;
 
 	--color-background: var(--background);
@@ -108,8 +114,6 @@
 
 	body {
 		@apply bg-background font-body text-foreground;
-		background: linear-gradient(180deg, oklch(0.15 0.02 300) 0%, oklch(0.13 0.015 260) 100%);
-		background-attachment: fixed;
 	}
 
 	h1,

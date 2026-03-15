@@ -9,6 +9,7 @@ import type { IAspectRepository } from '$lib/server/repositories/contracts/aspec
 import type { IUserRepository } from '$lib/server/repositories/contracts/user-repository.js';
 import type { ISchedulerEngine } from '$lib/server/services/contracts/scheduler-engine.js';
 import type { IAvailabilityWindowResolver } from '$lib/server/services/contracts/availability-window-resolver.js';
+import type { IAspectTargetValidator } from '$lib/server/services/contracts/aspect-target-validator.js';
 import type { AuditEmitter } from '$lib/server/infra/audit/audit-emitter.js';
 import type {
 	IPlanningService,
@@ -22,6 +23,7 @@ import type { TaskAllocation } from '$lib/server/domain/models/task-allocation.j
 import { createPlanningCycle } from '$lib/server/domain/models/planning-cycle.js';
 import { createPlanningRevision } from '$lib/server/domain/models/planning-revision.js';
 import { TaskStatus, PlanningCycleStatus } from '$lib/server/domain/enums.js';
+import { PrincipalType } from '$lib/server/domain/enums.js';
 import { NotFoundError, StateTransitionError } from '$lib/server/errors/domain-errors.js';
 
 export class PlanningService implements IPlanningService {
@@ -34,6 +36,7 @@ export class PlanningService implements IPlanningService {
 		private userRepo: IUserRepository,
 		private schedulerEngine: ISchedulerEngine,
 		private windowResolver: IAvailabilityWindowResolver,
+		private aspectTargetValidator: IAspectTargetValidator,
 		private auditEmitter: AuditEmitter
 	) {}
 
@@ -47,6 +50,7 @@ export class PlanningService implements IPlanningService {
 		]);
 
 		const timezone = user?.timezoneNameIana ?? 'UTC';
+		this.aspectTargetValidator.ensureActiveTargetsTotal100(aspects);
 
 		// Load tasks: backlog + in-progress across all active aspects
 		const aspectIds = aspects.map((a) => a.id);
@@ -115,6 +119,14 @@ export class PlanningService implements IPlanningService {
 			healthScores: []
 		});
 
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'planning_cycle.generated',
+			entityType: 'PlanningCycle',
+			entityId: aggregate.cycle.id
+		});
+
 		return {
 			cycleId: aggregate.cycle.id,
 			revisionId,
@@ -133,7 +145,15 @@ export class PlanningService implements IPlanningService {
 			throw new StateTransitionError('Can only confirm draft cycles');
 		}
 
-		return (await this.planningCycleRepo.confirmCycle(cycleId, expectedVersion)).cycle;
+		const confirmed = await this.planningCycleRepo.confirmCycle(cycleId, expectedVersion);
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'planning_cycle.confirmed',
+			entityType: 'PlanningCycle',
+			entityId: cycleId
+		});
+		return confirmed.cycle;
 	}
 
 	async regenerateConfirmedPlan(
@@ -201,6 +221,13 @@ export class PlanningService implements IPlanningService {
 			expectedVersion
 		);
 
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'planning_cycle.regenerated',
+			entityType: 'PlanningCycle',
+			entityId: cycleId
+		});
 		return updated.cycle;
 	}
 
@@ -258,6 +285,14 @@ export class PlanningService implements IPlanningService {
 			expectedVersion
 		);
 
+		await this.auditEmitter.emit({
+			userId,
+			actorPrincipalType: PrincipalType.UserSession,
+			eventType: 'planning_cycle.edited',
+			entityType: 'PlanningCycle',
+			entityId: cycleId
+		});
+
 		const activeRevision = updated.revisions.find((r) => r.status === 'Active');
 		return {
 			revisionId: activeRevision?.id ?? newRevisionId,
@@ -299,7 +334,7 @@ export class PlanningService implements IPlanningService {
 	private computeWeekEnd(weekStart: string): string {
 		const start = new Date(weekStart);
 		const end = new Date(start);
-		end.setUTCDate(end.getUTCDate() + 7);
+		end.setUTCDate(end.getUTCDate() + 6);
 		return end.toISOString().slice(0, 10);
 	}
 

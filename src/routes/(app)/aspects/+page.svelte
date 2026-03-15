@@ -26,7 +26,7 @@
 			{/snippet}
 		</EmptyState>
 	{:else}
-		<DashboardGrid columns={3} minWidth="280px" gap="6">
+		<DashboardGrid columns={3} gap="6">
 			{#each data.aspects as aspect}
 				<AspectCard
 					id={aspect.id}

@@ -14,6 +14,7 @@ import type { Aspect } from '$lib/server/domain/models/aspect.js';
 import {
 	createAspect,
 	activateAspect,
+	archiveAspect,
 	restoreAspectToDraft
 } from '$lib/server/domain/models/aspect.js';
 import { AspectName, AspectPurpose } from '$lib/server/domain/value-objects/string-values.js';
@@ -112,8 +113,32 @@ export class AspectService implements IAspectService {
 	}
 
 	async archiveAspect(userId: string, aspectId: string, expectedVersion: number): Promise<void> {
-		await this.loadOwnedAspect(userId, aspectId);
-		await this.aspectRepo.archive(aspectId, expectedVersion);
+		const aspect = await this.loadOwnedAspect(userId, aspectId);
+		const milestones = await this.milestoneRepo.query(userId, { aspectId, limit: 500 });
+		const tasks = await this.taskRepo.query(userId, { aspectId, limit: 500 });
+
+		for (const milestone of milestones.items) {
+			if (milestone.status !== 'Archived') {
+				const fullMilestone = await this.milestoneRepo.findById(milestone.id);
+				if (fullMilestone) {
+					await this.milestoneRepo.archive(milestone.id, fullMilestone.version);
+				}
+			}
+		}
+
+		for (const task of tasks.items) {
+			if (task.status !== 'Archived') {
+				const fullTask = await this.taskRepo.findById(task.id);
+				if (fullTask) {
+					await this.taskRepo.archive(task.id, fullTask.version);
+				}
+			}
+			await this.taskRepo.cancelFutureAllocations(task.id);
+			await this.taskRepo.cancelPendingReminders(task.id);
+		}
+
+		const archived = archiveAspect(aspect);
+		await this.aspectRepo.save(archived, expectedVersion);
 
 		await this.auditEmitter.emit({
 			userId,
@@ -125,8 +150,9 @@ export class AspectService implements IAspectService {
 	}
 
 	async restoreAspect(userId: string, aspectId: string, expectedVersion: number): Promise<Aspect> {
-		await this.loadOwnedAspect(userId, aspectId);
-		const restored = await this.aspectRepo.restoreToDraft(aspectId, expectedVersion);
+		const aspect = await this.loadOwnedAspect(userId, aspectId);
+		const restoredAspect = restoreAspectToDraft(aspect);
+		const restored = await this.aspectRepo.save(restoredAspect, expectedVersion);
 
 		await this.auditEmitter.emit({
 			userId,

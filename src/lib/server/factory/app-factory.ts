@@ -33,6 +33,7 @@ import { SchedulerEngine } from '$lib/server/services/internal/scheduler-engine.
 import { ImportRemapService } from '$lib/server/services/internal/import-remap-service.js';
 import { HealthComputationService } from '$lib/server/services/internal/health-computation-service.js';
 import { ReminderDispatchService } from '$lib/server/services/internal/reminder-dispatch-service.js';
+import { AspectTargetValidator } from '$lib/server/services/internal/aspect-target-validator.js';
 
 // Services
 import { AuthService } from '$lib/server/services/auth-service.js';
@@ -98,6 +99,7 @@ export class AppFactory {
 	private _importRemapService?: ImportRemapService;
 	private _healthComputation?: HealthComputationService;
 	private _reminderDispatch?: ReminderDispatchService;
+	private _aspectTargetValidator?: AspectTargetValidator;
 
 	// Services
 	private _authService?: AuthService;
@@ -254,6 +256,9 @@ export class AppFactory {
 			this.emailReminderProvider
 		));
 	}
+	get aspectTargetValidator() {
+		return (this._aspectTargetValidator ??= new AspectTargetValidator());
+	}
 
 	// ── Services ──
 
@@ -287,6 +292,7 @@ export class AppFactory {
 		return (this._milestoneService ??= new MilestoneService(
 			this.milestoneRepo,
 			this.aspectRepo,
+			this.taskRepo,
 			this.auditEmitter
 		));
 	}
@@ -295,6 +301,7 @@ export class AppFactory {
 			this.taskRepo,
 			this.aspectRepo,
 			this.milestoneRepo,
+			this.profileRepo,
 			this.recurrenceMaterializer,
 			this.auditEmitter
 		));
@@ -325,6 +332,7 @@ export class AppFactory {
 			this.userRepo,
 			this.schedulerEngine,
 			this.windowResolver,
+			this.aspectTargetValidator,
 			this.auditEmitter
 		));
 	}

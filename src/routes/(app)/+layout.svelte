@@ -36,12 +36,12 @@
 
 <svelte:window onkeydown={handleGlobalKeydown} />
 
-<div class="relative z-10 flex min-h-dvh flex-col">
+<div class="relative z-10 flex min-h-dvh w-full flex-col">
 	<!-- Glass navigation bar -->
 	<header
 		class="glass-surface sticky top-0 z-50 border-b border-[var(--color-glass-border-subtle)] bg-[var(--color-glass-strong)] shadow-glass-sm backdrop-blur-md"
 	>
-		<div class="mx-auto flex max-w-[72rem] items-center justify-between px-8 py-3">
+		<div class="mx-auto flex w-full items-center justify-between px-[5%] py-3">
 			<span class="font-display text-xl font-bold tracking-tight text-[var(--color-accent)]"
 				>Margin</span
 			>
@@ -91,8 +91,8 @@
 	</header>
 
 	<!-- Main content area — no glass wrapper; pages compose their own glass surfaces -->
-	<main class="flex-1 px-8 py-8">
-		<div class="mx-auto w-full max-w-[72rem]">
+	<main class="flex-1 px-[5%] py-8">
+		<div class="mx-auto">
 			{@render children()}
 		</div>
 	</main>

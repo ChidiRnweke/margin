@@ -66,3 +66,39 @@ export class FakeAuditEmitter {
 		this.emittedEvents.push(event);
 	}
 }
+
+export class FakeSchedulerEngine {
+	private result = { allocations: [] as unknown[] };
+
+	buildWeeklySchedule() {
+		return this.result;
+	}
+
+	setResult(result: { allocations: unknown[] }) {
+		this.result = result;
+	}
+}
+
+export class FakeAvailabilityWindowResolver {
+	private windows: unknown[] = [];
+
+	resolveEffectiveWindows() {
+		return this.windows;
+	}
+
+	setWindows(windows: unknown[]) {
+		this.windows = windows;
+	}
+}
+
+export class FakeAspectTargetValidator {
+	public capturedAspects: unknown[] = [];
+	public shouldThrow = false;
+
+	ensureActiveTargetsTotal100(aspects: unknown[]) {
+		this.capturedAspects = aspects;
+		if (this.shouldThrow) {
+			throw new Error('TARGET_PERCENT_TOTAL_INVALID');
+		}
+	}
+}

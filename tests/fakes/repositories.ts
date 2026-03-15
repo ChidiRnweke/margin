@@ -220,6 +220,8 @@ export class FakePlanningProfileRepository {
 }
 
 export class FakeAspectRepository {
+	public archivedIds: string[] = [];
+	public restoredIds: string[] = [];
 	private aspects: Map<
 		string,
 		{
@@ -273,6 +275,7 @@ export class FakeAspectRepository {
 		if (aspect) {
 			aspect.status = 'Archived';
 			aspect.archivedAt = new Date();
+			this.archivedIds.push(aspectId);
 		}
 	}
 
@@ -282,6 +285,7 @@ export class FakeAspectRepository {
 			aspect.status = 'Draft';
 			aspect.archivedAt = undefined;
 			aspect.version++;
+			this.restoredIds.push(aspectId);
 			return { ...aspect };
 		}
 		return undefined;
@@ -329,6 +333,10 @@ export class FakeAspectRepository {
 }
 
 export class FakeTaskRepository {
+	public cancelledFutureAllocationTaskIds: string[] = [];
+	public cancelledPendingReminderTaskIds: string[] = [];
+	public archivedIds: string[] = [];
+	public restoredIds: string[] = [];
 	private tasks: Map<
 		string,
 		{
@@ -379,6 +387,7 @@ export class FakeTaskRepository {
 		const task = this.tasks.get(taskId);
 		if (task) {
 			task.status = 'Archived';
+			this.archivedIds.push(taskId);
 		}
 	}
 
@@ -387,6 +396,7 @@ export class FakeTaskRepository {
 		if (task) {
 			task.status = 'Backlog';
 			task.version++;
+			this.restoredIds.push(taskId);
 			return { ...task };
 		}
 		return undefined;
@@ -402,7 +412,14 @@ export class FakeTaskRepository {
 	}
 
 	async query(userId: string, _query: unknown) {
-		const items = [...this.tasks.values()];
+		const query = (_query ?? {}) as Record<string, unknown>;
+		const statuses = typeof query.status === 'string' ? String(query.status).split(',') : undefined;
+		const items = [...this.tasks.values()].filter((task) => {
+			if (query.aspectId && task.aspectId !== query.aspectId) return false;
+			if (query.milestoneId && task.milestoneId !== query.milestoneId) return false;
+			if (statuses && !statuses.includes(task.status)) return false;
+			return userId ? task.aspectId !== '' : true;
+		});
 		return { items, nextCursor: undefined };
 	}
 
@@ -418,9 +435,11 @@ export class FakeTaskRepository {
 	}
 	async releaseActiveLock(_taskId: string, _expectedVersion: number) {}
 	async cancelFutureAllocations(_taskId: string) {
+		this.cancelledFutureAllocationTaskIds.push(_taskId);
 		return 0;
 	}
 	async cancelPendingReminders(_taskId: string) {
+		this.cancelledPendingReminderTaskIds.push(_taskId);
 		return 0;
 	}
 	async deleteByUserId(_userId: string) {
@@ -446,9 +465,19 @@ export class FakeTaskRepository {
 	getAll() {
 		return [...this.tasks.values()];
 	}
+
+	listByMilestoneId(milestoneId: string) {
+		return [...this.tasks.values()].filter((task) => task.milestoneId === milestoneId);
+	}
+
+	listByAspectId(aspectId: string) {
+		return [...this.tasks.values()].filter((task) => task.aspectId === aspectId);
+	}
 }
 
 export class FakeMilestoneRepository {
+	public archivedIds: string[] = [];
+	public restoredIds: string[] = [];
 	private milestones: Map<
 		string,
 		{ id: string; aspectId: string; title: string; status: string; version: number }
@@ -472,7 +501,10 @@ export class FakeMilestoneRepository {
 
 	async archive(milestoneId: string, _expectedVersion: number) {
 		const m = this.milestones.get(milestoneId);
-		if (m) m.status = 'Archived';
+		if (m) {
+			m.status = 'Archived';
+			this.archivedIds.push(milestoneId);
+		}
 	}
 
 	async restoreToOpen(milestoneId: string, _expectedVersion: number) {
@@ -480,6 +512,7 @@ export class FakeMilestoneRepository {
 		if (m) {
 			m.status = 'Open';
 			m.version++;
+			this.restoredIds.push(milestoneId);
 			return { ...m };
 		}
 		return undefined;
@@ -507,10 +540,15 @@ export class FakeMilestoneRepository {
 	getAll() {
 		return [...this.milestones.values()];
 	}
+
+	listByAspectId(aspectId: string) {
+		return [...this.milestones.values()].filter((milestone) => milestone.aspectId === aspectId);
+	}
 }
 
 export class FakeReminderRepository {
 	private reminders: Map<string, unknown> = new Map();
+	public cancelledTaskIds: string[] = [];
 
 	async findById(id: string) {
 		return this.reminders.get(id);
@@ -532,6 +570,7 @@ export class FakeReminderRepository {
 		return [];
 	}
 	async cancelPendingForTask(_taskId: string) {
+		this.cancelledTaskIds.push(_taskId);
 		return 0;
 	}
 	async deleteByUserId(_userId: string) {
@@ -568,42 +607,74 @@ export class FakePlanningCycleRepository {
 	private cycles: Map<string, unknown> = new Map();
 
 	async findCycleForWeek(_userId: string, _weekStart: string) {
+		for (const cycle of this.cycles.values() as Iterable<any>) {
+			if (cycle.cycle.userId === _userId && cycle.cycle.weekStartIsoMonday === _weekStart) {
+				return cycle;
+			}
+		}
 		return undefined;
 	}
 	async findById(id: string) {
 		return this.cycles.get(id);
 	}
 	async createCycleWithRevision(aggregate: { id: string }) {
-		this.cycles.set(aggregate.id, aggregate);
-		return aggregate;
+		const cycleId = (aggregate as any).cycle?.id ?? aggregate.id;
+		this.cycles.set(cycleId, aggregate);
+		return aggregate as any;
 	}
 	async createDraftRevision(_cycleId: string, _draftInput: unknown, _expectedVersion: number) {
 		return {};
 	}
 	async confirmCycle(_cycleId: string, _expectedVersion: number) {
-		return {};
+		const aggregate = this.cycles.get(_cycleId) as any;
+		aggregate.cycle = { ...aggregate.cycle, status: 'Confirmed' };
+		this.cycles.set(_cycleId, aggregate);
+		return aggregate;
 	}
 	async supersedeAndCreateRevision(
 		_cycleId: string,
 		_revisionInput: unknown,
 		_expectedVersion: number
 	) {
-		return {};
+		const aggregate = this.cycles.get(_cycleId) as any;
+		const nextRevision = {
+			id: (_revisionInput as any).revisionId,
+			revisionNumber: aggregate.revisions.length + 1,
+			status: 'Active'
+		};
+		aggregate.revisions = [...aggregate.revisions, nextRevision];
+		aggregate.allocations = (_revisionInput as any).allocations ?? [];
+		this.cycles.set(_cycleId, aggregate);
+		return aggregate;
 	}
 	async applyPlanEditRevision(_cycleId: string, _editInput: unknown, _expectedVersion: number) {
-		return {};
+		const aggregate = this.cycles.get(_cycleId) as any;
+		const nextRevision = {
+			id: (_editInput as any).newRevisionId,
+			revisionNumber: aggregate.revisions.length + 1,
+			status: 'Active'
+		};
+		aggregate.revisions = [...aggregate.revisions, nextRevision];
+		this.cycles.set(_cycleId, aggregate);
+		return aggregate;
 	}
 	async persistOutcome(_allocationId: string, _outcomeInput: unknown, _expectedVersion: number) {
 		return {};
 	}
 	async persistHealthScores(_cycleId: string, _scores: unknown[]) {
-		return [];
+		const aggregate = this.cycles.get(_cycleId) as any;
+		if (aggregate) aggregate.healthScores = _scores;
+		return _scores as any;
 	}
 	async queryCycles(_userId: string, _query: unknown) {
 		return { items: [], nextCursor: undefined };
 	}
 	async deleteByUserId(_userId: string) {
 		return 0;
+	}
+
+	seed(aggregate: any) {
+		this.cycles.set(aggregate.cycle.id, aggregate);
 	}
 }
 

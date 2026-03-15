@@ -1,26 +1,26 @@
 :root {
-	--color-bg: oklch(0.16 0.02 286);
-	--color-shell-backdrop: color-mix(in oklab, oklch(0.22 0.05 290) 82%, oklch(0.1 0.01 250));
-	--color-shell: color-mix(in oklab, oklch(0.2 0.025 286) 84%, transparent);
-	--color-panel: color-mix(in oklab, oklch(0.25 0.024 286) 76%, transparent);
-	--color-panel-strong: color-mix(in oklab, oklch(0.3 0.028 286) 88%, transparent);
-	--color-panel-glass: color-mix(in oklab, oklch(0.34 0.03 286) 42%, transparent);
-	--color-surface: oklch(0.24 0.024 286);
-	--color-surface-muted: oklch(0.28 0.022 286);
-	--color-surface-raised: oklch(0.32 0.026 286);
+	--color-bg: oklch(0.12 0.005 260);
+	--color-shell-backdrop: color-mix(in oklab, oklch(0.18 0.008 260) 82%, oklch(0.1 0.003 260));
+	--color-shell: color-mix(in oklab, oklch(0.16 0.005 260) 84%, transparent);
+	--color-panel: color-mix(in oklab, oklch(0.2 0.006 260) 76%, transparent);
+	--color-panel-strong: color-mix(in oklab, oklch(0.24 0.008 260) 88%, transparent);
+	--color-panel-glass: color-mix(in oklab, oklch(0.28 0.008 260) 42%, transparent);
+	--color-surface: oklch(0.16 0.005 260);
+	--color-surface-muted: oklch(0.2 0.006 260);
+	--color-surface-raised: oklch(0.24 0.008 260);
 
-	--color-text: oklch(0.95 0.01 286);
-	--color-text-muted: oklch(0.78 0.015 286);
-	--color-text-faint: oklch(0.64 0.014 286);
+	--color-text: oklch(0.95 0.01 260);
+	--color-text-muted: oklch(0.7 0.01 260);
+	--color-text-faint: oklch(0.55 0.01 260);
 
-	--color-border: oklch(0.52 0.03 286 / 0.36);
-	--color-border-strong: oklch(0.7 0.025 286 / 0.38);
+	--color-border: oklch(0.35 0.005 260 / 0.36);
+	--color-border-strong: oklch(0.5 0.008 260 / 0.38);
 
-	--color-accent: oklch(0.78 0.16 312);
-	--color-accent-strong: oklch(0.72 0.2 260);
+	--color-accent: oklch(0.85 0.04 260);
+	--color-accent-strong: oklch(0.72 0.06 280);
 	--color-accent-soft: color-mix(in oklab, var(--color-accent) 16%, transparent);
 	--color-accent-border: color-mix(in oklab, var(--color-accent) 42%, white 4%);
-	--color-accent-foreground: oklch(0.15 0.03 286);
+	--color-accent-foreground: oklch(0.12 0.005 260);
 	--color-accent-shadow: color-mix(in oklab, var(--color-accent) 44%, transparent);
 
 	--color-success: oklch(0.8 0.14 165);
@@ -36,25 +36,26 @@
 	--color-destructive-border: color-mix(in oklab, var(--color-destructive) 40%, transparent);
 	--color-destructive-shadow: color-mix(in oklab, var(--color-destructive) 34%, transparent);
 
-	--color-glass: color-mix(in oklab, oklch(0.26 0.02 286) 50%, transparent);
-	--color-glass-strong: color-mix(in oklab, oklch(0.3 0.024 286) 62%, transparent);
-	--color-glass-subtle: color-mix(in oklab, oklch(0.24 0.018 286) 35%, transparent);
-	--color-glass-border: oklch(0.45 0.02 280 / 0.25);
-	--color-glass-border-subtle: oklch(0.28 0.015 280 / 0.15);
-	--color-glass-highlight: oklch(0.95 0.01 286 / 0.06);
+	--color-glass: oklch(1 0 0 / 0.04);
+	--color-glass-strong: oklch(1 0 0 / 0.06);
+	--color-glass-subtle: oklch(1 0 0 / 0.02);
+	--color-glass-border: oklch(1 0 0 / 0.12);
+	--color-glass-border-subtle: oklch(1 0 0 / 0.05);
+	--color-glass-highlight: oklch(1 0 0 / 0.12);
 
-	--color-aurora-start: color-mix(in oklab, oklch(0.78 0.18 316) 36%, transparent);
-	--color-aurora-middle: color-mix(in oklab, oklch(0.76 0.16 240) 30%, transparent);
-	--color-aurora-glow: color-mix(in oklab, oklch(0.8 0.18 286) 32%, transparent);
+	--color-aurora-start: color-mix(in oklab, oklch(0.75 0.04 300) 36%, transparent);
+	--color-aurora-middle: color-mix(in oklab, oklch(0.75 0.04 250) 30%, transparent);
+	--color-aurora-glow: color-mix(in oklab, oklch(0.75 0.04 260) 32%, transparent);
 
-	--color-aspect-1: oklch(0.78 0.14 330);
-	--color-aspect-2: oklch(0.79 0.14 250);
-	--color-aspect-3: oklch(0.8 0.14 170);
-	--color-aspect-4: oklch(0.82 0.15 70);
-	--color-aspect-5: oklch(0.8 0.14 210);
-	--color-aspect-6: oklch(0.79 0.13 300);
-	--color-aspect-7: oklch(0.8 0.13 130);
-	--color-aspect-8: oklch(0.78 0.14 20);
+	/* Dark mode: muted, sophisticated aspect colors (chroma 0.04) */
+	--color-aspect-1: oklch(0.75 0.04 330);
+	--color-aspect-2: oklch(0.75 0.04 250);
+	--color-aspect-3: oklch(0.75 0.04 170);
+	--color-aspect-4: oklch(0.75 0.04 55);
+	--color-aspect-5: oklch(0.75 0.04 200);
+	--color-aspect-6: oklch(0.75 0.04 300);
+	--color-aspect-7: oklch(0.75 0.04 120);
+	--color-aspect-8: oklch(0.75 0.04 30);
 
 	--font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
 	--font-body: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -102,9 +103,9 @@
 	--shadow-panel-strong: 0 26px 60px -30px rgb(4 8 24 / 0.74);
 	--shadow-panel-float: 0 32px 90px -36px rgb(4 8 24 / 0.78);
 	--shadow-shell: 0 40px 120px -48px rgb(2 6 23 / 0.82);
-	--shadow-glass: 0 8px 32px oklch(0.1 0.03 286 / 0.3), inset 0 1px 0 oklch(1 0 0 / 0.06);
-	--shadow-glass-sm: 0 2px 8px oklch(0.1 0.03 286 / 0.2), inset 0 1px 0 oklch(1 0 0 / 0.04);
-	--shadow-glass-lg: 0 24px 48px oklch(0.1 0.03 286 / 0.4);
+	--shadow-glass: 0 8px 32px oklch(0.5 0.03 280 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.08);
+	--shadow-glass-sm: 0 2px 8px oklch(0.5 0.03 280 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.06);
+	--shadow-glass-lg: 0 24px 48px oklch(0.5 0.03 280 / 0.12);
 
 	--duration-fast: 140ms;
 	--duration-normal: 220ms;
@@ -120,29 +121,43 @@
 
 @media (prefers-color-scheme: light) {
 	:root {
-		--color-bg: oklch(0.97 0.01 286);
-		--color-shell-backdrop: color-mix(in oklab, oklch(0.93 0.03 300) 68%, white);
-		--color-shell: color-mix(in oklab, white 76%, oklch(0.9 0.018 286) 24%);
-		--color-panel: color-mix(in oklab, white 80%, oklch(0.92 0.014 286) 20%);
-		--color-panel-strong: color-mix(in oklab, white 88%, oklch(0.87 0.018 286) 12%);
+		--color-bg: oklch(0.98 0.002 260);
+		--color-shell-backdrop: color-mix(in oklab, oklch(0.93 0.01 260) 68%, white);
+		--color-shell: color-mix(in oklab, white 76%, oklch(0.9 0.008 260) 24%);
+		--color-panel: color-mix(in oklab, white 80%, oklch(0.92 0.006 260) 20%);
+		--color-panel-strong: color-mix(in oklab, white 88%, oklch(0.87 0.008 260) 12%);
 		--color-panel-glass: color-mix(in oklab, white 48%, transparent);
-		--color-surface: oklch(0.985 0.007 286);
-		--color-surface-muted: oklch(0.95 0.01 286);
-		--color-surface-raised: oklch(0.99 0.005 286);
+		--color-surface: oklch(0.96 0.005 260);
+		--color-surface-muted: oklch(0.95 0.005 260);
+		--color-surface-raised: oklch(0.99 0.003 260);
 
-		--color-text: oklch(0.22 0.03 286);
-		--color-text-muted: oklch(0.45 0.02 286);
-		--color-text-faint: oklch(0.58 0.015 286);
+		--color-text: oklch(0.22 0.01 260);
+		--color-text-muted: oklch(0.45 0.01 260);
+		--color-text-faint: oklch(0.65 0.01 260);
 
-		--color-border: oklch(0.76 0.02 286 / 0.42);
-		--color-border-strong: oklch(0.62 0.02 286 / 0.34);
+		--color-border: oklch(0.85 0.01 260 / 0.42);
+		--color-border-strong: oklch(0.62 0.01 260 / 0.34);
 
-		--color-glass: color-mix(in oklab, white 52%, transparent);
-		--color-glass-strong: color-mix(in oklab, white 68%, transparent);
-		--color-glass-subtle: color-mix(in oklab, white 38%, transparent);
-		--color-glass-border: oklch(0.8 0.015 286 / 0.28);
-		--color-glass-border-subtle: oklch(0.6 0.012 286 / 0.16);
-		--color-glass-highlight: oklch(1 0 0 / 0.12);
+		--color-accent: oklch(0.55 0.15 280);
+		--color-accent-strong: oklch(0.5 0.17 280);
+		--color-accent-foreground: oklch(0.99 0.003 280);
+
+		--color-glass: oklch(1 0 0 / 0.5);
+		--color-glass-strong: oklch(1 0 0 / 0.7);
+		--color-glass-subtle: oklch(1 0 0 / 0.3);
+		--color-glass-border: oklch(1 0 0 / 0.8);
+		--color-glass-border-subtle: oklch(1 0 0 / 0.2);
+		--color-glass-highlight: oklch(1 0 0 / 0.8);
+
+		/* Light mode: standard saturation aspect colors */
+		--color-aspect-1: oklch(0.72 0.12 330);
+		--color-aspect-2: oklch(0.72 0.12 250);
+		--color-aspect-3: oklch(0.72 0.12 170);
+		--color-aspect-4: oklch(0.72 0.12 55);
+		--color-aspect-5: oklch(0.72 0.12 200);
+		--color-aspect-6: oklch(0.72 0.12 300);
+		--color-aspect-7: oklch(0.72 0.12 120);
+		--color-aspect-8: oklch(0.72 0.12 30);
 
 		--shadow-glass: 0 8px 32px oklch(0.5 0.03 280 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.08);
 		--shadow-glass-sm: 0 2px 8px oklch(0.5 0.03 280 / 0.06), inset 0 1px 0 oklch(1 0 0 / 0.06);

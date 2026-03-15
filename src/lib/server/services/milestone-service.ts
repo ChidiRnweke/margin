@@ -1,5 +1,6 @@
 import type { IMilestoneRepository } from '$lib/server/repositories/contracts/milestone-repository.js';
 import type { IAspectRepository } from '$lib/server/repositories/contracts/aspect-repository.js';
+import type { ITaskRepository } from '$lib/server/repositories/contracts/task-repository.js';
 import type {
 	IMilestoneService,
 	CreateMilestoneInput,
@@ -14,13 +15,18 @@ import {
 	reopenMilestone
 } from '$lib/server/domain/models/milestone.js';
 import { MilestoneTitle } from '$lib/server/domain/value-objects/string-values.js';
-import { NotFoundError, OwnershipError } from '$lib/server/errors/domain-errors.js';
+import {
+	NotFoundError,
+	OwnershipError,
+	StateTransitionError
+} from '$lib/server/errors/domain-errors.js';
 import { PrincipalType } from '$lib/server/domain/enums.js';
 
 export class MilestoneService implements IMilestoneService {
 	constructor(
 		private milestoneRepo: IMilestoneRepository,
 		private aspectRepo: IAspectRepository,
+		private taskRepo: ITaskRepository,
 		private auditEmitter: AuditEmitter
 	) {}
 
@@ -28,6 +34,9 @@ export class MilestoneService implements IMilestoneService {
 		const aspect = await this.aspectRepo.findById(input.aspectId);
 		if (!aspect || aspect.userId !== userId) {
 			throw new NotFoundError('Aspect', input.aspectId);
+		}
+		if (aspect.status === 'Archived') {
+			throw new OwnershipError('Cannot create milestone for archived aspect');
 		}
 
 		const milestone = createMilestone({
@@ -91,6 +100,10 @@ export class MilestoneService implements IMilestoneService {
 		expectedVersion: number
 	): Promise<Milestone> {
 		const milestone = await this.loadOwnedMilestone(userId, milestoneId);
+		const tasks = await this.taskRepo.query(userId, { milestoneId, limit: 500 } as never);
+		if (tasks.items.some((task) => task.status !== 'Done' && task.status !== 'Archived')) {
+			throw new StateTransitionError('Cannot complete milestone with incomplete child tasks');
+		}
 		const completed = completeMilestone(milestone);
 		const saved = await this.milestoneRepo.save(completed, expectedVersion);
 
@@ -131,6 +144,15 @@ export class MilestoneService implements IMilestoneService {
 		expectedVersion: number
 	): Promise<void> {
 		await this.loadOwnedMilestone(userId, milestoneId);
+		const tasks = await this.taskRepo.query(userId, { milestoneId, limit: 500 } as never);
+		for (const task of tasks.items) {
+			const fullTask = await this.taskRepo.findById(task.id);
+			if (fullTask && fullTask.status !== 'Archived') {
+				await this.taskRepo.archive(task.id, fullTask.version);
+			}
+			await this.taskRepo.cancelFutureAllocations(task.id);
+			await this.taskRepo.cancelPendingReminders(task.id);
+		}
 		await this.milestoneRepo.archive(milestoneId, expectedVersion);
 
 		await this.auditEmitter.emit({
