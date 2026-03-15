@@ -1,15 +1,21 @@
-import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
+import { redirect } from '@sveltejs/kit';
 
-export const actions: Actions = {
-default: async ({ locals }) => {
-// TODO: Wire to ProfileController.completeOnboarding via locals.factory
-// const userId = locals.principal!.userId;
-// const factory = locals.factory;
-// await factory.profileController.completeOnboarding(userId);
-if (!locals.principal) {
-redirect(302, '/login');
-}
-return { success: true };
-}
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.principal) {
+		redirect(302, '/login');
+	}
+	return {
+		onboardingComplete: false
+	};
 };
+
+export const actions = {
+	default: async ({ locals }) => {
+		if (!locals.principal) {
+			redirect(302, '/login');
+		}
+		return { success: true };
+	}
+} satisfies Actions;

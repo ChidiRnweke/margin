@@ -12,7 +12,7 @@
 <AppShell>
 	{#snippet sidebar()}
 		<nav class="app-nav">
-			<a class="nav-item" href="/dashboard">Dashboard</a>
+			<a class="nav-item" href="/">Dashboard</a>
 			<a class="nav-item" href="/aspects">Aspects</a>
 			<a class="nav-item" href="/tasks">Tasks</a>
 			<a class="nav-item" href="/plan">Plan</a>
