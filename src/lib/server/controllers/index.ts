@@ -1,2 +1,12 @@
-// Controller barrel — concrete implementations added in Steps 67-70
-export type {};
+export { AuthController } from './auth-controller.js';
+export { ProfileController } from './profile-controller.js';
+export { AspectController } from './aspect-controller.js';
+export { MilestoneController } from './milestone-controller.js';
+export { TaskController } from './task-controller.js';
+export { RecurrenceController } from './recurrence-controller.js';
+export { AvailabilityController } from './availability-controller.js';
+export { PlanningController } from './planning-controller.js';
+export { ExecutionController } from './execution-controller.js';
+export { ReminderController } from './reminder-controller.js';
+export { DataPortabilityController } from './data-portability-controller.js';
+export { AuditController } from './audit-controller.js';
